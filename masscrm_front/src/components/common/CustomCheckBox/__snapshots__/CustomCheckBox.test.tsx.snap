@@ -1,0 +1,19 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CustomCheckBox checkBox should render correctly 1`] = `
+<WithStyles(ForwardRef(Checkbox))
+  checkedIcon={
+    <UNDEFINED
+      fontSize="small"
+    />
+  }
+  classes={
+    Object {
+      "root": "makeStyles-checkBox-1",
+    }
+  }
+  color="default"
+  icon={<React.Fragment />}
+  onChange={[Function]}
+/>
+`;

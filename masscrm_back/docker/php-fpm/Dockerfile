@@ -1,0 +1,50 @@
+FROM php:7.4-fpm AS masscrm-fpm
+RUN cat /etc/hosts
+ADD https://raw.githubusercontent.com/mlocati/docker-php-extension-installer/master/install-php-extensions /usr/local/bin/
+
+RUN chmod uga+x /usr/local/bin/install-php-extensions && sync
+
+RUN DEBIAN_FRONTEND=noninteractive apt-get update -q \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
+      curl \
+      cron \
+      procps \
+      supervisor \
+      git \
+      zip unzip \
+    && install-php-extensions \
+      bcmath \
+      bz2 \
+      calendar \
+      exif \
+      gd \
+      intl \
+      ldap \
+      memcached \
+      mysqli \
+      opcache \
+      pdo_mysql \
+      pdo_pgsql \
+      pgsql \
+      redis \
+      soap \
+      xsl \
+      zip \
+      sockets
+#RUN apt-get update && apt-get install -y dnsutils
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
+    && ln -s $(composer config --global home) /root/composer
+
+COPY docker/php-fpm/php-ini.ini /usr/local/etc/php/conf.d/90-custom.ini
+COPY --chown=www-data:www-data . /var/www/
+WORKDIR /var/www/
+RUN composer install
+#RUN chown -R www-data:www-data /var/www
+RUN chmod +x /var/www/storage/bash/*
+COPY docker/php-fpm/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN php artisan config:cache
+RUN php artisan migrate
+RUN php artisan cache:clear
+RUN php artisan view:clear
+RUN php artisan route:clear
+CMD ["/usr/bin/supervisord"]

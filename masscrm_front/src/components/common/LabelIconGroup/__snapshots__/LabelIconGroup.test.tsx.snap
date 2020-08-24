@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LabelIconGroup LabelIconGroup should render correctly 1`] = `
+<div
+  className="label-icon"
+>
+  <span
+    className="label-icon_text"
+  >
+    test
+    :
+  </span>
+  <span
+    className="label-icon_count"
+  >
+    0
+  </span>
+  <CommonIcon
+    IconComponent={
+      Object {
+        "$$typeof": Symbol(react.memo),
+        "compare": null,
+        "displayName": "PermIdentityIcon",
+        "muiName": "SvgIcon",
+        "type": Object {
+          "$$typeof": Symbol(react.forward_ref),
+          "render": [Function],
+        },
+      }
+    }
+  />
+</div>
+`;

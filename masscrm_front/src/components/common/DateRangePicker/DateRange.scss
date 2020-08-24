@@ -1,0 +1,17 @@
+.date-range{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  width: 230px;
+  background: #fff;
+  border: 1px solid #e1e5ed;
+  box-sizing: border-box;
+  border-radius: 4px;
+  padding: 8px;
+  color: #dadada;
+
+  &_icon{
+    color: #69738f;
+  }
+}

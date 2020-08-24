@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CommonButton whiteBtn should render correctly 1`] = `
+<WithStyles(WithStyles(ForwardRef(Button)))
+  className="makeStyles-yellow-1 makeStyles-small-3 "
+  disabled={true}
+  onClick={
+    [MockFunction] {
+      "calls": Array [
+        Array [],
+      ],
+      "results": Array [
+        Object {
+          "type": "return",
+          "value": undefined,
+        },
+      ],
+    }
+  }
+>
+  test
+</WithStyles(WithStyles(ForwardRef(Button)))>
+`;

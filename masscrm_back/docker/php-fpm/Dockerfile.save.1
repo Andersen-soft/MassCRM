@@ -1,0 +1,17 @@
+FROM php:7.4-fpm
+
+RUN apt-get update && apt-get install -y \
+        $PHPIZE_DEPS \
+        git \
+        zip \
+        unzip \
+        curl \
+        libmagickwand-dev \
+        libpcre3-dev \
+        libssl-dev \
+        libmemcached-dev \
+        libzip-dev \
+        libmcrypt-dev
+
+ADD . /src
+WORKDIR /src

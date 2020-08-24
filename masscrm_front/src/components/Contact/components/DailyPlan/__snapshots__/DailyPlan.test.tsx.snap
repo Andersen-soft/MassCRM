@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DailyPlan DailyPlan should render correctly 1`] = `
+<div
+  className="daily-plan"
+>
+  <LabelIconGroup
+    icon={
+      Object {
+        "$$typeof": Symbol(react.memo),
+        "compare": null,
+        "displayName": "PermIdentityIcon",
+        "muiName": "SvgIcon",
+        "type": Object {
+          "$$typeof": Symbol(react.forward_ref),
+          "render": [Function],
+        },
+      }
+    }
+    label="Daily plan"
+  />
+  <LabelIconGroup
+    icon={
+      Object {
+        "$$typeof": Symbol(react.memo),
+        "compare": null,
+        "displayName": "PermIdentityIcon",
+        "muiName": "SvgIcon",
+        "type": Object {
+          "$$typeof": Symbol(react.forward_ref),
+          "render": [Function],
+        },
+      }
+    }
+    label="Complete"
+  />
+</div>
+`;

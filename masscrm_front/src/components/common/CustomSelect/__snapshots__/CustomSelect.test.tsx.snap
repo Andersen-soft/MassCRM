@@ -1,0 +1,125 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
+<div
+  className="makeStyles-wrap-20"
+>
+  <WithStyles(ForwardRef(FormControl))
+    classes={
+      Object {
+        "root": "makeStyles-input-1 makeStyles-FormLabel-14 undefined undefined undefined",
+      }
+    }
+    style={
+      Object {
+        "width": "230px",
+      }
+    }
+    variant="outlined"
+  >
+    <WithStyles(ForwardRef(InputLabel))
+      classes={
+        Object {
+          "outlined": "makeStyles-InputLabelOutlined-12",
+          "shrink": "makeStyles-InputLabelShrink-13",
+        }
+      }
+    >
+      test
+    </WithStyles(ForwardRef(InputLabel))>
+    <WithStyles(ForwardRef(Select))
+      MenuProps={
+        Object {
+          "className": "makeStyles-Paper-8",
+        }
+      }
+      classes={
+        Object {
+          "icon": "makeStyles-customSelectIcon-6",
+          "outlined": "makeStyles-customSelectOutlined-7",
+        }
+      }
+      endAdornment={
+        <ForwardRef(WithStyles)
+          classes={
+            Object {
+              "positionEnd": "makeStyles-InputAdornmentPositionEnd-10",
+            }
+          }
+          position="end"
+        >
+          <ForwardRef(WithStyles)
+            aria-label=""
+            classes={
+              Object {
+                "edgeEnd": "makeStyles-IconBtnEdgeEnd-11",
+                "label": "makeStyles-MultiIconButtonLabel-18",
+                "root": "makeStyles-IconButtonRoot-19",
+              }
+            }
+            edge="end"
+            onClick={[Function]}
+            onMouseDown={[Function]}
+          >
+            <UNDEFINED
+              classes={
+                Object {
+                  "fontSizeSmall": "makeStyles-SvgIconFontSizeSmall-17",
+                }
+              }
+              fontSize="small"
+            />
+          </ForwardRef(WithStyles)>
+        </ForwardRef(WithStyles)>
+      }
+      inputProps={
+        Object {
+          "className": "selectInput",
+          "id": undefined,
+          "name": undefined,
+        }
+      }
+      multiple={true}
+      onChange={[Function]}
+      renderValue={[Function]}
+      value={Array []}
+    >
+      <WithStyles(ForwardRef(MenuItem))
+        className="makeStyles-ListItemBtn-9"
+        key="A"
+        value="A"
+      >
+        A
+      </WithStyles(ForwardRef(MenuItem))>
+      <WithStyles(ForwardRef(MenuItem))
+        className="makeStyles-ListItemBtn-9"
+        key="B"
+        value="B"
+      >
+        B
+      </WithStyles(ForwardRef(MenuItem))>
+      <WithStyles(ForwardRef(MenuItem))
+        className="makeStyles-ListItemBtn-9"
+        key="C"
+        value="C"
+      >
+        C
+      </WithStyles(ForwardRef(MenuItem))>
+      <WithStyles(ForwardRef(MenuItem))
+        className="makeStyles-ListItemBtn-9"
+        key="D"
+        value="D"
+      >
+        D
+      </WithStyles(ForwardRef(MenuItem))>
+      <WithStyles(ForwardRef(MenuItem))
+        className="makeStyles-ListItemBtn-9"
+        key="E"
+        value="E"
+      >
+        E
+      </WithStyles(ForwardRef(MenuItem))>
+    </WithStyles(ForwardRef(Select))>
+  </WithStyles(ForwardRef(FormControl))>
+</div>
+`;

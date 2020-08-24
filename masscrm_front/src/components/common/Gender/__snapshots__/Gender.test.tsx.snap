@@ -1,0 +1,59 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Gender RadioFilter should render correctly 1`] = `
+<Styled(MuiBox)
+  className="makeStyles-box-1"
+>
+  <WithStyles(ForwardRef(FormLabel))
+    classes={
+      Object {
+        "root": "makeStyles-label-2",
+      }
+    }
+    component="legend"
+  >
+    Gender
+  </WithStyles(ForwardRef(FormLabel))>
+  <ForwardRef(RadioGroup)
+    aria-label="gender"
+    classes={
+      Object {
+        "root": "makeStyles-radio-3",
+      }
+    }
+    onChange={[MockFunction]}
+    row={true}
+  >
+    <WithStyles(ForwardRef(FormControlLabel))
+      control={
+        <ForwardRef(WithStyles)
+          classes={
+            Object {
+              "root": "makeStyles-radioBtn-4",
+            }
+          }
+          color="default"
+          size="small"
+        />
+      }
+      label="Male"
+      value="m"
+    />
+    <WithStyles(ForwardRef(FormControlLabel))
+      control={
+        <ForwardRef(WithStyles)
+          classes={
+            Object {
+              "root": "makeStyles-radioBtn-4",
+            }
+          }
+          color="default"
+          size="small"
+        />
+      }
+      label="Female"
+      value="f"
+    />
+  </ForwardRef(RadioGroup)>
+</Styled(MuiBox)>
+`;

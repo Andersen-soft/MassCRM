@@ -1,0 +1,40 @@
+html{
+  background: rgba(0, 0, 0, 0.04);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-size: 14px;
+  color: #212121;
+  font-family: 'Roboto', serif;
+}
+
+:global {
+  .container{
+    width: 95%;
+    max-width: 1366px;
+    max-height: 100vh;
+    margin: 0 auto;
+  }
+
+  div::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  div::-webkit-scrollbar-track {
+    background: #f7f8fb;
+  }
+
+  div::-webkit-scrollbar-thumb {
+    background: #69738f;
+    border-radius: 10px;
+  }
+
+  div::-webkit-scrollbar-thumb:hover {
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,13 @@
+.icon {
+  width: 18px;
+  height: 18px;
+  fill: #dadada;
+
+  &_active {
+    cursor: pointer;
+
+    &:hover {
+      fill: #69738f;
+    }
+  }
+}

@@ -1,0 +1,1 @@
+export { DialogCloseIcon } from './DialogCloseIcon';

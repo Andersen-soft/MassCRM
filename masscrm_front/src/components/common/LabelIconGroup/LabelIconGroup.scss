@@ -1,0 +1,14 @@
+.label-icon {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding-right: 25px;
+
+  &_text {
+    color: #78829d;
+  }
+
+  &_count {
+    padding: 0 8px;
+  }
+}

@@ -1,0 +1,12 @@
+.icon {
+  width: 24px;
+  height: 24px;
+
+  &_active {
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}

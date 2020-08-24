@@ -1,0 +1,8 @@
+[program:cron]
+command = /bin/bash -c cron && tail -f /var/log/cron.log
+
+[program:php]
+command = docker-php-entrypoint php-fpm
+
+[supervisord]
+nodaemon=true

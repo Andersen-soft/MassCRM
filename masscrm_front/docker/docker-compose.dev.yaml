@@ -1,0 +1,10 @@
+version: '3.3'      
+services:
+  front-nginx:
+    image: nexus-docker.andersenlab.dev/front-masscrm:dev
+    container_name: front-masscrm
+    restart: always
+    ports:
+      - 90:80
+    volumes:
+      - /dockerlogs/front-logs-nginx:/var/log/nginx

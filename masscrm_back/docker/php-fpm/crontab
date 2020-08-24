@@ -1,0 +1,1 @@
+*/1 * * * * /bin/bash /var/www/storage/bash/startQueue.sh > /var/www/work.txt

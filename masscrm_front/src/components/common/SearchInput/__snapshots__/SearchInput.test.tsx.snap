@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SearchInput NumericRangeFilter should render correctly 1`] = `
+<Fragment>
+  <WithStyles(ForwardRef(FormControl))
+    classes={
+      Object {
+        "root": "makeStyles-input-1 makeStyles-search-7 undefined undefined",
+      }
+    }
+    style={
+      Object {
+        "width": undefined,
+      }
+    }
+    variant="outlined"
+  >
+    <WithStyles(ForwardRef(Autocomplete))
+      blurOnSelect={true}
+      freeSolo={true}
+      getOptionLabel={[Function]}
+      getOptionSelected={[Function]}
+      onInputChange={[Function]}
+      openOnFocus={true}
+      options={
+        Array [
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+        ]
+      }
+      renderInput={[Function]}
+    />
+  </WithStyles(ForwardRef(FormControl))>
+</Fragment>
+`;

@@ -1,0 +1,18 @@
+.control {
+  display: flex;
+  justify-content: flex-end;
+  outline: none;
+
+  &-btn {
+    background: transparent;
+    width: 24px;
+    height: 24px;
+    border: none;
+    padding: 0;
+    outline: none;
+
+    &:active, &:visited, &:focus {
+      outline: none;
+    }
+  }
+}

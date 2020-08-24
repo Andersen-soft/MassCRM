@@ -1,0 +1,15 @@
+.textarea {
+  border-color: #e1e5ed;
+  border-radius: 4px;
+  padding: 8px 36px 8px 8px;
+  font-family: 'Roboto', Arial, serif;
+  box-sizing: border-box;
+  outline: none;
+  resize: none;
+  font-size: 1em;
+
+  &::placeholder {
+    color: #939bb2;
+    font-size: 1em;
+  }
+}

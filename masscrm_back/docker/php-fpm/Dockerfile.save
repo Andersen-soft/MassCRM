@@ -1,0 +1,55 @@
+FROM php:7.4-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+        $PHPIZE_DEPS \
+        git \
+        composer \
+	zip \
+        unzip \
+        curl \
+        libmagickwand-dev \
+        libpcre3-dev \
+        libssl-dev \
+        libmemcached-dev \
+        libzip-dev \
+        libmcrypt-de
+
+# Install php extensions
+RUN docker-php-ext-install \
+    opcache \
+    bcmath \
+    fileinfo \
+    gettext \
+    gd \
+    json \
+    pdo \
+    pdo_mysql \
+    mysqli \
+    mbstring \
+    zip
+
+# Install and enable required PSR exetsion
+RUN pecl install psr \
+    && docker-php-ext-enable psr
+
+# Install and enable required Phalcon extension
+RUN pecl install phalcon \
+    && docker-php-ext-enable phalcon
+
+# Install and enable imagick extension
+RUN pecl install imagick \
+    && docker-php-ext-enable imagick
+
+# Install and enable memcached extension
+RUN pecl install memcached \
+    && docker-php-ext-enable memcached
+
+# Install and enable XDebug extension
+RUN pecl install xdebug \
+    && docker-php-ext-enable xdebug
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+ADD . /src
+WORKDIR /src

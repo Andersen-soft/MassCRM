@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CustomSwitch CustomSwitch should render correctly 1`] = `
+<WithStyles(ForwardRef(FormControlLabel))
+  classes={
+    Object {
+      "root": "makeStyles-switch-1",
+    }
+  }
+  control={
+    <ForwardRef(WithStyles)
+      checked={true}
+      onChange={[MockFunction]}
+    />
+  }
+  labelPlacement="start"
+/>
+`;

@@ -1,0 +1,16 @@
+First Name,Last Name,Full Name,Gender,Country,City,Position,Email,Company,Industry,Company Size
+Adam,Smith,Adam Smith,m,USA,Boston,developer,a.smith@mail.com,Creen,Gambling,51-200
+John,Yello,John Yello,m,Germany,Berlin,UI/UX designer,yello@yandex.ru,Udemy,E-Learning,11-50
+Maria,Garcia,Maria Garcia,f,Russia,Moscow,business analyst,maria.garcia1980@gmail.com,Udemy,E-Learning,11-50
+Maria,Hernandez,Maria Hernandez,f,Austria,Vienna,HR,hernandez@udemy.com,Udemy,E-Learning,11-50
+James,Williams,James Williams,m,USA,Boston,devops,williams@isoft.com,Isoft,"
+Computer Software",51-200
+Thomas,Brown,Thomas Brown,m,France,Paris,angular developer,brown@isoft.com,Isoft,Computer Software,51-200
+Ann,Ivanova,Ann Ivanova,f,Russia,Moscow,UI/UX designer,ivanova@opt.ru,Optova,Cosmetics,501-1000
+Kate,Voronova,Kate Voronova,f,Russia,Moscow,UI/UX designer,voronova@opt.ru,Optova,Cosmetics,501-1000
+Eliza,Smith,Eliza Smith,f,Germany,Berlin,UI/UX designer,smith@opt.ru,Optova,Cosmetics,501-1000
+Samuel,Taylor,Samuel Taylor,m,Italy,Rome,developer,taylor@compsoft.org,CompSoft,Information Technology and Services,51-200
+David,Davis,David Davis,m,Italy,Rome,developer,davis@compsoft.org,CompSoft,Information Technology and Services,51-200
+Henry,Clark,Henry Clark,m,Italy,Rome,business analyst,clark@compsoft.org,CompSoft,Information Technology and Services,51-200
+Charles,Miller,Charles Miller,m,Austria,Vienna,devops,miller@compsoft.org,CompSoft,Information Technology and Services,51-200
+Margaret,Johnson,Margaret Johnson,f,Austria,Vienna,devops,johnson@compsoft.org,CompSoft,Information Technology and Services,51-200

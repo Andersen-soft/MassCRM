@@ -1,0 +1,16 @@
+.more {
+  outline: none;
+
+  &-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    outline: none;
+    width: 24px;
+    height: 24px;
+
+    &:active, &:visited, &:focus {
+      outline: none;
+    }
+  }
+}

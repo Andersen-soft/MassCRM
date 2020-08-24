@@ -1,0 +1,23 @@
+.users-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px 8px 0 0;
+
+  &-title {
+    font-size: 20px;
+    line-height: 24px;
+  }
+  &-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    outline: none;
+
+    &:active, &:visited, &:focus {
+      outline: none;
+    }
+  }
+}

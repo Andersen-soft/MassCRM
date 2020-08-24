@@ -1,0 +1,26 @@
+.list-td {
+  &_wrap {
+    padding: 8px;
+  }
+
+  &_link {
+    display: block;
+    padding: 3px 0;
+    color: #13639d;
+    font-size: 1rem;
+  }
+
+  &_input {
+    display: block;
+    padding: 5px 0;
+  }
+
+  &_btns {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &_btns-form {
+    display: flex;
+  }
+}

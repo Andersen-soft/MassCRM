@@ -1,0 +1,70 @@
+.daily-plan {
+  padding: 7px 0;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.add-contact {
+  margin-bottom: 15px;
+}
+
+.data {
+  position: relative;
+  overflow: hidden;
+  margin-top: 16px;
+  background: #fff;
+  border: 1px solid rgba(205, 214, 225, 0.3);
+  border-radius: 8px;
+
+  &-search {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    box-sizing: border-box;
+    padding: 15px 24px;
+
+  }
+
+  &-title {
+    font-size: 1.35em;
+    font-family: 'Roboto', Arial, serif;
+    margin-right: 24px;
+  }
+
+  &-table {
+    position: relative;
+    width: 100%;
+  }
+
+  &-without {
+    position: relative;
+    min-height: 50vh;
+    width: 100%;
+  }
+
+  &-mess {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    text-align: center;
+    color: #939bb2;
+    font-size: 1.29em;
+  }
+}
+
+.panel {
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &_item {
+    display: flex;
+  }
+
+  &_title {
+    font-size: 1.3em;
+    margin-right: 24px;
+  }
+}
