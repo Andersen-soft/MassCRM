@@ -1,16 +1,18 @@
-# Name
-
-Andersen CRM Marketing
+![logo](./logo.jpg)
 
 # About us
 
-Andersen CRM Marketing is the system developed for working with a customer database in order to optimize the business processes of the marketing Department. Our system let users:
+Andersen CRM Marketing (MassCRM) is the system developed for working with potential clients in order to optimize the business processes of the marketing Department.
 
-- create contacts
-- import contacts from the file
-- easy access to contact data
-- using filters and sorts
-- export data
+Our system let users:
+- create a database of your potential clients
+- easy access to clients data
+- using filters and sorts that help you find necessary clients data
+- import to the system data of your clients from the file
+- export your database to the file
+
+We have collected key examples of usage. Please, explore the range of Andersen CRM Sales features by getting into [User Guide](Andersen%20CRM%20Marketing%20Guide.docx.pdf).
+Download the file for more convenient reading.
 
 # Technologies
 
