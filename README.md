@@ -50,6 +50,16 @@ Generating key JWT and application. Creating list of users, contacts, companies 
 bash 1stlocalrun.sh
 ```
 
+**By default, the system has preset users for each role**
+
+|   Login     |  Password  |  Roles  |
+|:------------|:-----------|:-------:|
+| David Lopez | aZ12JeGbNq | Admin   |
+| Paul Garcia | q4puH6eJxW | Manager |
+| Jane Smith  | cZ4JJA8yHW | NC1     |
+| Mike Jones  | V5eiayvzKj | NC2     |
+
+
 File down.sh gives you an ability to stop the project and change owner of logs folder to current user for cleaning. It  destroys previously created docker network, so sudo password will be promted for it and owner changeng.
 
 ```text
