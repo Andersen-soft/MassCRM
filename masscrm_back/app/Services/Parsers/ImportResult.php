@@ -2,132 +2,148 @@
 
 namespace App\Services\Parsers;
 
+use App\Models\InformationImport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Lang;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Models\User\User;
+use App\Models\User\UsersNotification;
+use App\Events\User\CreateSocketUserNotificationEvent;
 
 class ImportResult
 {
-    protected const FILE_EXTENSION = '.csv';
-    protected const DUPLICATION_PREFIX = 'duplication_';
-    protected const ERRORS_PREFIX = 'errors_';
+    private const FILE_EXTENSION = '.csv';
+    private const DUPLICATES_PREFIX = 'duplicates_';
+    private const ERRORS_PREFIX = 'errors_';
 
-    protected int $successImportContact = 0;
-    protected int $successImportCompany = 0;
-    protected int $duplicationContact = 0;
-    protected int $duplicationCompany = 0;
-    protected string $duplicationFileName = '';
-    protected string $errorFileName = '';
-    protected string $path = '';
-    protected $duplicationFile = null;
-    protected $errorsFile = null;
+    private array $counter = [
+        'countNewImportContacts' => 0,
+        'countNewImportCompanies' => 0,
+        'countDuplicateContacts' => 0,
+        'countDuplicateCompanies' => 0,
+        'countMissedDuplicates' => 0,
+        'countErrors' => 0
+    ];
 
+    private array $counterPrevious = [
+        'countNewImportContacts' => 0,
+        'countNewImportCompanies' => 0,
+        'countDuplicateContacts' => 0,
+        'countDuplicateCompanies' => 0,
+        'countMissedDuplicates' => 0,
+        'countErrors' => 0
+    ];
+
+    private string $duplicateFileName;
+    private string $errorFileName;
+    private $duplicateFile;
+    private $errorsFile;
 
     public function __construct()
     {
-        $this->path = storage_path('importSuccess/');
         $time = Carbon::now()->timestamp;
-        $this->duplicationFileName = self::DUPLICATION_PREFIX . $time . self::FILE_EXTENSION;
-        $this->errorFileName = self::ERRORS_PREFIX . $time . self::FILE_EXTENSION;
-        $this->duplicationFile = fopen($this->path . $this->duplicationFileName, 'w');
-        $this->errorsFile = fopen($this->path . $this->errorFileName, 'w');
+        $path = storage_path('importSuccess/');
+        $this->duplicateFileName = $path . self::DUPLICATES_PREFIX . $time . self::FILE_EXTENSION;
+        $this->errorFileName = $path. self::ERRORS_PREFIX . $time . self::FILE_EXTENSION;
+        $this->duplicateFile = fopen($this->duplicateFileName, 'w+');
+        $this->errorsFile = fopen($this->errorFileName, 'w+');
     }
 
-    public function incrementSucImportContact(int $count = 1): int
+    public function setHeaderToFiles(string $pathToFile): void
     {
-        $this->successImportContact += $count;
+        $headers = [];
+        $spreadsheet = IOFactory::load($pathToFile);
+        foreach ($spreadsheet->getActiveSheet()->getRowIterator(1, 1) as $row) {
+            foreach ($row->getCellIterator() as $cell) {
+                if ($cell->getValue() === null) {
+                    break;
+                }
+                $headers[] = $cell->getValue();
+            }
+        }
 
-        return $this->successImportContact;
+        $this->addLineToDuplicateFile($headers);
+        $this->addLineToErrorFile($headers, 'Error comment');
     }
 
-    public function incrementSucImportCompany(int $count = 1): int
+    public function incrementSucImportContact(): void
     {
-        $this->successImportCompany += $count;
-
-        return $this->successImportCompany;
+        $this->counter['countNewImportContacts']++;
     }
 
-    public function incrementDuplicationContact(int $count = 1): int
+    public function incrementSucImportCompany(): void
     {
-        $this->duplicationContact += $count;
-
-        return $this->duplicationContact;
+        $this->counter['countNewImportCompanies']++;
     }
 
-    public function incrementDuplicationCompany(int $count = 1): int
+    public function incrementSucImportDuplicateContact(): void
     {
-        $this->duplicationCompany += $count;
-
-        return $this->duplicationCompany;
+        $this->counter['countDuplicateContacts']++;
     }
 
-    public function getSuccessImportContact(): int
+    public function incrementSucImportDuplicateCompany(): void
     {
-        return $this->successImportContact;
+        $this->counter['countDuplicateCompanies']++;
     }
 
-    public function getSuccessImportCompany(): int
+    public function incrementMissingDuplicate(): void
     {
-        return $this->successImportCompany;
+        $this->counter['countMissedDuplicates']++;
     }
 
-    public function getDuplicationContact(): int
+    public function incrementCountErrors(): void
     {
-        return $this->duplicationContact;
+        $this->counterPrevious['countErrors']++;
     }
 
-    public function getDuplicationCompany(): int
-    {
-        return $this->duplicationCompany;
-    }
-
-    public function getDuplicationFileName(): string
-    {
-        return $this->duplicationFileName;
-    }
-
-    public function getErrorFileName(): string
-    {
-        return $this->errorFileName;
-    }
-
-    public function getPath(): string
-    {
-        return $this->path;
-    }
-
-    public function addLineToDuplicationFile(array $line, string $comment = null): void
+    public function addLineToDuplicateFile(array $line, string $comment = null): void
     {
         if ($comment) {
             $line[] = $comment;
         }
-        fputcsv($this->duplicationFile, $line);
+
+        fputcsv($this->duplicateFile, $line);
     }
 
-    public function addLineToErrorFile(array $line): void
+    public function addLineToErrorFile(array $line, $comment = null): void
     {
+        if ($comment) {
+            $line[] = is_array($comment) ?  : $comment;
+        }
+
         fputcsv($this->errorsFile, $line);
     }
 
-    public function __destruct()
+    public function failedSaveRow(): void
     {
-        $this->closeDuplicationFile();
-        $this->closeErrorsFile();
+        $this->counter = $this->counterPrevious;
     }
 
-    private function closeDuplicationFile(): void
+    public function successSaveRow(): void
     {
-        fclose($this->duplicationFile);
-        $path = $this->path . $this->duplicationFileName;
-        if (filesize($path) === 0) {
-            unlink($path);
-        }
+        $this->counterPrevious = $this->counter;
     }
 
-    private function closeErrorsFile(): void
+    public function save(User $user): void
     {
-        fclose($this->errorsFile);
-        $path = $this->path . $this->errorFileName;
-        if (filesize($path) === 0) {
-            unlink($path);
-        }
+        /** @var InformationImport $infoImport */
+        $infoImport = $user->informationImport()->create([
+            'count_new_contacts' => $this->counter['countNewImportContacts'],
+            'count_new_companies' => $this->counter['countNewImportCompanies'],
+            'count_processed_duplicate_contacts' => $this->counter['countDuplicateContacts'],
+            'count_processed_duplicate_companies' => $this->counter['countDuplicateCompanies'],
+            'count_missed_duplicates' => $this->counter['countMissedDuplicates'],
+            'count_unsuccessfully' => $this->counter['countErrors'],
+            'file_name_missed_duplicates' => $this->duplicateFileName,
+            'file_name_unsuccessfully_duplicates' => $this->errorFileName,
+        ]);
+
+        CreateSocketUserNotificationEvent::dispatch(
+            UsersNotification::TYPE_IMPORT_FINISHED,
+            Lang::get('import.finished'),
+            [$user],
+            '',
+            $infoImport->id
+        );
     }
 }

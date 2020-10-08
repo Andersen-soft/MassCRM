@@ -6,7 +6,7 @@ import { getAddContactList, updateContact } from 'src/actions';
 import { getFilterSettings } from 'src/selectors';
 import { styleNames } from 'src/services';
 import { ICommentCell, ICommentEdit } from './interfaces';
-import style from './CommentCell.scss';
+import style from '../cell.scss';
 
 const sn = styleNames(style);
 

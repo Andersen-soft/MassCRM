@@ -26,6 +26,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $min_employees
  * @property int|null $max_employees
  * @property string|null $comment
+ * @property array|null $vacancies_collection
+ * @property array|null $industries_collection
+ * @property array|null $subsidiaries_collection
+ * @property boolean $is_upload_collection
  * @property int|null $user_id
  */
 class Company extends CompanyFields
@@ -47,6 +51,10 @@ class Company extends CompanyFields
         self::MIN_EMPLOYEES_FIELD,
         self::MAX_EMPLOYEES_FIELD,
         self::COMMENT_FIELD,
+        self::VACANCIES_COllECTION_FIELD,
+        self::INDUSTRIES_COllECTION_FIELD,
+        self::SUBSIDIARIES_COllECTION_FIELD,
+        self::IS_UPLOAD_COLLECTION_FIELD,
         self::USER_ID_FIELD,
     ];
 
@@ -62,6 +70,10 @@ class Company extends CompanyFields
         self::MIN_EMPLOYEES_FIELD => 'integer',
         self::MAX_EMPLOYEES_FIELD => 'integer',
         self::COMMENT_FIELD => 'string',
+        self::VACANCIES_COllECTION_FIELD => 'array',
+        self::INDUSTRIES_COllECTION_FIELD => 'array',
+        self::SUBSIDIARIES_COllECTION_FIELD => 'array',
+        self::IS_UPLOAD_COLLECTION_FIELD => 'boolean',
         self::USER_ID_FIELD => 'integer',
     ];
 
@@ -150,6 +162,15 @@ class Company extends CompanyFields
         }
 
         return $this->founded;
+    }
+
+    public function getCreatedAtDate(): ?string
+    {
+        if ($this->created_at) {
+            return $this->created_at->format(self::DATE_FORMAT);
+        }
+
+        return $this->created_at;
     }
 
     public function setFounded(?Carbon $founded): Company
@@ -286,7 +307,7 @@ class Company extends CompanyFields
                 if ($this->notMerge($merge, self::MAX_EMPLOYEES_FIELD)) {
                     break;
                 }
-                $this->setMaxEmployees((int)$value);
+                $this->setMaxEmployees($value);
                 break;
             case self::COMPANY_SALE_PREFIX . self::COMMENT_FIELD:
             case self::COMMENT_FIELD:

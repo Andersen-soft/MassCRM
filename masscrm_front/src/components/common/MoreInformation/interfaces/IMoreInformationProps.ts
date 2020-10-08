@@ -6,4 +6,5 @@ export interface IMoreInformationProps {
   icon?: FC<SvgIconProps>;
   popperInfo?: JSX.Element | Element;
   tooltip?: string;
+  notification?: boolean;
 }

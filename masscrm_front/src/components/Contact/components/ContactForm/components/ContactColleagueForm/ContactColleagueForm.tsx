@@ -8,7 +8,7 @@ import {
   IContactColleagueForm
 } from 'src/interfaces/IContactColleague';
 
-import { jobInputStyle } from '../ContactJobInput/ContactJobInput.style';
+import { jobInputStyle } from 'src/components/common/ContactJobInput/ContactJobInput.style';
 
 const INITIAL_VALUES: IColleagueFormState = {
   full_name: '',

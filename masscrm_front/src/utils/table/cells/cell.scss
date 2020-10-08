@@ -1,7 +1,8 @@
 .cell {
   &-edit {
-    padding: 4px;
+    padding: 10px;
     background: #fff;
+    min-width: 260px;
 
     &_btn {
       display: flex;
@@ -14,7 +15,111 @@
     }
 
   }
+
   &-icon {
     padding: 4px;
+  }
+
+  &-input {
+    min-width: 230px;
+    padding: 15px;
+  }
+}
+
+.comment-edit {
+  padding: 4px;
+  background: #fff;
+
+  &_btn {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  &_content {
+    max-width: 290px;
+    padding: 8px;
+    max-height: 200px;
+    word-break: break-word;
+  }
+
+  &_text {
+    width: 290px;
+    min-height: 200px;
+  }
+}
+
+
+.icon {
+  padding: 4px;
+}
+
+.comment-td {
+  max-width: 290px;
+
+  &_btn {
+    display: flex;
+    align-items: center;
+    position: relative;
+    background: transparent;
+    border: none;
+    outline: none;
+  }
+
+  &_more {
+    color: #78829d;
+  }
+
+  &_content {
+    max-width: 290px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.list-td {
+  &_wrap {
+    padding: 8px;
+  }
+
+  &_link {
+    display: block;
+    padding: 3px 0;
+    color: #13639d;
+    font-size: 1rem;
+  }
+
+  &_input {
+    display: block;
+    padding: 5px 0;
+  }
+
+  &_btns {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &_btns-form {
+    display: flex;
+  }
+}
+
+.download {
+  display: flex;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  align-items: center;
+  padding: 0;
+  outline: none;
+
+  &-title {
+    padding-left: 10px;
+    color: #13639D;
+    font-weight: 100;
+    font-size: 0.875rem;
+    font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+
   }
 }

@@ -13,16 +13,16 @@ class UpdateCompanyCommand
     protected int $companyId;
     protected array $companyFields;
     protected array $industries;
-    protected array $vacancies;
-    protected array $subsidiaries;
+    protected ?array $vacancies;
+    protected ?array $subsidiaries;
     protected User $user;
 
     public function __construct(
         int $companyId,
         array $companyFields,
         array $industries,
-        array $vacancies,
-        array $subsidiaries,
+        ?array $vacancies,
+        ?array $subsidiaries,
         User $user
     ) {
         $this->companyFields = $companyFields;
@@ -38,12 +38,12 @@ class UpdateCompanyCommand
         return $this->companyFields;
     }
 
-    public function getVacancies(): array
+    public function getVacancies(): ?array
     {
         return $this->vacancies;
     }
 
-    public function getSubsidiaries(): array
+    public function getSubsidiaries(): ?array
     {
         return $this->subsidiaries;
     }

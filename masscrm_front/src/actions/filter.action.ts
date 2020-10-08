@@ -8,12 +8,15 @@ export const getFiltersDataAction = createAction('GET_FILTER_DATA');
 export const setFilterSettingsAction = createAction('SET_FILTER_DATA');
 export const setListFieldAction = createAction('SET_LIST_FIELD');
 export const setFilterValuesAction = createAction('SET_FILTER_VALUES');
+export const setMultiFilterValuesAction = createAction(
+  'SET_MULTI_FILTER_VALUES'
+);
 export const setSortValuesAction = createAction('SET_SORT_VALUE');
 export const setSortAction = createAction('SET_SORT');
 
 export const getFiltersData = () => async (dispatch: Dispatch) => {
   try {
-    const data = await HTTP.get(`filters/`);
+    const { data } = await HTTP.get(`filters/`);
     dispatch(getFiltersDataAction({ data }));
   } catch (error) {
     setNotification(error);
@@ -26,7 +29,9 @@ export const setFilterSettings = (settings: IContactFilter) => (
   dispatch(setFilterSettingsAction({ settings }));
 };
 
-export const setListField = (field: string) => (dispatch: Dispatch) => {
+export const setListField = (field: (string | undefined)[]) => (
+  dispatch: Dispatch
+) => {
   dispatch(setListFieldAction(field));
 };
 
@@ -34,6 +39,12 @@ export const setFilterValues = (obj: {
   [x: number]: string[] | string | number | (number | Date)[] | never[];
 }) => (dispatch: Dispatch) => {
   dispatch(setFilterValuesAction(obj));
+};
+
+export const setMultiFilterValues = (obj: {
+  [x: string]: string[] | string | number | (number | Date)[] | never[];
+}) => (dispatch: Dispatch) => {
+  dispatch(setMultiFilterValuesAction(obj));
 };
 
 export const setSortValues = (obj: { [x: string]: ISortingObject }) => (

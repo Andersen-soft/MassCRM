@@ -100,6 +100,6 @@ return [
             'max' => ''
         ],
     ],
-    'origin' => ['NC1', 'NC2', 'Parser', 'Purchase', 'Legasy','Reply', 'Lemlist'],
+    'origin' => ['NC1', 'NC2', 'Parser', 'Purchase', 'Legacy','Reply', 'Lemlist'],
     'company_type' => [Company::TYPE_COMPANY_HOLDING, Company::TYPE_COMPANY_SUBSIDIARY],
 ];

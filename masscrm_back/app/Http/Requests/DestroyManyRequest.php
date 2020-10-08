@@ -22,7 +22,7 @@ class DestroyManyRequest extends AbstractRequest
     public function rules(): array
     {
         return [
-            'ids' => 'required|array',
+            'ids' => 'array',
             'ids.*' => 'integer'
         ];
     }

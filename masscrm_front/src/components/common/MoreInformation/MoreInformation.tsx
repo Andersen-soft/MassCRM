@@ -13,7 +13,8 @@ export const MoreInformation: FC<IMoreInformationProps> = ({
   popperInfo,
   icon,
   tooltip,
-  clearAutocompleteList
+  clearAutocompleteList,
+  notification
 }) => {
   const stylePopover = customPopover();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -41,7 +42,11 @@ export const MoreInformation: FC<IMoreInformationProps> = ({
     <div className={sn('more')}>
       {tooltip ? <Tooltip title={tooltip}>{openModeBtn}</Tooltip> : openModeBtn}
       <Popover
-        className={stylePopover.popover}
+        className={
+          notification
+            ? `${stylePopover.popover} ${stylePopover.notification}`
+            : stylePopover.popover
+        }
         id={id}
         open={open}
         anchorEl={anchorEl}

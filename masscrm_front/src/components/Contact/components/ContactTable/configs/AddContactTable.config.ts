@@ -2,9 +2,17 @@ import { ITableConfig } from 'src/components/common/Table/interfaces';
 
 export const TableConfigCallBack = (
   isFullTable: boolean,
+  rowsForJob: boolean,
   isMyContact?: boolean
 ) => {
   const personalInfo = [
+    {
+      code: 'linkedin',
+      name: 'Li',
+      hasFilter: true,
+      isFiltered: false,
+      hasInputFilter: true
+    },
     {
       code: 'first_name',
       name: 'First name',
@@ -37,8 +45,8 @@ export const TableConfigCallBack = (
 
   const locationInfo = [
     {
-      code: 'country',
-      name: 'Country',
+      code: 'city',
+      name: 'City',
       hasFilter: true,
       isFiltered: false,
       hasMultiSelectFilter: true
@@ -51,8 +59,8 @@ export const TableConfigCallBack = (
       hasMultiSelectFilter: true
     },
     {
-      code: 'city',
-      name: 'City',
+      code: 'country',
+      name: 'Country',
       hasFilter: true,
       isFiltered: false,
       hasMultiSelectFilter: true
@@ -61,20 +69,6 @@ export const TableConfigCallBack = (
 
   const workInfo = [
     {
-      code: 'position',
-      name: 'Position',
-      hasFilter: true,
-      isFiltered: false,
-      hasInputFilter: true
-    },
-    {
-      code: 'linkedin',
-      name: 'Li',
-      hasFilter: true,
-      isFiltered: false,
-      hasInputFilter: true
-    },
-    {
       code: 'social_networks',
       name: 'Social Networks',
       hasFilter: true,
@@ -82,7 +76,7 @@ export const TableConfigCallBack = (
       hasInputFilter: true
     },
     {
-      code: 'phone',
+      code: 'phones',
       name: 'Phone',
       hasFilter: true,
       isFiltered: false,
@@ -109,22 +103,8 @@ export const TableConfigCallBack = (
 
   const companyInfo = [
     {
-      code: 'company_name',
+      code: 'company',
       name: 'Company',
-      hasFilter: true,
-      isFiltered: false,
-      hasMultiSelectFilter: true
-    },
-    {
-      code: 'company_website',
-      name: 'Company website',
-      hasFilter: true,
-      isFiltered: false,
-      hasInputFilter: true
-    },
-    {
-      code: 'company_industries',
-      name: 'Industry',
       hasFilter: true,
       isFiltered: false,
       hasMultiSelectFilter: true
@@ -144,8 +124,8 @@ export const TableConfigCallBack = (
       hasInputFilter: true
     },
     {
-      code: 'company_sto',
-      name: 'CTO',
+      code: 'company_website',
+      name: 'Company website',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
@@ -154,14 +134,14 @@ export const TableConfigCallBack = (
 
   const jobInfo = [
     {
-      code: 'job',
+      code: 'jobs',
       name: 'Job',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
     },
     {
-      code: 'skills',
+      code: 'jobs_skills',
       name: 'Job Skills',
       hasFilter: true,
       isFiltered: false,
@@ -169,23 +149,151 @@ export const TableConfigCallBack = (
     }
   ];
 
+  const blacklistInfo = {
+    code: 'in_blacklist',
+    name: 'blacklist',
+    hasFilter: true,
+    isFiltered: false,
+    hasCheckboxFilter: true
+  };
+
   const commentInfo = {
-    code: 'comment',
+    code: 'comments',
     name: 'Comment',
     hasFilter: true,
     isFiltered: false,
     hasInputFilter: true
   };
 
+  const dateContactInfo = [
+    {
+      code: 'created',
+      name: 'Contact created',
+      hasFilter: true,
+      isFiltered: true,
+      hasDataRangeFilter: true,
+      hasSorting: true
+    },
+    {
+      code: 'updated',
+      name: 'Contact updated',
+      hasFilter: true,
+      isFiltered: true,
+      hasDataRangeFilter: true,
+      hasSorting: true
+    }
+  ];
+
+  const dateCompanyInfo = [
+    {
+      code: 'company_created',
+      name: 'Company created',
+      hasFilter: true,
+      isFiltered: false,
+      hasDataRangeFilter: true
+    },
+    {
+      code: 'company_founded',
+      name: 'Founded',
+      hasFilter: true,
+      isFiltered: false,
+      hasDataRangeFilter: true
+    }
+  ];
+
+  const positionInfo = {
+    code: 'position',
+    name: 'Position',
+    hasFilter: true,
+    isFiltered: false,
+    hasMultiSelectFilter: true
+  };
+
+  const industryInfo = {
+    code: 'company_industries',
+    name: 'Industry',
+    hasFilter: true,
+    isFiltered: false,
+    hasMultiSelectFilter: true
+  };
+
+  const ctoInfo = {
+    code: 'company_cto',
+    name: 'CTO',
+    hasFilter: true,
+    isFiltered: false,
+    hasInputFilter: true
+  };
+
+  const skypeInfo = {
+    code: 'skype',
+    name: 'Skype',
+    hasFilter: true,
+    isFiltered: false,
+    hasInputFilter: true
+  };
+
+  const birthdayInfo = {
+    code: 'birthday',
+    name: 'Date of birth',
+    hasFilter: true,
+    isFiltered: false,
+    hasDataRangeFilter: true,
+    hasSorting: true
+  };
+
+  const responsibleInfo = {
+    code: 'responsible',
+    name: 'Responsible',
+    hasFilter: true,
+    isFiltered: true,
+    hasMultiSelectFilter: true
+  };
+
+  const inWorkInfo = [
+    {
+      code: 'is_in_work',
+      name: 'Work in',
+      hasFilter: false,
+      isFiltered: false,
+      hasCheckboxFilter: true
+    },
+    {
+      code: 'date_of_use',
+      name: 'Date of use',
+      hasFilter: false,
+      isFiltered: true,
+      hasDataRangeFilter: true
+    }
+  ];
+
   const tableConfig: ITableConfig = {
-    rows: [
-      { name: '№', hasFilter: false, isFiltered: false },
-      ...personalInfo,
-      ...locationInfo,
-      ...workInfo,
-      ...emailInfo,
-      ...companyInfo
-    ],
+    rows: !rowsForJob
+      ? [
+          { name: '№', hasFilter: false, isFiltered: false },
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          industryInfo,
+          ...jobInfo,
+          commentInfo,
+          ctoInfo,
+          ...workInfo
+        ]
+      : [
+          { name: '№', hasFilter: false, isFiltered: false },
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          industryInfo,
+          commentInfo,
+          ctoInfo,
+          ...workInfo
+        ],
     column: {
       hasSelectAll: true,
       hasDelete: true,
@@ -195,90 +303,31 @@ export const TableConfigCallBack = (
     body: {}
   };
 
-  if (isFullTable) {
-    tableConfig.rows.push(...jobInfo);
-  }
-
-  tableConfig.rows.push(commentInfo);
-
   if (isMyContact) {
     const allInfo = [
       ...personalInfo,
-      {
-        code: 'birthday',
-        name: 'Date of birth',
-        hasFilter: true,
-        isFiltered: false,
-        hasDataRangeFilter: true,
-        hasSorting: true
-      },
+      positionInfo,
+      ...companyInfo,
+      ...emailInfo,
       ...locationInfo,
+      industryInfo,
+      ...jobInfo,
+      commentInfo,
+      ctoInfo,
+      ...dateCompanyInfo,
       ...workInfo,
-      {
-        code: 'skype',
-        name: 'Skype',
-        hasFilter: true,
-        isFiltered: false,
-        hasInputFilter: true
-      },
-      ...emailInfo
-    ];
-
-    const dateContactInfo = [
-      {
-        code: 'created',
-        name: 'Contact created',
-        hasFilter: true,
-        isFiltered: true,
-        hasDataRangeFilter: true,
-        hasSorting: true
-      },
-      {
-        code: 'updated',
-        name: 'Contact updated',
-        hasFilter: true,
-        isFiltered: true,
-        hasDataRangeFilter: true,
-        hasSorting: true
-      }
-    ];
-
-    const dateCompanyInfo = [
-      {
-        code: 'company_created',
-        name: 'Company created',
-        hasFilter: true,
-        isFiltered: false,
-        hasDataRangeFilter: true
-      },
-      {
-        code: 'company_founded',
-        name: 'Founded',
-        hasFilter: true,
-        isFiltered: false,
-        hasDataRangeFilter: true
-      }
+      skypeInfo,
+      birthdayInfo
     ];
 
     if (isFullTable) {
       return {
         rows: [
-          {
-            code: 'responsible',
-            name: 'Responsible',
-            hasFilter: true,
-            isFiltered: true,
-            hasMultiSelectFilter: true
-          },
           ...dateContactInfo,
-          {
-            code: 'origin',
-            name: 'Origin',
-            hasFilter: true,
-            isFiltered: true,
-            hasCheckboxFilter: true
-          },
-          ...allInfo,
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
           {
             code: 'confidence',
             name: 'Confidence',
@@ -286,15 +335,42 @@ export const TableConfigCallBack = (
             isFiltered: false,
             hasNumericRangeFilter: true
           },
+          ...locationInfo,
+          industryInfo,
+          ...jobInfo,
+          commentInfo,
+          ctoInfo,
+          ...dateCompanyInfo,
           {
-            code: 'collegue',
-            name: 'Collegue',
+            code: 'company_type',
+            name: 'Type of company',
+            hasFilter: true,
+            isFiltered: false,
+            hasCheckboxFilter: true
+          },
+          {
+            code: 'company_subsidiary',
+            name: 'Subsidiary companies',
             hasFilter: true,
             isFiltered: false,
             hasInputFilter: true
           },
           {
-            code: 'id',
+            code: 'company_holding',
+            name: 'Holding company',
+            hasFilter: true,
+            isFiltered: false,
+            hasInputFilter: true
+          },
+          {
+            code: 'origin',
+            name: 'Origin',
+            hasFilter: true,
+            isFiltered: true,
+            hasCheckboxFilter: true
+          },
+          {
+            code: 'service_id',
             name: 'ID',
             hasFilter: true,
             isFiltered: false,
@@ -324,7 +400,7 @@ export const TableConfigCallBack = (
             hasInputFilter: true
           },
           {
-            code: 'sequence_status',
+            code: 'status',
             name: 'Status',
             hasFilter: true,
             isFiltered: false,
@@ -394,7 +470,7 @@ export const TableConfigCallBack = (
             hasMultiSelectFilter: true
           },
           {
-            code: 'sale_id',
+            code: 'sale_link',
             name: 'Sale ID',
             hasFilter: true,
             isFiltered: false,
@@ -410,49 +486,30 @@ export const TableConfigCallBack = (
           {
             code: 'sale_project_c1',
             name: '1C Project',
-            hasFilter: true,
+            hasFilter: false,
             isFiltered: false,
             hasRadioFilter: true
           },
-          ...companyInfo,
+          ...workInfo,
           {
-            code: 'company_type',
-            name: 'Type of company',
-            hasFilter: true,
-            isFiltered: false,
-            hasCheckboxFilter: true
-          },
-          {
-            code: 'company_subsidiary',
-            name: 'Subsidiary companies',
-            hasFilter: true,
+            code: 'colleagues',
+            name: 'Colleague',
+            hasFilter: false,
             isFiltered: false,
             hasInputFilter: true
           },
-          {
-            code: 'holding_subsidiary',
-            name: 'Holding company',
-            hasFilter: true,
-            isFiltered: false,
-            hasInputFilter: true
-          },
-          ...dateCompanyInfo,
-          ...jobInfo,
-          commentInfo
+          skypeInfo,
+          birthdayInfo,
+          responsibleInfo,
+          ...inWorkInfo,
+          blacklistInfo
         ],
         column: tableConfig.column,
         body: tableConfig.body
       };
     }
     return {
-      rows: [
-        ...dateContactInfo,
-        ...allInfo,
-        ...companyInfo,
-        ...dateCompanyInfo,
-        ...jobInfo,
-        commentInfo
-      ],
+      rows: [...dateContactInfo, ...allInfo],
       column: tableConfig.column,
       body: tableConfig.body
     };

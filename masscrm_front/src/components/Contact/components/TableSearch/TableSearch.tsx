@@ -2,36 +2,34 @@ import React, { FC, useCallback, useState } from 'react';
 import { GetApp } from '@material-ui/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { styleNames } from 'src/services';
-import {
-  SearchInput,
-  DateRange,
-  CommonButton,
-  CommonIcon
-} from 'src/components/common';
-import { importActions } from 'src/actions/import.action';
-import { IStoreState } from 'src/interfaces';
-import { ContactModal } from '../ContactModal';
-import { ColumnsFilter } from './components';
+import { SearchInput, DateRange, CommonIcon } from 'src/components/common';
+import { openImportModalAction } from 'src/actions/import.action';
+import importAnimation from 'src/lotties/importAnimation.json';
+import Lottie from 'react-lottie';
+import { getImportStatus } from 'src/selectors';
+import { ColumnsFilter, KebabMenu } from './components';
 import style from './TableSearch.scss';
 import { DownloadReport } from './components/DownloadReport';
 
 const sn = styleNames(style);
 
+const defaultOptions = {
+  autoplay: true,
+  renderer: 'svg',
+  animationData: importAnimation,
+  rendererSettings: {
+    preserveAspectRatio: 'xMidYMid slice'
+  }
+};
+
 export const TableSearch: FC<{ isFullTable: boolean }> = ({ isFullTable }) => {
   const dispatch = useDispatch();
-  const [open, setOpen] = useState(false);
   const [searchValue, setSearchValue] = useState<string>();
   const [dateValue, setDateValue] = useState<Array<Date>>([]);
-  const importStatus = useSelector(
-    (state: IStoreState) => state.import.importStatus
-  );
-
-  const handleToggle = () => {
-    setOpen(val => !val);
-  };
+  const importStatus = useSelector(getImportStatus);
 
   const handleOpenImportModal = useCallback(() => {
-    dispatch(importActions.openImportModalAction());
+    dispatch(openImportModalAction(true));
   }, [dispatch]);
 
   return (
@@ -57,31 +55,28 @@ export const TableSearch: FC<{ isFullTable: boolean }> = ({ isFullTable }) => {
         </div>
       </div>
       <div className={sn('table-search__item')}>
-        {isFullTable && (
-          <>
-            <CommonButton
-              color='yellow'
-              onClickHandler={handleToggle}
-              text='Add Contact'
-            />
-            <ContactModal handleClose={handleToggle} open={open} />
-          </>
-        )}
         <ColumnsFilter isFullTable />
-        {isFullTable && (
+        {importStatus === 'processing' ? (
+          <Lottie
+            options={defaultOptions}
+            height={24}
+            width={24}
+            isClickToPauseDisabled
+          />
+        ) : (
           <div className={sn('tooltip')}>
             <CommonIcon
               IconComponent={GetApp}
               className={sn('table-search__icon')}
               onClick={handleOpenImportModal}
-              disabled={importStatus !== 'none'}
             />
             <span className={sn('tooltipText')}>
               Import contacts from the file
             </span>
           </div>
         )}
-        <DownloadReport />
+        {isFullTable && <DownloadReport />}
+        {isFullTable && <KebabMenu />}
       </div>
     </div>
   );

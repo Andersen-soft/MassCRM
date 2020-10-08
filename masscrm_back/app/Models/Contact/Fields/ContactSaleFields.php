@@ -11,7 +11,31 @@ use App\Services\Reports\SearchType;
 class ContactSaleFields extends BaseModel implements FieldsInterface
 {
     public const CONTACT_SALE_PREFIX = 'cS_';
+    public const JOIN = 'join';
     public const SALE = 'sale';
+    public const JOIN_SALE_TABLE = [
+        'table' => 'contact_sales',
+        'first' => 'contact_sales.contact_id',
+        'second' => 'contacts.id'
+    ];
+
+    public const JOIN_SALE_SOURCE_TABLE = [
+        self::JOIN_SALE_TABLE,
+        [
+            'table' => 'sources',
+            'first' => 'contact_sales.source_id',
+            'second' => 'sources.id'
+        ]
+    ];
+
+    public const JOIN_SALE_STATUS_TABLE = [
+        self::JOIN_SALE_TABLE,
+        [
+            'table' => 'sale_statuses',
+            'first' => 'sale_statuses.id',
+            'second' => 'contact_sales.status_id'
+        ]
+    ];
 
     public const CONTACT_ID_FIELD = 'contact_id';
     public const LINK_FIELD = 'link';
@@ -31,7 +55,8 @@ class ContactSaleFields extends BaseModel implements FieldsInterface
             self::SEARCH => true,
             self::FORMAT => self::DATE_TIME_FORMAT,
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_DATA_RANGE,
-            self::FIELD => 'contact_sales.created_at'
+            self::FIELD => 'contact_sales.created_at',
+            self::JOIN => [self::JOIN_SALE_TABLE]
         ],
         self::UPDATED_AT_FIELD => [
             self::SORT => false,
@@ -46,7 +71,8 @@ class ContactSaleFields extends BaseModel implements FieldsInterface
             self::SORT => true,
             self::SEARCH => true,
             self::FIELD => 'contact_sales.link',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_SALE_TABLE]
         ],
         self::STATUS_ID_FIELD => [
             self::SORT => false,
@@ -56,7 +82,8 @@ class ContactSaleFields extends BaseModel implements FieldsInterface
             self::SORT => true,
             self::SEARCH => true,
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_VALUE_SELECT,
-            self::FIELD => 'contact_sales.project_c1'
+            self::FIELD => 'contact_sales.project_c1',
+            self::JOIN => [self::JOIN_SALE_TABLE]
         ],
         self::SOURCE_ID_FIELD => [
             self::SORT => false,
@@ -66,13 +93,15 @@ class ContactSaleFields extends BaseModel implements FieldsInterface
             self::SORT => true,
             self::SEARCH => true,
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT,
-            self::FIELD => 'sources.name'
+            self::FIELD => 'sources.name',
+            self::JOIN => self::JOIN_SALE_SOURCE_TABLE
         ],
         SaleStatus::STATUS => [
             self::SORT => true,
             self::SEARCH => true,
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT,
-            self::FIELD => 'sale_statuses.name'
+            self::FIELD => 'sale_statuses.name',
+            self::JOIN => self::JOIN_SALE_STATUS_TABLE
         ],
     ];
 

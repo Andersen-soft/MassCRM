@@ -67,7 +67,7 @@ Show your appreciation to those who have contributed to the project.
 
 # License
 
-Andersen CRM Marketing [BSD licensed](./LICENSE)
+Andersen CRM Marketing [BSD licensed](../LICENSE)
 
 # Project status
 

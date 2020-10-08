@@ -1,0 +1,44 @@
+.table-panel {
+  box-sizing: border-box;
+  background: #fff;
+  margin-top: 16px;
+  border: 1px solid rgba(205, 214, 225, 0.3);
+  border-radius: 8px;
+
+  &__flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 24px;
+
+    .title {
+      font-size: 18px;
+      line-height: 22px;
+      color: #212121;
+      margin-right: 16px;
+    }
+
+    .button {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: none;
+      background: #fff;
+      outline: none;
+      font-size: 12px;
+      width: 62px;
+      line-height: 140.62%;
+      color: #78829d;
+    }
+  }
+
+  &__flex > div {
+    display: flex;
+    align-items: center;
+
+    .panel_item {
+      margin-right: -25px;
+      display: flex;
+    }
+  }
+}

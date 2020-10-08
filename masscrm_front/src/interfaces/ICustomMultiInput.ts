@@ -20,8 +20,10 @@ export interface ICustomMultiInput {
   width?: string;
   disabled?: boolean;
   hideClearBtn?: boolean;
-  onChange: (fieldName: string, value: Array<string>) => void;
+  onChange: (fieldName: string, value: Array<string> | string) => void;
   formik?: FormikProps<Array<string> | string | boolean | undefined>;
+  clear?: boolean;
+  resetClearInputState?: () => void;
 }
 
 export interface ICustomMultiRows {

@@ -20,6 +20,59 @@ class ContactFields extends BaseModel implements FieldsInterface
 {
     public const CONTACT_PREFIX = 'c_';
 
+    public const JOIN = 'join';
+
+    public const JOIN_CONTACT_EMAIL_TABLE = [
+        'table' => 'contact_emails',
+        'first' => 'contact_emails.contact_id',
+        'second' => 'contacts.id'
+    ];
+
+    public const JOIN_CONTACT_SOCIAL_NETWORK_TABLE =[
+        'table' => 'contact_social_networks',
+        'first' => 'contact_social_networks.contact_id',
+        'second' => 'contacts.id'
+    ];
+
+    public const JOIN_CONTACT_PHONES_TABLE  = [
+        'table' => 'contact_phones',
+        'first' => 'contact_phones.contact_id',
+        'second' => 'contacts.id'
+    ];
+
+    public const JOIN_CONTACT_COLLEAGUES_TABLE = [
+        'table' => 'contact_colleagues',
+        'first' => 'contact_colleagues.contact_id',
+        'second' => 'contacts.id'
+    ];
+
+    public const JOIN_CONTACT_CAMPAIGNS_TABLE = [
+        'table' => 'contact_campaigns',
+        'first' => 'contact_campaigns.contact_id',
+        'second' => 'contacts.id'
+    ];
+
+    public const JOIN_CONTACT_CAMPAIGN_STATUSES_TABLE = [
+        self::JOIN_CONTACT_CAMPAIGNS_TABLE,
+        [
+            'table' => 'campaign_statuses',
+            'first' => 'campaign_statuses.id',
+            'second' => 'contact_campaigns.status_id'
+        ]
+    ];
+
+    public const JOIN_CONTACT_MAILS_TABLE = [
+        'table' => 'contact_mails',
+        'first' => 'contact_mails.contact_id',
+        'second' => 'contacts.id'
+    ];
+
+    public const JOIN_CONTACT_NOTES_TABLE = [
+        'table' => 'contact_notes',
+        'first' => 'contact_notes.contact_id',
+        'second' => 'contacts.id'
+    ];
+
     public const COMPANY_ID_FIELD = 'company_id';
     public const FIRST_NAME_FIELD = 'first_name';
     public const LAST_NAME_FIELD = 'last_name';
@@ -48,6 +101,17 @@ class ContactFields extends BaseModel implements FieldsInterface
     public const MAILING_TOOL_FIELD = 'mailing_tool';
     public const ORIGIN_FIELD = 'origin';
     public const COMMENT_FIELD = 'comment';
+    public const IN_BLACKLIST_FIELD = 'in_blacklist';
+
+    public const EMAIL_COLLECTION_FIELD = 'email_collection';
+    public const PHONE_COLLECTION_FIELD = 'phone_collection';
+    public const SOCIAL_NETWORK_COLLECTION_FIELD = 'social_network_collection';
+    public const COLLEAGUE_COLLECTION_FIELD = 'colleague_collection';
+    public const SEQUENCE_COLLECTION_FIELD = 'sequence_collection';
+    public const MAIL_COLLECTION_FIELD = 'mail_collection';
+    public const NOTE_COLLECTION_FIELD = 'note_collection';
+    public const SALE_COLLECTION_FIELD = 'sale_collection';
+    public const IS_UPLOAD_COLLECTION_FIELD = 'is_upload_collection';
 
     public const FIELDS = [
         self::ID_FIELD => [
@@ -135,7 +199,7 @@ class ContactFields extends BaseModel implements FieldsInterface
             self::SORT => true,
             self::SEARCH => true,
             self::FIELD => 'contacts.position',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT
         ],
         self::LINKEDIN_FIELD => [
             self::SORT => true,
@@ -223,6 +287,12 @@ class ContactFields extends BaseModel implements FieldsInterface
             self::FIELD => 'contacts.service_id',
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
         ],
+        self::IN_BLACKLIST_FIELD => [
+            self::SORT => true,
+            self::SEARCH => true,
+            self::FIELD => 'contacts.in_blacklist',
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
+        ],
         Company::COMPANY_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
@@ -231,61 +301,71 @@ class ContactFields extends BaseModel implements FieldsInterface
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_emails.email',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_EMAIL_TABLE]
         ],
         ContactPhones::PHONE_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_phones.phone',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_PHONES_TABLE]
         ],
         ContactSocialNetworks::SOCIAL_NETWORKS_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_social_networks.link',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_SOCIAL_NETWORK_TABLE]
         ],
         ContactColleagues::COLLEAGUE_NAME_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_colleagues.full_name',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_COLLEAGUES_TABLE]
         ],
         ContactColleagues::COLLEAGUE_LINK_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_colleagues.link',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_LINK_COLLEAGUE_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_LINK_COLLEAGUE_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_COLLEAGUES_TABLE]
         ],
         ContactEmails::REQUIRES_VALIDATION => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_emails.verification',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_VALUE_SELECT
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_VALUE_SELECT,
+            self::JOIN => [self::JOIN_CONTACT_EMAIL_TABLE]
         ],
         ContactCampaigns::SEQUENCE_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_campaigns.sequence',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_CAMPAIGNS_TABLE]
         ],
         CampaignStatus::STATUS_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'campaign_statuses.name',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT,
+            self::JOIN => self::JOIN_CONTACT_CAMPAIGN_STATUSES_TABLE
         ],
         ContactMails::MAILS_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_mails.message',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_MAILS_TABLE]
         ],
         ContactNotes::MY_NOTES_FIELD => [
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'contact_notes.message',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE,
+            self::JOIN => [self::JOIN_CONTACT_NOTES_TABLE]
         ],
         ContactSale::SALE => [
             self::SORT => false,

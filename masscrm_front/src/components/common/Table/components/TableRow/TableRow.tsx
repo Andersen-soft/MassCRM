@@ -1,12 +1,14 @@
-import React, { FC, useMemo } from 'react';
-import { TableCell, TableRow } from '@material-ui/core';
+import React, { FC, useMemo, useState, useCallback } from 'react';
+import { TableCell, TableRow, Dialog } from '@material-ui/core';
 import { Delete, Edit } from '@material-ui/icons';
 import {
   CustomCheckBox,
   CommonIcon,
   MoreInformation,
-  SocialIcon
+  SocialIcon,
+  DefaultPopUp
 } from 'src/components/common';
+import { ShowAllTD } from 'src/utils/table/cells';
 import { ITableCell, ITableRowProps } from '../../interfaces';
 import { Control } from '../../../Control';
 
@@ -16,10 +18,18 @@ export const TableRowItem: FC<ITableRowProps> = ({
   data,
   currentPage
 }) => {
+  const [open, setOpen] = useState<boolean>(false);
   const onSelectHandler = () =>
     config.onSelectRow && config.onSelectRow(row.id);
 
-  const onDeleteHandler = (id: number) => () => {
+  const handleChangeOpenState = useCallback(
+    (value: boolean) => (): void => {
+      setOpen(value);
+    },
+    []
+  );
+
+  const onConfirmDeleteHandler = (id: number) => () => {
     config.onDeleteSelected && config.onDeleteSelected(id);
   };
 
@@ -44,14 +54,21 @@ export const TableRowItem: FC<ITableRowProps> = ({
   const canDeleted = useMemo(
     () =>
       config.hasDelete && (
-        <TableCell component='th' scope='row' key='delete' className='smallTD'>
+        <TableCell className='smallTD' component='th' scope='row' key='delete'>
           <CommonIcon
             IconComponent={Delete}
-            onClick={onDeleteHandler(row.id)}
+            onClick={handleChangeOpenState(true)}
           />
+          <Dialog open={open}>
+            <DefaultPopUp
+              questionMessage='Are you sure you want to delete this contact?'
+              onClose={handleChangeOpenState(false)}
+              onConfirm={onConfirmDeleteHandler(row.id)}
+            />
+          </Dialog>
         </TableCell>
       ),
-    []
+    [open]
   );
 
   const canEdit = useMemo(
@@ -61,7 +78,7 @@ export const TableRowItem: FC<ITableRowProps> = ({
           <CommonIcon IconComponent={Edit} onClick={onEditHandler(row.id)} />
         </TableCell>
       ),
-    []
+    [onEditHandler]
   );
 
   const hasInfo = useMemo(
@@ -97,7 +114,8 @@ export const TableRowItem: FC<ITableRowProps> = ({
       socialName = 'linkedin',
       component,
       isBold,
-      isBlue
+      isBlue,
+      isComment
     }: ITableCell,
     index: number
   ) => {
@@ -115,6 +133,13 @@ export const TableRowItem: FC<ITableRowProps> = ({
       return (
         <TableCell key={index} className='blueText'>
           {dataCell}
+        </TableCell>
+      );
+    }
+    if (isComment) {
+      return (
+        <TableCell key={index}>
+          <ShowAllTD value={String(dataCell)} />
         </TableCell>
       );
     }

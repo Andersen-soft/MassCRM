@@ -29,10 +29,10 @@ class ActivityLogTransform extends TransformerAbstract
     public function transform(AbstractActivityLog $activityLog): array
     {
         /** @var User $user */
-        $user = $activityLog->user;
+        $user = $this->user;
 
         return [
-            'id' => $activityLog->getId(),
+            'id' => $this->getId(),
             'description' => Lang::get(
                 'activityLog.' . $activityLog->getModelName() . '_'
                 . $activityLog->getActivityType() . '_' . $activityLog->getModelField(),

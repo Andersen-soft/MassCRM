@@ -2,13 +2,12 @@
 
 namespace App\Exceptions;
 
-use App\Exceptions\Custom\ImportContactsExceptionInterface;
-use App\Services\PayloadBuilder;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Exceptions\Validation\ValidationRequestException;
+use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Throwable;
 
@@ -33,6 +32,15 @@ class Handler extends ExceptionHandler
         'password_confirmation',
     ];
 
+    public function report(Throwable $exception): void
+    {
+        if (app()->bound('sentry') && $this->shouldReport($exception)) {
+            app('sentry')->captureException($exception);
+        }
+
+        parent::report($exception);
+    }
+
     /**
      * Render an exception into an HTTP response.
      *
@@ -45,23 +53,27 @@ class Handler extends ExceptionHandler
     public function render($request, Throwable $exception)
     {
         switch (true) {
-            case ($exception instanceof ImportContactsExceptionInterface):
-                return $this->renderException([
-                    'message' => $exception->getMessage(),
-                    'type' => 'ImportError',
-                    'code'    => $exception->getCode(),
-                ], JsonResponse::HTTP_BAD_REQUEST);
-            case ($exception instanceof RequestException):
+            case ($exception instanceof ValidationRequestException):
+                return $this->renderException($exception->getErrors(), $exception->getCode());
+            case ($exception instanceof BaseException):
+                return $this->renderException([$exception->getMessage()], $exception->getCode());
             case ($exception instanceof UnauthorizedHttpException):
-                return $this->renderException(['message' => $exception->getMessage()], $exception->getStatusCode());
+            case ($exception instanceof JWTException):
+                return $this->renderException([$exception->getMessage()], JsonResponse::HTTP_UNAUTHORIZED);
             default:
-                return parent::render($request, $exception);
+                return $this->renderException([$exception->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    private function renderException(array $payload = [], int $code = JsonResponse::HTTP_UNAUTHORIZED): JsonResponse
+    private function renderException(array $errors, int $code): JsonResponse
     {
-        $payloadBuilder = new PayloadBuilder();
-        return new JsonResponse($payloadBuilder->getResponseBody($payload, false), $code);
+        $response = [
+            'success' => false,
+            'data' => [],
+            'meta' => [],
+            'errors' => $errors,
+        ];
+
+        return new JsonResponse($response, $code);
     }
 }

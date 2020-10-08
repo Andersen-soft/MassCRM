@@ -4,7 +4,8 @@ import { IUser } from './IUser';
 import {
   IContactFilter,
   IContactFiltersState,
-  IContactResult
+  IContactResult,
+  IMultiFilterState
 } from './IContact';
 import { ICompany } from './ICompany';
 import { IIndustry } from './IIndustry';
@@ -21,15 +22,33 @@ import {
 import { IFileInfo } from './IFile';
 import { IWebsocketStore } from './IWebsocket';
 import { ISortingObject, ISortingState } from './ISorting';
+import { IBlacklistFiltersState, IBlacklistItem } from './IBlacklist';
+import {
+  IOneContactActivityLogItem,
+  IOneContactAttachmentItem,
+  IOneContactData
+} from './IOneContactData';
+import { IExportStore } from './IExport';
 
 export type ILocationStore = ILocations;
 
 export interface INotificationStore {
-  notification: string;
+  data: Array<any> | null;
+  notification: any;
 }
 
 export interface ILoaderStore {
   isLoading: boolean;
+}
+
+export interface IBlacklistStore {
+  isFiltersUse: boolean;
+  data: Array<IBlacklistItem>;
+  blacklistFilter: IBlacklistFiltersState;
+  total?: number;
+  per_page?: number;
+  showCount: number;
+  errors: string[];
 }
 
 export interface IContactStore {
@@ -73,19 +92,36 @@ export interface IImportStore {
   responsibleSearchList: Array<ISearchItem>;
   showStartImportMessage: boolean;
   docInfo?: IDocInfo;
-  selectedTab?: string;
+  selectedTab: string | number;
 }
 
 export interface IFilterStore {
   data?: IFilterData;
   settings?: IContactFilter;
   values?: IContactFiltersState;
+  multiValues?: IMultiFilterState;
   sort?: ISortingState;
   sortBy?: ISortingObject;
 }
 
 export interface IPageStore {
   currentPage: number;
+}
+
+export interface IOneContact {
+  data: IOneContactData;
+}
+
+export interface IOneContactActivityLog {
+  data: Array<IOneContactActivityLogItem>;
+}
+
+export interface IOneContactAttachment {
+  data: Array<IOneContactAttachmentItem>;
+}
+
+export interface IErrorStore {
+  data?: string;
 }
 
 export interface IStoreState {
@@ -100,4 +136,10 @@ export interface IStoreState {
   page: IPageStore;
   websocket: IWebsocketStore;
   loader: ILoaderStore;
+  blacklist: IBlacklistStore;
+  oneContact: IOneContact;
+  oneContactActivityLog: IOneContactActivityLog;
+  oneContactAttachment: IOneContactAttachment;
+  exportData: IExportStore;
+  errorData: IErrorStore;
 }

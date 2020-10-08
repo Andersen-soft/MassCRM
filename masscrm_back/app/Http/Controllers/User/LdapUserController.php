@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\User;
 
 use App\Exceptions\User\LdapException;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use ErrorException;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\User\LdapUserRequest;
 use App\Services\Ldap\LdapService;
 
-class LdapUserController extends Controller
+class LdapUserController extends BaseController
 {
     public function __construct()
     {
@@ -52,7 +52,7 @@ class LdapUserController extends Controller
     public function __invoke(LdapUserRequest $request, LdapService $ldapService): JsonResponse
     {
         try {
-            return $this->response(
+            return $this->success(
                 $ldapService->fetchListUser($request->get('email')),
             );
         } catch (ErrorException $e) {

@@ -44,11 +44,21 @@ class PermissionsSeeder extends Seeder
             ],
             [
                 'slug' => 'showUserById',
-                'roles' => [User::USER_ROLE_ADMINISTRATOR],
+                'roles' => [
+                    User::USER_ROLE_ADMINISTRATOR,
+                    User::USER_ROLE_MANAGER,
+                    User::USER_ROLE_NC2,
+                    User::USER_ROLE_NC1
+                ]
             ],
             [
                 'slug' => 'getListUsers',
-                'roles' => [User::USER_ROLE_ADMINISTRATOR],
+                'roles' => [
+                    User::USER_ROLE_ADMINISTRATOR,
+                    User::USER_ROLE_MANAGER,
+                    User::USER_ROLE_NC2,
+                    User::USER_ROLE_NC1
+                ]
             ],
             [
                 'slug' => 'changePasswordUser',

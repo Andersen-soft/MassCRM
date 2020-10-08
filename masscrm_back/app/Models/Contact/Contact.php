@@ -2,10 +2,12 @@
 
 namespace App\Models\Contact;
 
+use App\Models\AttachmentFile\ContactAttachment;
 use App\Models\Company\Company;
 use App\Models\Contact\Fields\ContactFields;
 use App\Models\User\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,26 +16,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Class Contact
  * @package App
  * @property int $id
+ * @property int|null $user_id
  * @property int|null $company_id
- * @property string|null $responsible
- * @property Carbon $created_at
- * @property Carbon $updated_at
- * @property string|null $first_name
- * @property string|null $last_name
- * @property string|null $full_name
- * @property string|null $gender
- * @property Carbon|null $birthday
- * @property string|null $country
- * @property string|null $city
- * @property string|null $region
- * @property string|null $position
- * @property string|null $linkedin
- * @property string|null $skype
- * @property Carbon|null $last_touch
- * @property string|null $location
- * @property Carbon|null $added_to_mailing
- * @property string|null $mailing_tool
- * @property string|null $origin
  * @property int|null $opens
  * @property int|null $views
  * @property int|null $deliveries
@@ -41,12 +25,43 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $bounces
  * @property int|null $confidence
  * @property int|null $service_id
+ * @property string|null $mailing_tool
+ * @property string|null $origin
  * @property string|null $comment
- * @property int|null $user_id
+ * @property string|null $responsible
+ * @property string|null $first_name
+ * @property string|null $last_name
+ * @property string|null $full_name
+ * @property string|null $gender
+ * @property string|null $country
+ * @property string|null $city
+ * @property string|null $region
+ * @property string|null $position
+ * @property string|null $linkedin
+ * @property string|null $skype
+ * @property string|null $location
+ * @property Carbon|null $last_touch
+ * @property Carbon|null $added_to_mailing
+ * @property Carbon|null $date_of_use
+ * @property Carbon|null $birthday
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
+ * @property bool $is_upload_collection
+ * @property bool $is_in_work
+ * @property bool $in_blacklist
+ * @property array $email_collection
+ * @property array $phone_collection
+ * @property array $social_network_collection
+ * @property array $colleague_collection
+ * @property array $sequence_collection
+ * @property array $mail_collection
+ * @property array $note_collection
+ * @property array $sale_collection
  */
 class Contact extends ContactFields
 {
     public const CONTACT = 'contact';
+    public const EXCEPT_EMAIL_TEMPLATE = 'noemail@noemail.com';
 
     protected $fillable = [
         self::ID_FIELD,
@@ -78,7 +93,17 @@ class Contact extends ContactFields
         self::CONFIDENCE_FIELD,
         self::SERVICE_ID_FIELD,
         self::COMMENT_FIELD,
+        self::EMAIL_COLLECTION_FIELD,
+        self::PHONE_COLLECTION_FIELD,
+        self::SOCIAL_NETWORK_COLLECTION_FIELD,
+        self::COLLEAGUE_COLLECTION_FIELD,
+        self::SEQUENCE_COLLECTION_FIELD,
+        self::MAIL_COLLECTION_FIELD,
+        self::NOTE_COLLECTION_FIELD,
+        self::SALE_COLLECTION_FIELD,
+        self::IS_UPLOAD_COLLECTION_FIELD,
         self::USER_ID_FIELD,
+        self::IN_BLACKLIST_FIELD,
     ];
 
     protected $casts = [
@@ -110,7 +135,17 @@ class Contact extends ContactFields
         self::CONFIDENCE_FIELD => 'integer',
         self::SERVICE_ID_FIELD => 'integer',
         self::COMMENT_FIELD => 'string',
+        self::EMAIL_COLLECTION_FIELD => 'array',
+        self::PHONE_COLLECTION_FIELD => 'array',
+        self::SOCIAL_NETWORK_COLLECTION_FIELD => 'array',
+        self::COLLEAGUE_COLLECTION_FIELD => 'array',
+        self::SEQUENCE_COLLECTION_FIELD => 'array',
+        self::MAIL_COLLECTION_FIELD => 'array',
+        self::NOTE_COLLECTION_FIELD => 'array',
+        self::SALE_COLLECTION_FIELD => 'array',
+        self::IS_UPLOAD_COLLECTION_FIELD => 'boolean',
         self::USER_ID_FIELD => 'integer',
+        self::IN_BLACKLIST_FIELD => 'boolean',
     ];
 
     public function getId(): int
@@ -496,7 +531,7 @@ class Contact extends ContactFields
         return $this->hasMany(ContactCampaigns::class, 'contact_id');
     }
 
-    public function setValue(string $field, string $value = null, bool $merge = false): Contact
+    public function setValue(string $field, $value = null, bool $merge = false): Contact
     {
         switch ($field) {
             case self::FIRST_NAME_FIELD:
@@ -551,9 +586,24 @@ class Contact extends ContactFields
                 if ($this->notMerge($merge, self::ADDED_TO_MAILING_FIELD)) {
                     break;
                 }
+
+                if ($value === null && $this->getAddedToMailing() === null) {
+                    $this->setAddedToMailing($value);
+                    break;
+                } elseif ($value === null && $this->getAddedToMailing() !== null) {
+                    break;
+                }
+
                 $this->setAddedToMailing(Carbon::parse($value));
                 break;
             case self::LAST_TOUCH_FIELD:
+                if ($value === null && $this->getLastTouch() === null) {
+                    $this->setLastTouch($value);
+                    break;
+                } elseif ($value === null && $this->getLastTouch() !== null) {
+                    break;
+                }
+
                 $this->setLastTouch(Carbon::parse($value));
                 break;
             case self::OPENS_FIELD:
@@ -618,7 +668,7 @@ class Contact extends ContactFields
                 if ($this->notMerge($merge, self::ORIGIN_FIELD)) {
                     break;
                 }
-                $this->setOrigin($value);
+                $this->setOrigin(implode(';', $value));
                 break;
             case self::CONTACT_PREFIX . self::COMMENT_FIELD:
             case self::COMMENT_FIELD:
@@ -638,6 +688,16 @@ class Contact extends ContactFields
         }
 
         return false;
+    }
+
+    public function updateIsInWorkAndDate(Builder $contacts): void
+    {
+        $contacts->update(
+            [
+                'is_in_work' => true,
+                'date_of_use' => Carbon::now()
+            ]
+        );
     }
 
     public function createAssociate(string $field, string $value): Contact

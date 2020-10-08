@@ -4,6 +4,7 @@ namespace App\Repositories\Industry;
 
 use App\Models\Industry;
 use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 
 class IndustryRepository
 {
@@ -11,5 +12,10 @@ class IndustryRepository
     {
         return Industry::where('active', true)
             ->get();
+    }
+
+    public function getIndustryFromName(string $name): ?Industry
+    {
+        return Industry::query()->where('name', 'ILIKE', $name)->first();
     }
 }

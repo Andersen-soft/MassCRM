@@ -33,19 +33,21 @@ export interface IContactFormInputs {
     | Array<Date>
     | Array<ISequence>
     | IContactsJobs
-    | Array<INotes>;
+    | Array<INotes>
+    | Date;
   id?: number;
   responsible?: string;
   first_name: string;
   last_name: string;
   full_name?: string;
   gender?: string;
-  social_networks?: string;
+  social_networks?: Array<string>;
+  social_network?: string;
   country?: string;
   region?: string;
   city?: string;
   position?: string;
-  linkedin: string;
+  linkedin?: string;
   emails: Array<string>;
   email?: string;
   validation: boolean;
@@ -62,13 +64,13 @@ export interface IContactFormInputs {
   comment?: string;
   vacancies?: IContactsJobs;
   confidence?: number;
-  birthday?: Array<Date>;
+  birthday?: string;
   skype?: string;
   origin?: Array<string>;
   company_type?: string;
-  company_subsidiary?: number;
-  company_holding?: number;
-  company_founded?: Array<Date>;
+  company_subsidiary?: string | number;
+  company_holding?: string | number;
+  company_founded?: string;
   sequences?: Array<ISequence>;
   notes?: Array<INotes>;
   sales?: Array<ISale>;

@@ -11,6 +11,14 @@ import { filterReducer } from './filter.reducer';
 import { pageReducer } from './page.reducer';
 import { websocketReducer } from './websocket.reducer';
 import { loaderReducer } from './loader.reducer';
+import { blacklistReducer } from './blacklist.reducer';
+import {
+  oneContactActivityLogReducer,
+  oneContactAttachmentReducer,
+  oneContactReducer
+} from './oneContact.reducer';
+import { exportReducer } from './export.reducer';
+import { errorReducer } from './error.reducer';
 
 const rootReducer = combineReducers<IStoreState>({
   users: usersReducer,
@@ -23,7 +31,13 @@ const rootReducer = combineReducers<IStoreState>({
   filter: filterReducer,
   page: pageReducer,
   websocket: websocketReducer,
-  loader: loaderReducer
+  loader: loaderReducer,
+  blacklist: blacklistReducer,
+  oneContact: oneContactReducer,
+  oneContactActivityLog: oneContactActivityLogReducer,
+  oneContactAttachment: oneContactAttachmentReducer,
+  exportData: exportReducer,
+  errorData: errorReducer
 });
 
 export default rootReducer;

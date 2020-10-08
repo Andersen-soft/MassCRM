@@ -17,7 +17,7 @@ class ImportStartParseHandler
         /** @var Process $process */
         $process = $command->getUser()->processes()->create([
             'status' => Process::TYPE_STATUS_PROCESS_WAIT,
-            'type' => Process::TYPE_PROCESS_IMPORT
+            'type' => Process::TYPE_PROCESS_IMPORT_CONTACT
         ]);
 
         ImportContactsJob::dispatch(

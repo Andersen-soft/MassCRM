@@ -7,6 +7,9 @@ export const customPopover = makeStyles(() =>
       '& .MuiPaper-elevation8': {
         overflow: 'visible'
       }
+    },
+    notification: {
+      maxWidth: '317px'
     }
   })
 );

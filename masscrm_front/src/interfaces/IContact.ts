@@ -6,6 +6,7 @@ import {
   ISale,
   ISequence
 } from '../components/Contact/components/ContactForm/interfaces';
+import { INote } from './INote';
 
 export interface IContact {
   [key: string]: any;
@@ -15,9 +16,9 @@ export interface IContact {
   full_name?: string;
   gender?: string;
   linkedin?: string;
-  requires_validation?: string;
+  requires_validation?: number | string;
   location?: ILocation;
-  social_networks?: Array<string>;
+  social_networks?: string;
   comment?: string;
   colleagues?: IContactColleagues;
   company_id?: number;
@@ -27,7 +28,7 @@ export interface IContact {
   mailing_tool?: string;
   added_to_mailing?: string;
   responsible?: string;
-  origin?: string;
+  origin?: Array<string>;
   birthday?: string;
   opens?: number;
   views?: number;
@@ -38,7 +39,7 @@ export interface IContact {
   service_id?: number;
   position?: string;
   sequences?: Array<{ id: number; sequence: string; status: string }>;
-  notes?: Array<{ id: number; message: string }>;
+  note?: Array<string>;
   sales?: Array<ISale>;
   phones?: Array<string>;
 }
@@ -66,7 +67,7 @@ export interface IContactResult {
   mailing_tool?: string;
   added_to_mailing?: string;
   responsible?: string;
-  origin?: string;
+  origin?: Array<string>;
   birthday?: string;
   opens?: number;
   views?: number;
@@ -78,15 +79,18 @@ export interface IContactResult {
   position?: string;
   sequences?: Array<ISequence>;
   mails?: Array<{ id: number; message: string }>;
-  notes?: Array<{ id: number; message: string }>;
+  note?: Array<INote>;
   sales?: Array<ISale>;
   phones: Array<IPhone>;
+  in_blacklist?: boolean;
+  is_in_work?: boolean;
+  date_of_use?: string;
 }
 export interface IContactFilter {
   page?: number | string;
   limit?: number;
   search?: {
-    responsible?: Array<string>;
+    responsible?: string[];
     created_at?: {
       min?: number | string;
       max?: number | string;
@@ -98,25 +102,25 @@ export interface IContactFilter {
     first_name?: string;
     last_name?: string;
     full_name?: string;
-    gender?: Array<string>;
+    gender?: string[];
     birthday?: {
       min?: string | number;
       max?: string | number;
     };
-    country?: Array<string>;
-    city?: Array<string>;
-    region?: Array<string>;
-    position?: string;
+    country?: string[];
+    city?: string[];
+    region?: string[];
+    position?: string[];
     linkedin?: string;
     social_networks?: string;
     phone?: string;
     skype?: string;
     email?: string;
-    origin?: Array<string>;
+    origin?: string[];
     requires_validation?: number;
     colleague_name?: string;
     colleague_link?: string;
-    mailing_tool?: Array<string>;
+    mailing_tool?: string[];
     service_id?: number;
     company_id?: string;
     added_to_mailing?: {
@@ -132,7 +136,7 @@ export interface IContactFilter {
       max?: string | number;
     };
     sequence?: string;
-    status?: Array<string>;
+    status?: string[];
     opens?: {
       min?: string | number;
       max?: string | number;
@@ -152,6 +156,7 @@ export interface IContactFilter {
     bounces?: number;
     mails?: string;
     my_notes?: string;
+    in_blacklist?: number[];
     comment?: string;
     sale?: {
       id?: number;
@@ -159,9 +164,9 @@ export interface IContactFilter {
         min?: string | number;
         max?: string | number;
       };
-      source?: Array<string>;
+      source?: string[];
       link?: string;
-      status?: Array<string>;
+      status?: string[];
       project_c1?: number;
     };
     company?: {
@@ -169,11 +174,11 @@ export interface IContactFilter {
         min?: string | number;
         max?: string | number;
       };
-      name?: Array<string>;
+      name?: string[];
       website?: string;
       linkedin?: string;
       sto_full_name?: string;
-      industry?: Array<string>;
+      industry?: string[];
       company_size?: {
         min?: string | number;
         max?: string | number;
@@ -188,6 +193,11 @@ export interface IContactFilter {
       jobs?: Array<string>;
       skills?: Array<string>;
     };
+  };
+  is_in_work?: number;
+  date_of_use?: {
+    min?: string | number;
+    max?: string | number;
   };
   sort?: {
     field_name?: string;
@@ -206,6 +216,7 @@ export interface IContactSearchDownload {
       }
     | string
     | number
+    | number[]
     | undefined;
   responsible?: Array<string>;
   created?: {
@@ -228,7 +239,7 @@ export interface IContactSearchDownload {
   city?: Array<string>;
   region?: Array<string>;
   location?: Array<string>;
-  position?: string;
+  position?: string[];
   linkedIn?: string;
   otherSocialNetworks?: string;
   phones?: string;
@@ -311,6 +322,7 @@ export interface IContactDownload {
     fieldName?: string;
     typeSort?: string;
   };
+  isInWork?: number;
 }
 
 export interface IContactFiltersState {
@@ -327,7 +339,7 @@ export interface IContactFiltersState {
   Country: string[];
   Region: string[];
   City: string[];
-  Position: string;
+  Position: string[];
   Li: string;
   'Social Networks': string;
   Phone: string;
@@ -366,5 +378,17 @@ export interface IContactFiltersState {
   'Type of company': string[];
   Job: string;
   'Job Skills': string;
+  blacklist: string[];
   Comment: string;
+}
+
+export interface IMultiFilterState {
+  [index: string]: string[];
+  Responsible: string[];
+  Country: string[];
+  Region: string[];
+  City: string[];
+  Position: string[];
+  Company: string[];
+  Industry: string[];
 }

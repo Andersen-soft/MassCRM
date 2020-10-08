@@ -1,13 +1,13 @@
 import React from 'react';
 import { TableCellBaseProps } from '@material-ui/core';
-import { CommentEdit, CommentTD } from '.';
-import { EditPopup } from '..';
+import { CommentEdit } from '.';
+import { EditPopup, ShowAllTD } from '..';
 import { ICommentCell } from './interfaces';
 
 export const commentCell = ({ value, ...props }: ICommentCell) => (
   tdProps: React.PropsWithChildren<TableCellBaseProps>
 ) => {
-  const ContentTD = () => <CommentTD value={value} />;
+  const ContentTD = () => <ShowAllTD value={value} />;
 
   return (
     <EditPopup

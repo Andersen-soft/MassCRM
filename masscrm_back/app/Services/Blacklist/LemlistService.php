@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Services\Blacklist;
+
+use App\Repositories\Blacklist\BlacklistRepository;
+use Illuminate\Support\Facades\Http;
+
+class LemlistService
+{
+    private const LIMIT = 50;
+    private const NAME_SERVICE = 'Lemlist';
+
+    private BlacklistService $blacklistService;
+    private BlacklistRepository $blacklistRepository;
+
+    public function __construct(BlacklistService $blacklistService, BlacklistRepository $blacklistRepository)
+    {
+        $this->blacklistService = $blacklistService;
+        $this->blacklistRepository = $blacklistRepository;
+    }
+
+    public function fetchBlacklistFromLemlist(): void
+    {
+        $offset = 0;
+
+        do {
+            $response = Http::withBasicAuth(
+                trim(config('app.lemlist_username')),
+                config('app.lemlist_password')
+            )->get(
+                config('app.lemlist_blacklist_api_url'),
+                ['offset' => $offset, 'limit' => self::LIMIT]
+            )->json();
+
+            $emails = [];
+
+            foreach ($response as $key => $item) {
+                if (!$this->blacklistService->validateDomain($item['value'])) {
+                    continue;
+                }
+
+                $domain = $this->blacklistService->getDomainFromEmail($item['value']);
+                if (!$domain && $this->blacklistRepository->checkIgnoreDomain($item['value'])) {
+                    continue;
+                }
+
+                if (!$this->blacklistService->checkEmailInBlackList($item['value'])) {
+                    $emails[] = $item['value'];
+                }
+            }
+
+            $this->blacklistService->addNewDomains($emails, null, self::NAME_SERVICE);
+            $offset += self::LIMIT;
+
+        } while($response);
+    }
+}

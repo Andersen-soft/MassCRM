@@ -1,0 +1,70 @@
+import React from 'react';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Divider from '@material-ui/core/Divider';
+import ListItemText from '@material-ui/core/ListItemText';
+import Typography from '@material-ui/core/Typography';
+import { format } from 'date-fns';
+import parseJSON from 'date-fns/parseJSON';
+import { useStyles } from './CustomList.styles';
+import { IListProps } from './interfaces';
+import { INotification, INotificationPayload } from '../../../interfaces';
+
+const DOWNLOAD_TYPES = [
+  'export_contacts_finished',
+  'export_blacklist_finished'
+];
+
+export const CustomList = ({ list, getResult }: IListProps) => {
+  const classes = useStyles();
+
+  const handleClick = (
+    type: string,
+    id: number,
+    payload: INotificationPayload
+  ) => () => {
+    getResult && getResult(type, id, payload);
+  };
+
+  return (
+    <List
+      className={
+        list?.length > 3 ? `${classes.root} ${classes.rootOver}` : classes.root
+      }
+    >
+      {list?.map(({ id, payload, type }: INotification) => (
+        <div key={id}>
+          <ListItem>
+            <ListItemText
+              className={
+                payload.new
+                  ? classes.newNotification
+                  : classes.historyNotification
+              }
+              primary={payload.message}
+              secondary={
+                <Typography
+                  component='span'
+                  variant='body2'
+                  className={classes.typography}
+                >
+                  <span className={classes.date}>
+                    {format(parseJSON(payload.created_at), 'dd MMM, p')}
+                  </span>
+                  <button
+                    className={classes.button}
+                    type='button'
+                    onClick={handleClick(type, id, payload)}
+                  >
+                    {DOWNLOAD_TYPES.includes(type) ? 'Download' : 'View result'}
+                  </button>
+                </Typography>
+              }
+            />
+          </ListItem>
+          <Divider variant='middle' component='li' />
+        </div>
+      ))}
+    </List>
+  );
+};

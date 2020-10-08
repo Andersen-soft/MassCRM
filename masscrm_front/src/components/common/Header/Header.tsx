@@ -1,42 +1,120 @@
-import React, { FC, useCallback } from 'react';
+import React, {
+  FC,
+  SyntheticEvent,
+  useCallback,
+  useEffect,
+  useState
+} from 'react';
 import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { styleNames } from 'src/services';
 import history from 'src/store/history';
 import { rolesConfig, header } from 'src/data/header';
-import { IStoreState } from 'src/interfaces/store';
+import { INotificationStore, IStoreState } from 'src/interfaces/store';
 import { getUserRoles } from 'src/selectors';
+import Badge from '@material-ui/core/Badge';
+import NotificationsNoneRoundedIcon from '@material-ui/icons/NotificationsNoneRounded';
+import Snackbar, { SnackbarCloseReason } from '@material-ui/core/Snackbar';
+import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
+import {
+  changeViewed,
+  clearWebsocketData,
+  finishImportAction,
+  getContactExportFile,
+  getImportResult,
+  getNotification,
+  setSelectedTabAction,
+  getExportFile
+} from 'src/actions';
+import { INotification, INotificationPayload } from 'src/interfaces';
 import { Logo } from '../Logo';
 import style from './Header.scss';
 import { ExitIcon } from '../ExitIcon';
+import { MoreInformation } from '../MoreInformation';
+import { useStyles } from './Header.style';
+import { CommonError } from '..';
+import { ImportModal } from '../../ImportModal';
+import { Notification } from '../../Notification';
 
 const sn = styleNames(style);
 
+function Alert(props: AlertProps) {
+  return <MuiAlert elevation={6} variant='filled' {...props} />;
+}
+
 export const Header: FC = () => {
+  const [open, setOpen] = useState(false);
+  const [openModal, setOpenModal] = useState<boolean>(false);
+  const onClose = () => setOpenModal(false);
   const { location } = window;
   const userRole = useSelector(getUserRoles);
   const roles = Object.keys(userRole);
+  const classes = useStyles();
+  const dispatch = useDispatch();
 
-  const mockFun = useCallback(() => {
+  const RESULT: any = {
+    export_blacklist_finished: (id: number, data: INotificationPayload) => {
+      getExportFile(data.file_path, 'Blacklist').then(() => {
+        if (data.new) {
+          changeViewed(id).then(() => dispatch(getNotification()));
+        }
+      });
+    },
+    export_contacts_finished: (id: number, data: INotificationPayload) => {
+      getContactExportFile(data.file_path).then(() => {
+        if (data.new) {
+          changeViewed(id).then(() => dispatch(getNotification()));
+        }
+      });
+    },
+    import_finished: (id: number, data: INotificationPayload) => {
+      dispatch(setSelectedTabAction('Import'));
+      dispatch(getImportResult(data.operation_id));
+      if (data.new) {
+        changeViewed(id).then(() => dispatch(getNotification()));
+      }
+      setOpenModal(true);
+    }
+  };
+
+  const getResult = (type: string, id: number, data: INotificationPayload) =>
+    RESULT[type](id, data);
+
+  const onLogout = useCallback(() => {
     Cookies.remove('token');
-    location.reload();
+    location.href = '/';
   }, []);
+
+  const handleClose = (
+    event: SyntheticEvent<Element, Event>,
+    reason?: SnackbarCloseReason
+  ) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   const headerCallBack = useCallback(() => {
     if (roles.length > 0) {
       return rolesConfig.availablePages[roles[0]]?.map(url => {
         const name = header[url.split('/')[1]];
         return (
-          <Link
-            key={name}
-            to={url}
-            className={`${sn('header__item')} ${
-              history.location.pathname === url ? sn('header__item_active') : ''
-            }`}
-          >
-            <span>{name}</span>
-          </Link>
+          name && (
+            <Link
+              key={name}
+              to={url}
+              className={`${sn('header__item')} ${
+                history.location.pathname === url
+                  ? sn('header__item_active')
+                  : ''
+              }`}
+            >
+              <span>{name}</span>
+            </Link>
+          )
         );
       });
     }
@@ -44,6 +122,26 @@ export const Header: FC = () => {
   }, [userRole]);
 
   const user = useSelector((state: IStoreState) => state.users.userData);
+  const wsData = useSelector((state: IStoreState) => state.websocket.wsData);
+
+  const notificationList = useSelector(
+    (state: INotificationStore) => state.notification.data
+  );
+  const newNotification = notificationList.filter(
+    (item: INotification) => item.payload.new
+  );
+  const historyNotification = notificationList.filter(
+    (item: INotification) => !item.payload.new
+  );
+
+  useEffect(() => {
+    dispatch(getNotification());
+    if (wsData?.message) {
+      dispatch(finishImportAction());
+      setOpen(true);
+      dispatch(clearWebsocketData(null));
+    }
+  }, [wsData]);
 
   return (
     <header className={sn('header')}>
@@ -53,12 +151,48 @@ export const Header: FC = () => {
           <nav className={sn('header__menu')}>{headerCallBack()}</nav>
         </div>
         <div className={sn('header__btns')}>
+          {!roles.includes('administrator') && (
+            <Badge
+              className={classes.badge}
+              badgeContent={newNotification?.length}
+              overlap='circle'
+            >
+              <MoreInformation
+                icon={NotificationsNoneRoundedIcon}
+                notification
+                popperInfo={
+                  <Notification
+                    getResult={getResult}
+                    newNotification={newNotification}
+                    historyNotification={historyNotification}
+                  />
+                }
+              />
+            </Badge>
+          )}
           <span className={sn('header__user')}>
             {user?.name ? user.name : ''}
           </span>
-          <ExitIcon onClickHandler={mockFun} />
+          <ExitIcon onClickHandler={onLogout} />
         </div>
       </div>
+      <Snackbar
+        className={classes.snackbar}
+        open={open}
+        autoHideDuration={6000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity='info'>
+          <div className={sn('header__notification-snackbar')}>
+            <span>New notification! Click on </span>
+            <NotificationsNoneRoundedIcon />
+            <span> to see details.</span>
+          </div>
+        </Alert>
+      </Snackbar>
+      <ImportModal open={openModal} onClose={onClose} importTabs='Import' />
+      <CommonError />
     </header>
   );
 };

@@ -1,0 +1,41 @@
+.headerWrapper {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #E5E9F0;
+  box-sizing: border-box;
+
+  .menuWrapper {
+    list-style-type: none;
+    height: 54px;
+    margin: 0 0 0 24px;
+    padding: 0;
+
+    button {
+      float: left;
+      border: none;
+      outline: none;
+      background-color: inherit;
+      margin: 16px 20px 0 0;
+      padding: 8px 0 16px 0;
+      font-family: Roboto, serif;
+      font-style: normal;
+      font-weight: normal;
+      font-size: 18px;
+      line-height: 22px;
+      text-decoration: none;
+      color: #212121;
+      &.active {
+        border-bottom: 2px solid #FEDA00;
+      }
+    }
+
+  }
+
+  .buttonWrapper {
+    margin: 16px 24px 16px 0;
+  }
+}
+
+
+
+

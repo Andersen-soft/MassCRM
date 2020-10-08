@@ -17,7 +17,7 @@ import { ICustomSelectProps } from './interfaces';
 export const CustomSelect: FC<ICustomSelectProps> = ({
   multi,
   placeholder,
-  value = [],
+  value = undefined,
   items,
   required,
   errorMessage,

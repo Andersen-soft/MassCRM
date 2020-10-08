@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { connect } from 'formik';
 import { styleNames } from 'src/services';
 import {
@@ -11,21 +11,21 @@ import {
   CommonButton,
   SliderRange,
   DateRange,
-  CustomMultiInput
+  CustomMultiInput,
+  ContactCompany,
+  ContactJobInput
 } from 'src/components/common';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { IContactForm } from '../interfaces';
-import { ContactJobInput } from './ContactJobInput';
 import style from '../ContactForm.scss';
-import { ContactCompany } from './ContactCompany';
 
 const sn = styleNames(style);
 
 export const ContactFormModalUI = connect<IContactForm & any>(
   ({
     formik: {
-      initialValues,
       setFieldValue,
+      touched,
       values: {
         first_name,
         last_name,
@@ -59,7 +59,7 @@ export const ContactFormModalUI = connect<IContactForm & any>(
       },
       errors,
       handleSubmit,
-      handleChange
+      handleChange: formikHandleChange
     },
     isEditedFullName,
     onChangeFullName,
@@ -78,7 +78,11 @@ export const ContactFormModalUI = connect<IContactForm & any>(
     companyTypes,
     isFullForm,
     onChangeHolding,
-    onChangeSubsidiary
+    onChangeSubsidiary,
+    role,
+    handleChange,
+    handleChangeFirstLastName,
+    setFieldValueHandler
   }) => {
     const onChangeConfidence = (val: number) =>
       setFieldValue('confidence', val);
@@ -87,10 +91,21 @@ export const ContactFormModalUI = connect<IContactForm & any>(
       setFieldValue(name, val);
 
     const onChangeDate = (name: string, [value]: Date[]) => {
-      if (value) {
-        setFieldValue(name, format(value, 'yyyy-MM-dd'));
-      }
+      setFieldValue(name, value ? format(value, 'yyyy-MM-dd') : undefined);
     };
+
+    const userNc1 = Boolean(role?.nc1);
+
+    const currentType = useMemo(() => {
+      switch (company_type?.toLowerCase()) {
+        case 'holding':
+          return ['Subsidiary'];
+        case 'subsidiary':
+          return ['Holding'];
+        default:
+          return [];
+      }
+    }, [company_type]);
 
     return (
       <form>
@@ -98,22 +113,22 @@ export const ContactFormModalUI = connect<IContactForm & any>(
           <div className={sn('create-contact')}>
             <div className={sn('create-contact__item')}>
               <CommonInput
-                name='first_name'
-                onChangeValue={handleChange}
+                id='first_name'
+                onChangeValue={handleChangeFirstLastName('first_name')}
                 placeholder='First name'
                 required
-                value={first_name || initialValues.first_name}
-                errorMessage={errors.first_name}
+                value={first_name}
+                errorMessage={touched.first_name && errors.first_name}
               />
             </div>
             <div className={sn('create-contact__item')}>
               <CommonInput
                 name='last_name'
-                value={last_name || initialValues.last_name}
-                onChangeValue={handleChange}
+                value={last_name}
+                onChangeValue={handleChangeFirstLastName('last_name')}
                 placeholder='Last name'
                 required
-                errorMessage={errors.last_name}
+                errorMessage={touched.last_name && errors.last_name}
               />
             </div>
             <div className={sn('create-contact__item')}>
@@ -132,34 +147,39 @@ export const ContactFormModalUI = connect<IContactForm & any>(
             <div className={sn('create-contact__item')}>
               <Gender
                 name='gender'
-                value={gender || initialValues.gender}
-                onChangeHandler={handleChange}
+                value={gender}
+                onChangeHandler={handleChange('gender')}
+                errorMessage={touched.gender && errors.gender}
               />
             </div>
-            <div className={sn('create-contact__item')}>
-              <DateRange
-                name='birthday'
-                onChange={onChangeDate}
-                placeholder='Date of birth'
-                singular
-                date={birthday}
-              />
-            </div>
+            {isFullForm && (
+              <div className={sn('create-contact__item')}>
+                <DateRange
+                  name='birthday'
+                  onChange={onChangeDate}
+                  placeholder='Date of birth'
+                  singular
+                  date={
+                    birthday ? [parse(birthday, 'd.MM.yyyy', new Date())] : []
+                  }
+                />
+              </div>
+            )}
             <div className={sn('create-contact__item')}>
               <SearchInput
                 required
                 name='country'
-                value={country || initialValues.country}
+                value={country}
                 placeholder='Country'
                 items={countries}
                 onChange={onChangeCountry(setFieldValue)}
-                errorMessage={errors.country}
+                errorMessage={touched.country && errors.country}
               />
             </div>
             <div className={sn('create-contact__item')}>
               <SearchInput
                 name='region'
-                value={region || initialValues.region}
+                value={region}
                 placeholder='Region'
                 items={regions}
                 onChange={onChangeRegion(setFieldValue)}
@@ -170,7 +190,7 @@ export const ContactFormModalUI = connect<IContactForm & any>(
             <div className={sn('create-contact__item')}>
               <SearchInput
                 name='city'
-                value={city || initialValues.city}
+                value={city}
                 placeholder='City'
                 items={cities}
                 onChange={setSearchField(setFieldValue, 'city')}
@@ -180,29 +200,29 @@ export const ContactFormModalUI = connect<IContactForm & any>(
               <CommonInput
                 required
                 name='position'
-                value={position || initialValues.position}
-                onChangeValue={handleChange}
+                value={position}
+                onChangeValue={handleChange('position')}
                 placeholder='Position'
-                errorMessage={errors.position}
+                errorMessage={touched.position && errors.position}
               />
             </div>
             <div className={sn('create-contact__item')}>
               <CommonInput
-                required
                 name='linkedin'
-                value={linkedin || initialValues.linkedin}
-                onChangeValue={handleChange}
-                placeholder='linkedin'
+                value={linkedin}
+                onChangeValue={handleChange('linkedin')}
+                placeholder='Linkedin'
                 errorMessage={errors.linkedin}
               />
             </div>
             <div className={sn('create-contact__item')}>
-              <CommonInput
+              <CustomMultiInput
+                id='social_network'
                 name='social_networks'
-                value={social_networks || initialValues.social_networks}
-                onChangeValue={handleChange}
-                placeholder='Other social network'
-                errorMessage={errors.social_networks}
+                items={social_networks}
+                onChange={setFieldValueHandler}
+                placeholder='Social network'
+                errorMessage={touched.social_network && errors.social_network}
               />
             </div>
             <div className={sn('create-contact__item')}>
@@ -211,35 +231,37 @@ export const ContactFormModalUI = connect<IContactForm & any>(
                 name='phones'
                 items={phones || []}
                 placeholder='Phone'
-                onChange={setFieldValue}
+                onChange={setFieldValueHandler}
                 errorMessage={errors.phone}
               />
             </div>
-            <div className={sn('create-contact__item')}>
-              <CommonInput
-                name='skype'
-                value={skype || initialValues.skype}
-                onChangeValue={handleChange}
-                placeholder='Skype'
-              />
-            </div>
+            {isFullForm && (
+              <div className={sn('create-contact__item')}>
+                <CommonInput
+                  name='skype'
+                  value={skype}
+                  onChangeValue={handleChange('skype')}
+                  placeholder='Skype'
+                />
+              </div>
+            )}
             <div className={sn('create-contact__item')}>
               <CustomMultiInput
                 id='email'
                 name='emails'
-                items={emails || initialValues.emails}
+                items={emails}
                 placeholder='E-mail'
-                onChange={setFieldValue}
+                onChange={setFieldValueHandler}
                 errorMessage={errors?.email}
-                errorRequired={errors?.emails}
+                errorRequired={touched.emails && errors?.emails}
                 required
               />
             </div>
             <div className={sn('create-contact__item')}>
               <CustomSwitch
                 name='validation'
-                value={validation || initialValues.validation}
-                onChangeHandler={handleChange}
+                value={validation || false}
+                onChangeHandler={formikHandleChange}
                 label='Requires validation'
               />
             </div>
@@ -248,7 +270,7 @@ export const ContactFormModalUI = connect<IContactForm & any>(
                 <SliderRange
                   min={0}
                   max={100}
-                  value={confidence || initialValues.confidence || 0}
+                  value={confidence}
                   onChange={onChangeConfidence}
                   name='Confidence'
                   disabled={!validation}
@@ -259,7 +281,7 @@ export const ContactFormModalUI = connect<IContactForm & any>(
               <div className={sn('create-contact__item')}>
                 <CustomSelect
                   name='origin'
-                  value={origin || initialValues.origin}
+                  value={origin}
                   items={origins || []}
                   onChange={onChangeSelectList('origin')}
                   multi
@@ -272,66 +294,66 @@ export const ContactFormModalUI = connect<IContactForm & any>(
             <div className={sn('create-contact__item')}>
               <ContactCompany
                 error={errors.company}
-                value={company || initialValues.company}
+                value={company}
                 onSelect={onChangeCompany(setFieldValue)}
                 name='company'
                 placeholder='Company'
+                required
+                errorMessage={touched.company && errors.company}
               />
             </div>
             <div className={sn('create-contact__item')}>
               <CommonInput
-                required
                 name='companyWebSite'
-                value={companyWebSite || initialValues.companyWebSite}
-                onChangeValue={handleChange}
+                value={companyWebSite}
+                onChangeValue={handleChange('companyWebSite')}
                 placeholder='Company website'
-                errorMessage={errors.companyWebSite}
+                errorMessage={touched.companyWebSite && errors.companyWebSite}
               />
             </div>
             <div className={sn('create-contact__item')}>
               <CommonInput
                 name='companyLinkedIn'
-                value={companyLinkedIn || initialValues.companyLinkedIn}
-                onChangeValue={handleChange}
+                value={companyLinkedIn}
+                onChangeValue={handleChange('companyLinkedIn')}
                 placeholder='Company linkedin'
+                errorMessage={errors.companyLinkedIn}
               />
             </div>
             <div className={sn('create-contact__item')}>
               <CommonInput
                 name='CTO'
-                value={CTO || initialValues.CTO}
-                onChangeValue={handleChange}
+                value={CTO}
+                onChangeValue={handleChange('CTO')}
                 placeholder='CTO'
               />
             </div>
             <div className={sn('create-contact__item')}>
-              <CustomSelect
+              <SearchInput
                 name='industry'
-                value={industry || initialValues.industry}
+                value={industry}
                 items={industries}
                 onChange={onChangeIndustry(setFieldValue)}
                 multi
                 placeholder='Industry'
                 required
-                errorMessage={errors.industry}
+                errorMessage={touched.industry && errors.industry}
               />
             </div>
             <div className={sn('create-contact__item')}>
               <SearchInput
-                required
                 name='companySize'
-                value={companySize || initialValues.companySize}
+                value={companySize}
                 placeholder='Company size'
                 items={companySizeFilter}
                 onChange={setSearchField(setFieldValue, 'companySize')}
-                errorMessage={errors.companySize}
               />
             </div>
             <div className={sn('create-contact__item')}>
               {isFullForm && (
                 <CustomSelect
                   name='company_type'
-                  value={company_type || initialValues.company_type}
+                  value={company_type}
                   items={companyTypes || []}
                   onChange={onChangeSelectList('company_type')}
                   placeholder='Type of company'
@@ -341,43 +363,52 @@ export const ContactFormModalUI = connect<IContactForm & any>(
             <div className={sn('create-contact__item')}>
               {isFullForm && (
                 <ContactCompany
-                  type={company_type}
+                  type={currentType}
                   name='company_subsidiary'
-                  value={company_subsidiary || initialValues.company_subsidiary}
+                  value={company_subsidiary}
                   onSelect={onChangeSubsidiary(setFieldValue)}
                   placeholder='Subsidiary companies'
-                  disabled={!(company_type && company_type === 'Holding')}
+                  disabled={
+                    !company_type ? true : company_type === 'Subsidiary'
+                  }
                 />
               )}
             </div>
             <div className={sn('create-contact__item')}>
               {isFullForm && (
                 <ContactCompany
-                  type={company_type}
+                  type={currentType}
                   name='company_holding'
-                  value={company_holding || initialValues.company_holding}
+                  value={company_holding}
                   onSelect={onChangeHolding(setFieldValue)}
                   placeholder='Holding company'
-                  disabled={!(company_type && company_type === 'Subsidiary')}
+                  disabled={!company_type ? true : company_type === 'Holding'}
                 />
               )}
             </div>
-            <div className={sn('create-contact__item')}>
-              <DateRange
-                name='company_founded'
-                onChange={onChangeDate}
-                singular
-                date={company_founded || initialValues.company_founded}
-                placeholder='Founded'
-              />
-            </div>
             {isFullForm && (
+              <div className={sn('create-contact__item')}>
+                <DateRange
+                  name='company_founded'
+                  onChange={onChangeDate}
+                  singular
+                  date={
+                    company_founded
+                      ? [parse(company_founded, 'd.MM.yyyy', new Date())]
+                      : []
+                  }
+                  placeholder='Founded'
+                />
+              </div>
+            )}
+            {!userNc1 && (
               <>
                 <div className={sn('create-contact__item')}>
                   <ContactJobInput
-                    vacancies={vacancies || initialValues.vacancies || []}
-                    onChange={setFieldValue}
-                    errorMessage={errors.vacancies}
+                    role={role}
+                    vacancies={vacancies}
+                    onChange={setFieldValueHandler}
+                    errorMessage={touched.vacancies && errors.vacancies}
                   />
                 </div>
               </>
@@ -385,10 +416,10 @@ export const ContactFormModalUI = connect<IContactForm & any>(
             <div className={sn('create-contact__item')}>
               <CustomTextarea
                 name='comment'
-                value={comment || initialValues.comment}
+                value={comment}
                 placeholder='Comment'
-                onChange={handleChange}
-                className={sn('create-contact__text')}
+                onChange={handleChange('comment')}
+                width='230px'
               />
             </div>
           </div>

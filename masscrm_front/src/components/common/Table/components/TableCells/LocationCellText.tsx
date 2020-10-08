@@ -32,7 +32,6 @@ export const LocationCellText: FC<{
   const cities = useSelector(getCity);
   const filter = useSelector(getFilterSettings);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
   const getNameCallBack = ({ name }: { name: string }) => name;
 
   const getItems = useCallback(() => {

@@ -16,6 +16,9 @@ class CompanyVacancyObserver
         /** @var Company $company */
         $company = $companyVacancy->company;
 
+
+
+
         if ($company->getUpdatedAt()->diffInSeconds($company->getCreatedAt()) < 5) {
             return;
         }
@@ -28,7 +31,7 @@ class CompanyVacancyObserver
                 ->setModelName((new ReflectionClass($companyVacancy))->getShortName())
                 ->setModelField($item)
                 ->setDataNew($companyVacancy->{$item})
-                ->setLogInfo($companyVacancy->toJson())
+                ->setLogInfo($companyVacancy->getRawOriginal())
                 ->setAdditionalInfoForData($companyVacancy->getVacancy())
                 ->save();
         }
@@ -50,7 +53,7 @@ class CompanyVacancyObserver
                     ->setDataOld($companyVacancy->getOriginal($key))
                     ->setDataNew($value)
                     ->setAdditionalInfoForData($companyVacancy->getVacancy())
-                    ->setLogInfo($companyVacancy->toJson())
+                    ->setLogInfo($companyVacancy->getRawOriginal())
                     ->save();
             }
         }
@@ -68,7 +71,7 @@ class CompanyVacancyObserver
             ->setModelName((new ReflectionClass($companyVacancy))->getShortName())
             ->setModelField(CompanyVacancy::VACANCY)
             ->setDataOld(  $companyVacancy->getOriginal(CompanyVacancy::VACANCY))
-            ->setLogInfo($companyVacancy->toJson())
+            ->setLogInfo($companyVacancy->getRawOriginal())
             ->save();
     }
 }

@@ -15,11 +15,11 @@ class ContactAttachmentObserver
         (new ActivityLogContact())
             ->setUserId($contactAttachment->getUserId())
             ->setActivityType(ActivityLogContact::STORE_ATTACHMENT_FILE_EVENT)
-            ->setCompanyId($contactAttachment->getContactId())
+            ->setContactId($contactAttachment->getContactId())
             ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataNew($contactAttachment->getFileName())
-            ->setLogInfo($contactAttachment->toJson())
+            ->setLogInfo($contactAttachment->getRawOriginal())
             ->save();
     }
 
@@ -28,12 +28,12 @@ class ContactAttachmentObserver
         (new ActivityLogContact())
             ->setUserId($contactAttachment->getUserId())
             ->setActivityType(ActivityLogContact::UPDATE_ATTACHMENT_FILE_EVENT)
-            ->setCompanyId($contactAttachment->getContactId())
+            ->setContactId($contactAttachment->getContactId())
             ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataOld($contactAttachment->getOriginal(self::FIELD_FILE_NAME))
             ->setDataNew($contactAttachment->getFileName())
-            ->setLogInfo($contactAttachment->toJson())
+            ->setLogInfo($contactAttachment->getRawOriginal())
             ->save();
     }
 
@@ -42,11 +42,11 @@ class ContactAttachmentObserver
         (new ActivityLogContact())
             ->setUserId($contactAttachment->getUserId())
             ->setActivityType(ActivityLogContact::DELETE_ATTACHMENT_FILE_EVENT)
-            ->setCompanyId($contactAttachment->getContactId())
+            ->setContactId($contactAttachment->getContactId())
             ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataOld($contactAttachment->getOriginal(self::FIELD_FILE_NAME))
-            ->setLogInfo($contactAttachment->toJson())
+            ->setLogInfo($contactAttachment->getRawOriginal())
             ->save();
     }
 }

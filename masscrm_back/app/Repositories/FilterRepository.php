@@ -32,12 +32,15 @@ class FilterRepository
                 );
                 break;
             case SearchType::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE:
-                $query->whereRaw(
-                    $value['min'] . ' BETWEEN companies.min_employees AND companies.max_employees'
-                )->where('companies.max_employees', '<=', $value['max']);
+                if (!empty($value['max'])) {
+                    $query->whereRaw(
+                        $value['min'] . ' BETWEEN companies.min_employees AND companies.max_employees'
+                    )->where('companies.max_employees', '<=', $value['max']);
+                } else {
+                    $query->where('companies.min_employees', '>=', $value['min']);
+                }
                 break;
         }
-
         return $query;
     }
 }

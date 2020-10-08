@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useState, useRef } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useRef,
+  useEffect
+} from 'react';
 import { connect } from 'formik';
 import filter from 'lodash.filter';
 import {
@@ -41,7 +47,9 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     errorRequired,
     required,
     onChange,
-    formik
+    formik,
+    clear,
+    resetClearInputState
   }) => {
     const inputStyles = inputStyle();
     const styles = multiStyle();
@@ -57,13 +65,22 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     const parentElement = useRef(null);
     const openList = Boolean(anchorList);
     const listId = openList ? 'list-popover' : undefined;
+    const [showError, setShowError] = useState<boolean>(true);
+
+    useEffect(() => {
+      if (clear) {
+        setInputValue('');
+        resetClearInputState && resetClearInputState();
+      }
+    }, [clear]);
 
     const classControl = useMemo(
       () => ({
-        root: `${inputStyles.input} ${errorMessage &&
+        root: `${inputStyles.input} ${showError &&
+          errorMessage &&
           inputStyles.inputError} ${required && inputStyles.inputRequire}`
       }),
-      [errorMessage]
+      [showError, errorMessage]
     );
     const classLabel = useMemo(
       () => ({
@@ -77,28 +94,36 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
       (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
         setInputValue(event.target.value);
         formik.handleChange(event);
-        // onChangeValue(event);
+        setShowError(false);
+        setTipOpen(true);
       },
       [inputValue]
     );
     const onKeyHandler = useCallback(
       (key: string, value: string) => {
-        if (key === 'Enter' && !errorMessage) {
+        if (key === 'Enter' && !errorMessage && value) {
           const newArray = [...items];
 
           newArray.push(value);
           onChange(name, newArray);
           setInputValue('');
         }
+        if (key === 'Enter' && errorMessage) {
+          setShowError(true);
+        }
       },
       [items, errorMessage]
     );
     const clearField = useCallback(() => {
       onChange(name, []);
+      onChange(id, '');
       setInputValue('');
+      setShowError(true);
     }, [items]);
+
     const handleOpenList = useCallback(() => {
       setAnchorList(parentElement.current);
+      setTipOpen(false);
     }, [anchorList]);
     const openTip = useCallback(() => {
       setTipOpen(true);
@@ -112,7 +137,6 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     const handleChange = useCallback(
       (data: ICustomMultiValues, index: number) => {
         const newData = [...items];
-
         newData[index] = data.formMulti;
         onChange(name, newData);
       },
@@ -158,6 +182,7 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
             onMouseLeave={closeTip}
             placeholder={placeholder}
             type='text'
+            error={Boolean((showError && errorMessage) || errorRequired)}
             endAdornment={
               <InputAdornment position='end'>
                 <div className={styles.multiCount}>{items.length}</div>
@@ -216,7 +241,7 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
             placeholder={placeholder}
           />
         </FormControl>
-        {(errorMessage || errorRequired) && (
+        {((showError && errorMessage) || errorRequired) && (
           <Box className={inputStyles.error}>
             {errorMessage || errorRequired}
           </Box>

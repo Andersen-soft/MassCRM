@@ -1,7 +1,6 @@
 ##MassCRM back-end
 The project is written for the business logic of CRM systems. Project users are sales managers and marketing department.
 
-
 ## Technologies
 * Laravel 7.0
 * PHP version 7.4

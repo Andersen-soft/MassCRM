@@ -2,7 +2,7 @@ import React, { FC, MouseEvent, useState } from 'react';
 import { Popover } from '@material-ui/core';
 import { ShowAll } from 'src/components/common';
 import { styleNames } from 'src/services';
-import style from './ContactCell.scss';
+import style from '../cell.scss';
 
 const sn = styleNames(style);
 

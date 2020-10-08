@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Company\Company;
+use App\Models\Process;
+use Illuminate\Support\Facades\Lang;
 
 return [
     'column_separator' => [
@@ -20,25 +22,25 @@ return [
         'mail' => 'Email',
     ],
     'fields' => [
+        'skip' => 'Skip',
         'first_name' => 'First Name',
         'last_name' => 'Last Name',
-        'email' => 'Email',
-        'company' => 'Company',
-        'phone' => 'Phone',
-        'city' => 'City',
-        'region' => 'Region',
+        'full name' => 'Full name',
+        'gender' => 'Gender',
+        'date_of_birth' => 'Date of birth',
         'country' => 'Country',
-        'c_linkedin' => 'Contact linkedin',
-        'c_social' => 'Contact social network',
-        'comp_linkedin' => 'Company linkedin',
+        'region' => 'Region',
+        'city' => 'City',
         'position' => 'Position',
-        'website' => 'Website',
-        'industry' => 'Industry',
-        'comp_size' => 'Company Size',
+        'c_linkedin' => 'Contact linkedIn',
+        'c_social' => 'Other social network',
+        'phone' => 'Phone',
+        'skype' => 'Skype',
+        'email' => 'E-mail',
+        'requires_validation' => 'Requires validation',
         'confidence' => 'Confidence',
-        'c_comment' => 'Contact comment',
-        'comp_comment' => 'Company comment',
-        'service_id' => 'id',
+        'colleague' => 'Colleague',
+        'service_id' => 'ID',
         'added_to_mailing' => 'Added to mailing',
         'last_touch' => 'Last Touch',
         'sequence' => 'Sequence',
@@ -48,7 +50,27 @@ return [
         'deliveries' => 'Deliveries',
         'replies' => 'Replies',
         'bounces' => 'Bounces',
-        'skip' => 'Skip'
+        'mails' => 'Mails',
+        'my_notes' => 'My notes',
+        'sale_created' => 'Sale created',
+        'source' => 'Source',
+        'sale_id' => 'Sale ID',
+        'sale_status' => 'Sale status',
+        'sale_project_c1' => '1C Project',
+        'c_comment' => 'Comment',
+        'company' => 'Company',
+        'website' => 'Website',
+        'comp_linkedin' => 'Company LinkedIn',
+        'sto' => 'CTO',
+        'industry' => 'Industry',
+        'comp_size' => 'Company Size',
+        'comp_type' => 'Type of company',
+        'subsidiaries' => 'Subsidiary companies',
+        'holding' => 'Holding company',
+        'founded' => 'Founded',
+        'job' => 'Job',
+        'job_skills' => 'Job skills',
+        'job_urls' => 'Job url',
     ],
     'genders' => [
         'f' => 'Female',
@@ -98,9 +120,16 @@ return [
         [
             'name' => '10001+',
             'min' => 10001,
-            'max' => ''
+            'max' => null
         ],
     ],
-    'origin' => ['NC1', 'NC2', 'Parser', 'Purchase', 'Legasy', 'Reply', 'Lemlist'],
+    'origin' => ['NC1', 'NC2', 'Parser', 'Purchase', 'Legacy', 'Reply', 'Lemlist'],
     'company_type' => [Company::TYPE_COMPANY_HOLDING, Company::TYPE_COMPANY_SUBSIDIARY],
+    'export_status' => [
+        Process::TYPE_STATUS_PROCESS_WAIT => Lang::get('export.statuses.' . Process::TYPE_STATUS_PROCESS_WAIT),
+        Process::TYPE_STATUS_PROCESS_IN_PROGRESS =>
+            Lang::get('export.statuses.' . Process::TYPE_STATUS_PROCESS_IN_PROGRESS),
+        Process::TYPE_STATUS_PROCESS_FAILED => Lang::get('export.statuses.' . Process::TYPE_STATUS_PROCESS_FAILED),
+        Process::TYPE_STATUS_PROCESS_DONE => Lang::get('export.statuses.' . Process::TYPE_STATUS_PROCESS_DONE)
+    ]
 ];

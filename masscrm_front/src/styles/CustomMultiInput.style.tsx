@@ -130,7 +130,10 @@ export const multiStyle = makeStyles(() =>
       }
     },
     wrap: {
-      position: 'relative'
+      position: 'relative',
+      '& .Mui-error': {
+        borderColor: '#FD5757'
+      }
     },
     popper: {
       zIndex: 3000
@@ -140,7 +143,8 @@ export const multiStyle = makeStyles(() =>
       fontSize: '12px',
       fontWeight: 300,
       boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
-      width: '200px'
+      width: '200px',
+      background: '#fff'
     },
     addButton: {
       display: 'flex',

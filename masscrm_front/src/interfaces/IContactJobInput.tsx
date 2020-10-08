@@ -23,6 +23,7 @@ export interface IContactJobInput {
   vacancies: IContactsJobs;
   onChange: (fieldName: string, value: IContactsJobs) => void;
   errorMessage?: string;
+  role?: any;
 }
 
 export interface IContactJobForm {

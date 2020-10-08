@@ -37,7 +37,7 @@ class ActivityLogContact extends AbstractActivityLog
         'model_field' => 'string',
         'data_old' => 'string',
         'data_new' => 'string',
-        'log_info' => 'string',
+        'log_info' => 'array',
         'additional_info_for_data' => 'string',
     ];
 

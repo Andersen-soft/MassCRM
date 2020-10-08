@@ -23,7 +23,7 @@ class ImportStartParseCommand
     protected int $responsible;
     protected bool $isHeader;
     protected string $duplicationAction;
-    protected ?string $columnSeparator;
+    protected string $columnSeparator;
     protected ?string $comment;
 
     public function __construct(
@@ -33,7 +33,7 @@ class ImportStartParseCommand
         string $responsible,
         string $isHeader,
         string $duplicationAction,
-        string $columnSeparator = null,
+        string $columnSeparator,
         string $comment = null
     )
     {
@@ -67,7 +67,7 @@ class ImportStartParseCommand
         return $this->duplicationAction;
     }
 
-    public function getColumnSeparator(): ?string
+    public function getColumnSeparator(): string
     {
         return $this->columnSeparator;
     }

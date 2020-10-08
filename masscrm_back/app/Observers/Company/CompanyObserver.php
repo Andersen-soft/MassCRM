@@ -42,7 +42,7 @@ class CompanyObserver
                     ->setModelField($key)
                     ->setDataOld($dataOld)
                     ->setDataNew($value)
-                    ->setLogInfo($company->toJson())
+                    ->setLogInfo($company->getRawOriginal())
                     ->save();
             }
         }

@@ -2,9 +2,9 @@
 
 namespace App\Http\Requests\AttachmentFile;
 
-use App\Services\Reports\AbstractReport;
+use App\Http\Requests\AbstractRequest;
 
-class AttachFileRequest extends AbstractReport
+class AttachFileRequest extends AbstractRequest
 {
     /**
      * Determine if the user is authorized to make this request.

@@ -19,7 +19,7 @@ class CompanyAttachmentObserver
             ->setModelName((new ReflectionClass($companyAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataNew($companyAttachment->getFileName())
-            ->setLogInfo($companyAttachment->toJson())
+            ->setLogInfo($companyAttachment->getRawOriginal())
             ->save();
     }
 
@@ -33,7 +33,7 @@ class CompanyAttachmentObserver
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataOld($companyAttachment->getOriginal(self::FIELD_FILE_NAME))
             ->setDataNew($companyAttachment->getFileName())
-            ->setLogInfo($companyAttachment->toJson())
+            ->setLogInfo($companyAttachment->getRawOriginal())
             ->save();
     }
 
@@ -46,7 +46,7 @@ class CompanyAttachmentObserver
             ->setModelName((new ReflectionClass($companyAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataOld( $companyAttachment->getOriginal(self::FIELD_FILE_NAME))
-            ->setLogInfo($companyAttachment->toJson())
+            ->setLogInfo($companyAttachment->getRawOriginal())
             ->save();
     }
 }

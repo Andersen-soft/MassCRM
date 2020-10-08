@@ -54,6 +54,21 @@ exports[`Gender RadioFilter should render correctly 1`] = `
       label="Female"
       value="f"
     />
+    <WithStyles(ForwardRef(FormControlLabel))
+      control={
+        <ForwardRef(WithStyles)
+          classes={
+            Object {
+              "root": "makeStyles-radioBtn-4",
+            }
+          }
+          color="default"
+          size="small"
+        />
+      }
+      label="Not defined"
+      value=""
+    />
   </ForwardRef(RadioGroup)>
 </Styled(MuiBox)>
 `;

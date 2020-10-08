@@ -1,27 +1,32 @@
 import React from 'react';
 import { IContactResult, ICompany } from 'src/interfaces';
-import { IJob } from 'src/interfaces/IJob';
 import { TableCellBaseProps } from '@material-ui/core';
-import { Done } from '@material-ui/icons';
 import { ITableCell, ITableRow } from 'src/components/common/Table/interfaces';
-import { SocialIcon, CommonIcon } from 'src/components/common';
 import {
   countryCell,
   textCell,
   genderCell,
   commentCell,
   contactCell,
-  companySizeCell
+  companySizeCell,
+  originCell,
+  confidenceCell,
+  subsidiaryHoldingCell,
+  typeCompanyCell,
+  networkCell,
+  jobCell
 } from './cells';
 import { industryCell } from './cells/ItemsCell/industryCell';
 
 export const addContactMapCallback = (
   isNC2: boolean,
+  rowsForJob: boolean,
   isMyContact?: boolean,
   columnsSelected?: Array<string>
 ) => (contact: IContactResult, index: number) => {
   const {
     id,
+    first_name,
     gender,
     location,
     linkedin,
@@ -32,7 +37,6 @@ export const addContactMapCallback = (
     comment,
     created_at,
     updated_at,
-    birthday,
     skype,
     responsible,
     confidence,
@@ -47,9 +51,12 @@ export const addContactMapCallback = (
     replies,
     sequences,
     sales,
-    notes,
+    note,
     colleague,
-    phones = []
+    phones = [],
+    in_blacklist,
+    is_in_work,
+    date_of_use
   } = contact;
 
   const {
@@ -62,114 +69,100 @@ export const addContactMapCallback = (
     vacancies: companyVacancies,
     linkedin: companyLinkedin,
     subsidiary,
-    founded,
     created_at: companyCreated
   } = company;
+
+  const required_validation =
+    (emails.length && emails[0]?.verification) || false;
 
   const dateTypeTD = (date: string = '') => ({
     className
   }: React.PropsWithChildren<TableCellBaseProps>) => {
-    const dateTime = date.split(' ');
+    const [dateValue, timeValue] = (date && date.split(' ')) || '';
+
     return (
       <td className={className}>
-        {dateTime[0]}
+        {dateValue}
         <br />
-        {dateTime[1]}
+        {timeValue}
       </td>
     );
   };
 
-  const jobTypeTD = (
-    vacancies: Array<IJob> = [],
-    fieldName: string = 'job'
-  ) => ({ className }: React.PropsWithChildren<TableCellBaseProps>) => (
-    <td className={className}>
-      {vacancies.map((vacancy: IJob) => (
-        <p key={`${fieldName}-${vacancy.id}`}>{vacancy[fieldName]}</p>
-      ))}
-    </td>
-  );
+  const textContactTD = (name: string, required?: boolean, isDate?: boolean) =>
+    textCell({ id, name, value: contact[name], required, isDate });
 
-  const socialNetworkTD = ({
-    className
-  }: React.PropsWithChildren<TableCellBaseProps>) => (
-    <td className={className}>
-      {social_networks?.map(({ link, id: idSN }) => {
-        const network = link?.split('/')[2]?.split('.');
-        return (
-          <SocialIcon
-            socialName={network && network[0]}
-            link={link}
-            key={idSN}
-          />
-        );
-      })}
-    </td>
-  );
-
-  const verificationTD = ({
-    className
-  }: React.PropsWithChildren<TableCellBaseProps>) => (
-    <td className={className}>
-      {emails[0]?.verification && (
-        <CommonIcon IconComponent={Done} style={{ color: '#46C662' }} />
-      )}
-    </td>
-  );
-
-  const textContactTD = (name: string, required?: boolean) =>
-    textCell(id, name, contact[name], required);
-
-  const textCompanyTD = (name: string, required?: boolean) =>
-    textCell(company?.id, name, company[name]?.toString(), required, true);
+  const textCompanyTD = (name: string, required?: boolean, isDate?: boolean) =>
+    textCell({
+      id: company?.id,
+      name,
+      value: company[name]?.toString(),
+      required,
+      isCompany: true,
+      isDate,
+      contact
+    });
 
   const linkCompanyTD = (name: string, required?: boolean) =>
-    textCell(
-      company?.id,
+    textCell({
+      id: company?.id,
       name,
-      company[name]?.toString(),
+      value: company[name]?.toString(),
       required,
-      true,
-      company[name]?.toString().split('://')[1]
-    );
+      isCompany: true,
+      link: company[name]?.toString().split('://')[1],
+      type: 'link',
+      contact
+    });
+
+  const contactLink = textCell({
+    id,
+    name: 'first_name',
+    value: first_name,
+    required: true,
+    link: first_name,
+    type: 'link',
+    href: `/contact?id=${id}`,
+    contact
+  });
 
   const isLinkedin = (val: string | string[]) =>
     val.indexOf('https://www.linkedin.com/') < 0 ? 'invalid link' : false;
 
   const personalInfo: Array<ITableCell> = [
-    { code: 'first_name', component: textContactTD('first_name', true) },
+    {
+      code: 'linkedin',
+      component: textCell({
+        id,
+        name: 'linkedin',
+        value: linkedin,
+        required: true,
+        validation: isLinkedin,
+        type: 'linkedin'
+      })
+    },
+    { code: 'first_name', component: contactLink },
     { code: 'last_name', component: textContactTD('last_name', true) },
     { code: 'full_name', component: textContactTD('full_name') },
     { code: 'gender', component: genderCell({ id, value: gender }) }
   ];
 
   const locationInfo: Array<ITableCell> = [
+    { code: 'city', component: countryCell(id, location, 'city') },
+    { code: 'region', component: countryCell(id, location, 'region') },
     {
       code: 'country',
       component: countryCell(id, location, 'country', true)
-    },
-    { code: 'region', component: countryCell(id, location, 'region') },
-    { code: 'city', component: countryCell(id, location, 'city') }
+    }
   ];
 
   const workInfo = [
-    { code: 'position', component: textContactTD('position') },
     {
-      code: 'linkedin',
-      component: textCell(
-        id,
-        'linkedin',
-        linkedin,
-        true,
-        false,
-        linkedin,
-        'linkedin',
-        isLinkedin
-      )
+      code: 'social_networks',
+      component: networkCell({ value: social_networks, id })
     },
-    { code: 'social_networks', component: socialNetworkTD },
     {
-      code: 'phone',
+      code: 'phones',
       component: contactCell({
         id,
         value: phones?.map(({ phone }) => phone),
@@ -187,69 +180,127 @@ export const addContactMapCallback = (
         type: 'emails'
       })
     },
-    { code: 'requires_validation', component: verificationTD }
+    {
+      code: 'requires_validation',
+      component: textCell({
+        id,
+        name: 'requires_validation',
+        switchValue: required_validation,
+        type: 'switch'
+      })
+    }
   ];
 
   const companyInfo = [
-    { code: 'company_name', component: textCompanyTD('name') },
-    { code: 'company_website', component: linkCompanyTD('website') },
-    {
-      code: 'company_industries',
-      component: industryCell({ id: companyId, value: industries || [] })
-    },
+    { code: 'company', component: textCompanyTD('name') },
     {
       code: 'company_size',
       component: companySizeCell({
         min_employees,
         max_employees,
-        id: companyId
+        id: companyId,
+        contactID: id
       })
     },
     {
       code: 'company_linkedin',
-      component: textCell(
-        companyId,
-        'linkedin',
-        companyLinkedin,
-        true,
-        true,
-        companyLinkedin,
-        'linkedin',
-        isLinkedin
-      )
+      component: textCell({
+        id: companyId,
+        name: 'linkedin',
+        value: companyLinkedin,
+        isCompany: true,
+        required: true,
+        type: 'linkedin',
+        validation: isLinkedin,
+        contact
+      })
     },
-    { code: 'company_sto', component: textCompanyTD('sto_full_name') }
+    { code: 'company_website', component: linkCompanyTD('website') }
   ];
-
-  const dataRow: ITableRow = {
-    id: id || 0,
-    cells: [
-      {
-        data: (index + 1).toString()
-      },
-      ...personalInfo,
-      ...locationInfo,
-      ...workInfo,
-      ...emailInfo,
-      ...companyInfo
-    ]
-  };
 
   const jobInfo = [
-    { code: 'job', component: jobTypeTD(companyVacancies, 'job') },
-    { code: 'skills', component: jobTypeTD(companyVacancies, 'skills') }
+    {
+      code: 'jobs',
+      component: jobCell({
+        value: companyVacancies,
+        idContact: id,
+        companyId,
+        fieldName: 'job'
+      })
+    },
+    {
+      code: 'jobs_skills',
+      component: jobCell({
+        value: companyVacancies,
+        idContact: id,
+        companyId,
+        fieldName: 'skills'
+      })
+    }
   ];
 
+  const inWorkInfo = [
+    { code: 'is_in_work', data: is_in_work ? 'Yes' : 'No' },
+    { code: 'date_of_use', component: dateTypeTD(date_of_use) }
+  ];
+
+  const blacklistInfo = {
+    code: 'in_blacklist',
+    data: in_blacklist ? 'Yes' : 'No'
+  };
+
   const commentInfo = {
-    code: 'comment',
+    code: 'comments',
     component: commentCell({ id, value: comment })
   };
 
-  if (isNC2) {
-    dataRow.cells.push(...jobInfo);
-  }
-
-  dataRow.cells.push(commentInfo);
+  const dataRow: ITableRow = {
+    id: id || 0,
+    cells: !rowsForJob
+      ? [
+          {
+            data: (index + 1).toString()
+          },
+          ...personalInfo,
+          { code: 'position', component: textContactTD('position') },
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          {
+            code: 'company_industries',
+            component: industryCell({
+              id: companyId,
+              value: industries || [],
+              contactID: id
+            })
+          },
+          ...jobInfo,
+          commentInfo,
+          { code: 'company_cto', component: textCompanyTD('sto_full_name') },
+          ...workInfo
+        ]
+      : [
+          {
+            data: (index + 1).toString()
+          },
+          ...personalInfo,
+          { code: 'position', component: textContactTD('position') },
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          {
+            code: 'company_industries',
+            component: industryCell({
+              id: companyId,
+              value: industries || [],
+              contactID: id
+            })
+          },
+          commentInfo,
+          { code: 'company_cto', component: textCompanyTD('sto_full_name') },
+          ...workInfo
+        ]
+  };
 
   const selectColumns = ({ cells, ...data }: ITableRow) => {
     return columnsSelected && columnsSelected?.length > 0
@@ -263,61 +314,131 @@ export const addContactMapCallback = (
       : { cells, ...data };
   };
 
+  const dateContactInfo: Array<ITableCell> = [
+    { code: 'created', component: dateTypeTD(created_at) },
+    { code: 'updated', component: dateTypeTD(updated_at) }
+  ];
+
+  const dateCompanyInfo: Array<ITableCell> = [
+    { code: 'company_created', component: dateTypeTD(companyCreated) },
+    {
+      code: 'company_founded',
+      component: textCompanyTD('founded', false, true)
+    }
+  ];
+
+  const positionInfo = {
+    code: 'position',
+    component: textContactTD('position')
+  };
+
+  const industryInfo = {
+    code: 'company_industries',
+    component: industryCell({
+      id: companyId,
+      value: industries || [],
+      contactID: id
+    })
+  };
+
+  const ctoInfo = {
+    code: 'company_cto',
+    component: textCompanyTD('sto_full_name')
+  };
+
+  const skypeInfo = {
+    code: 'skype',
+    component: textCell({
+      id,
+      name: 'skype',
+      value: skype,
+      link: `skype:${skype}`,
+      type: 'skype'
+    })
+  };
+
+  const responsibleInfo = {
+    code: 'responsible',
+    data: responsible
+  };
+
+  const birthdayInfo = {
+    code: 'birthday',
+    component: textContactTD('birthday', false, true)
+  };
+
   if (isMyContact) {
     const allInfo: Array<ITableCell> = [
       ...personalInfo,
-      { code: 'birthday', component: dateTypeTD(birthday) },
+      positionInfo,
+      ...companyInfo,
+      ...emailInfo,
       ...locationInfo,
+      industryInfo,
+      ...jobInfo,
+      commentInfo,
+      ctoInfo,
+      ...dateCompanyInfo,
       ...workInfo,
-      {
-        code: 'skype',
-        component: textCell(
-          id,
-          'skype',
-          skype,
-          false,
-          false,
-          `skype:${skype}`,
-          'skype'
-        )
-      },
-      ...emailInfo
-    ];
-
-    const dateContactInfo: Array<ITableCell> = [
-      { code: 'created', component: dateTypeTD(created_at) },
-      { code: 'updated', component: dateTypeTD(updated_at) }
-    ];
-
-    const dateCompanyInfo: Array<ITableCell> = [
-      { code: 'company_created', component: dateTypeTD(companyCreated) },
-      { code: 'company_founded', component: dateTypeTD(founded) }
+      skypeInfo,
+      birthdayInfo
     ];
 
     if (isNC2) {
       const dataNC2: ITableRow = {
         id: id || 0,
         cells: [
-          {
-            code: 'responsible',
-            data: responsible
-          },
           ...dateContactInfo,
-          {
-            code: 'origin',
-            data: origin
-          },
-          ...allInfo,
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
           {
             code: 'confidence',
-            data: confidence
+            component: confidenceCell({
+              id,
+              value: confidence,
+              disabled: !required_validation
+            })
+          },
+          ...locationInfo,
+          industryInfo,
+          ...jobInfo,
+          commentInfo,
+          ctoInfo,
+          ...dateCompanyInfo,
+          {
+            code: 'company_type',
+            component: typeCompanyCell({
+              value: companyType,
+              id: companyId,
+              contactID: id
+            })
           },
           {
-            code: 'collegue',
-            data: colleague && colleague[0]
+            code: 'company_holding',
+            component: subsidiaryHoldingCell({
+              value: subsidiary,
+              id: companyId,
+              type: companyType === 'Holding' ? companyType : undefined,
+              contactID: id
+            })
           },
           {
-            code: 'id',
+            code: 'company_subsidiary',
+            component: subsidiaryHoldingCell({
+              value: holding,
+              id: companyId,
+              type: companyType === 'Subsidiary' ? companyType : undefined,
+              contactID: id
+            })
+          },
+          {
+            code: 'origin',
+            component: originCell({ id, value: origin })
+          },
+          {
+            code: 'service_id',
             component: textContactTD('service_id', false)
           },
           {
@@ -339,7 +460,7 @@ export const addContactMapCallback = (
             )
           },
           {
-            code: 'sequence_status',
+            code: 'status',
             component: ({
               className
             }: React.PropsWithChildren<TableCellBaseProps>) => (
@@ -370,23 +491,15 @@ export const addContactMapCallback = (
           },
           {
             code: 'mails',
-            component: ({
-              className
-            }: React.PropsWithChildren<TableCellBaseProps>) => (
-              <td className={className}>
-                {mails?.map(({ message }) => message).join('/')}
-              </td>
-            )
+            data: mails?.map(item => item.message).join('\n')
           },
           {
             code: 'my_notes',
-            component: ({
-              className
-            }: React.PropsWithChildren<TableCellBaseProps>) => (
-              <td className={className}>
-                {notes?.map(({ message }) => message).join('/')}
-              </td>
-            )
+            component: contactCell({
+              id,
+              value: note?.map(({ message }) => message),
+              type: 'note'
+            })
           },
           {
             code: 'sale_created',
@@ -411,7 +524,7 @@ export const addContactMapCallback = (
             )
           },
           {
-            code: 'sale_id',
+            code: 'sale_link',
             component: ({
               className
             }: React.PropsWithChildren<TableCellBaseProps>) => (
@@ -440,36 +553,23 @@ export const addContactMapCallback = (
               </td>
             )
           },
-          ...companyInfo,
+          ...workInfo,
           {
-            code: 'company_type',
-            data: companyType
+            code: 'colleagues',
+            data: colleague && colleague[0]
           },
-          {
-            code: 'company_subsidiary',
-            data: subsidiary && subsidiary[0].name
-          },
-          {
-            code: 'holding_subsidiary',
-            data: holding && holding[0].name
-          },
-          ...dateCompanyInfo,
-          ...jobInfo,
-          commentInfo
+          skypeInfo,
+          birthdayInfo,
+          responsibleInfo,
+          ...inWorkInfo,
+          blacklistInfo
         ]
       };
       return selectColumns(dataNC2);
     }
     const dataNC1: ITableRow = {
       id: id || 0,
-      cells: [
-        ...dateContactInfo,
-        ...allInfo,
-        ...companyInfo,
-        ...dateCompanyInfo,
-        ...jobInfo,
-        commentInfo
-      ]
+      cells: [...dateContactInfo, ...allInfo]
     };
     return selectColumns(dataNC1);
   }
@@ -495,6 +595,8 @@ export const addItemFilter = (filter: string[] | string, item: string) => [
   ...filter,
   item
 ];
+
+export const ROWS_COUNT = 50;
 
 export const MAP_AUTOCOMPLETE_VALUES: any = {
   Responsible: (acc: IContactResult, current: IContactResult) =>
@@ -537,7 +639,7 @@ export const MAP_AUTOCOMPLETE_VALUES: any = {
     current.emails
       ? [...acc.result?.concat(current.emails.map(item => item.email))]
       : [...acc.result],
-  Collegue: (acc: IContactResult, current: IContactResult) =>
+  Colleague: (acc: IContactResult, current: IContactResult) =>
     current.colleagues
       ? [
           ...acc.result?.concat(
@@ -575,8 +677,8 @@ export const MAP_AUTOCOMPLETE_VALUES: any = {
         ]
       : [...acc.result],
   'My notes': (acc: IContactResult, current: IContactResult) =>
-    current.notes
-      ? [...acc.result.concat(current.notes.map(item => item.message))]
+    current.note
+      ? [...acc.result.concat(current?.note?.map(item => item.message))]
       : [...acc.result],
   Source: (acc: IContactResult, current: IContactResult) =>
     current.sales
@@ -709,7 +811,7 @@ export const MAP_AUTOCOMPLETE_RESPONSE: any = {
       limit: 50,
       search: {
         created_at: date,
-        position: value || undefined
+        position: [value]
       }
     };
   },
@@ -761,7 +863,7 @@ export const MAP_AUTOCOMPLETE_RESPONSE: any = {
       }
     };
   },
-  Collegue: (value: string, date: object) => {
+  Colleague: (value: string, date: object) => {
     return {
       search: {
         created_at: date,

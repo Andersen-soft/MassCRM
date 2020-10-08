@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Import;
 
 use App\Commands\Import\ImportContactsCommand;
 use App\Commands\Import\ImportStartParseCommand;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\Import\ImportLoadingFileRequest;
 use App\Http\Requests\Import\ImportStartParsingRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Services\Process\ProcessService;
+use App\Services\Import\ImportService;
+use App\Http\Resources\Import\Statistic;
+use App\Http\Requests\Import\ImportStatisticRequest;
 
-class ImportContactsController extends Controller
+class ImportContactsController extends BaseController
 {
     /**
      * @OA\Post(
@@ -55,16 +57,16 @@ class ImportContactsController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function uploadFile(ImportLoadingFileRequest $request)
+    public function uploadFile(ImportLoadingFileRequest $request): JsonResponse
     {
-        return $this->response(
-            $this->dispatchNow(
-                new ImportContactsCommand(
-                    $request->file('file'),
-                    Auth::user(),
-                )
+        $data = $this->dispatchNow(
+            new ImportContactsCommand(
+                $request->file('file'),
+                $request->user(),
             )
         );
+
+        return $this->success($data);
     }
 
     /**
@@ -89,7 +91,7 @@ class ImportContactsController extends Controller
      *                 ),
      *                 @OA\Property(property="origin", type="array",
      *                    @OA\Items(type="string",enum={
-     *                        "NC1", "NC2", "Parser", "Purchase", "Legasy", "Reply", "Lemlist"
+     *                        "NC1", "NC2", "Parser", "Purchase", "Legacy", "Reply", "Lemlist"
      *                    })
      *                 ),
      *                 @OA\Property(property="comment", type="string"),
@@ -128,22 +130,22 @@ class ImportContactsController extends Controller
      *     @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function startParse(ImportStartParsingRequest $request)
+    public function startParse(ImportStartParsingRequest $request): JsonResponse
     {
-        return $this->response(
-            $this->dispatchNow(
-                new ImportStartParseCommand(
-                    Auth::user(),
-                    $request->get('fields'),
-                    $request->get('origin', []),
-                    $request->get('responsible'),
-                    $request->get('is_headers'),
-                    $request->get('duplication_action'),
-                    $request->get('column_separator'),
-                    $request->get('comment')
-                )
-            ) ?? []
-        );
+        $data = $this->dispatchNow(
+            new ImportStartParseCommand(
+                $request->user(),
+                $request->get('fields'),
+                $request->get('origin', []),
+                $request->get('responsible'),
+                $request->get('is_headers'),
+                $request->get('duplication_action'),
+                $request->get('column_separator'),
+                $request->get('comment')
+            )
+        ) ?? [];
+
+        return $this->success($data);
     }
 
     /**
@@ -168,8 +170,15 @@ class ImportContactsController extends Controller
      */
     public function getStatus(Request $request, ProcessService $processService): JsonResponse
     {
-        return $this->response([
+        return $this->success([
             'process' => $processService->isProcessImport($request->user())
         ]);
+    }
+
+    public function getStatisticImport(ImportStatisticRequest $request, ImportService $importService): JsonResponse
+    {
+        $result = $importService->getStatisticImport($request->get('id'));
+
+        return $this->success(new Statistic($result));
     }
 }

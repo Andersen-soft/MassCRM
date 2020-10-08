@@ -2,12 +2,12 @@
 
 exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
 <div
-  className="makeStyles-wrap-20"
+  className="makeStyles-wrap-23"
 >
   <WithStyles(ForwardRef(FormControl))
     classes={
       Object {
-        "root": "makeStyles-input-1 makeStyles-FormLabel-14 undefined undefined undefined",
+        "root": "makeStyles-input-1 makeStyles-FormLabel-17 undefined undefined undefined",
       }
     }
     style={
@@ -20,8 +20,8 @@ exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
     <WithStyles(ForwardRef(InputLabel))
       classes={
         Object {
-          "outlined": "makeStyles-InputLabelOutlined-12",
-          "shrink": "makeStyles-InputLabelShrink-13",
+          "outlined": "makeStyles-InputLabelOutlined-15",
+          "shrink": "makeStyles-InputLabelShrink-16",
         }
       }
     >
@@ -30,47 +30,14 @@ exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
     <WithStyles(ForwardRef(Select))
       MenuProps={
         Object {
-          "className": "makeStyles-Paper-8",
+          "className": "makeStyles-Paper-11",
         }
       }
       classes={
         Object {
-          "icon": "makeStyles-customSelectIcon-6",
-          "outlined": "makeStyles-customSelectOutlined-7",
+          "icon": "makeStyles-customSelectIcon-9",
+          "outlined": "makeStyles-customSelectOutlined-10",
         }
-      }
-      endAdornment={
-        <ForwardRef(WithStyles)
-          classes={
-            Object {
-              "positionEnd": "makeStyles-InputAdornmentPositionEnd-10",
-            }
-          }
-          position="end"
-        >
-          <ForwardRef(WithStyles)
-            aria-label=""
-            classes={
-              Object {
-                "edgeEnd": "makeStyles-IconBtnEdgeEnd-11",
-                "label": "makeStyles-MultiIconButtonLabel-18",
-                "root": "makeStyles-IconButtonRoot-19",
-              }
-            }
-            edge="end"
-            onClick={[Function]}
-            onMouseDown={[Function]}
-          >
-            <UNDEFINED
-              classes={
-                Object {
-                  "fontSizeSmall": "makeStyles-SvgIconFontSizeSmall-17",
-                }
-              }
-              fontSize="small"
-            />
-          </ForwardRef(WithStyles)>
-        </ForwardRef(WithStyles)>
       }
       inputProps={
         Object {
@@ -85,35 +52,35 @@ exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
       value={Array []}
     >
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-9"
+        className="makeStyles-ListItemBtn-12"
         key="A"
         value="A"
       >
         A
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-9"
+        className="makeStyles-ListItemBtn-12"
         key="B"
         value="B"
       >
         B
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-9"
+        className="makeStyles-ListItemBtn-12"
         key="C"
         value="C"
       >
         C
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-9"
+        className="makeStyles-ListItemBtn-12"
         key="D"
         value="D"
       >
         D
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-9"
+        className="makeStyles-ListItemBtn-12"
         key="E"
         value="E"
       >

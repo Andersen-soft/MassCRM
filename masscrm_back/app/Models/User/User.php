@@ -2,8 +2,10 @@
 
 namespace App\Models\User;
 
+use App\Models\Blacklist;
 use App\Models\Contact\Contact;
 use App\Models\Industry;
+use App\Models\InformationImport;
 use App\Models\Process;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -296,6 +298,16 @@ class User extends Authenticatable implements JWTSubject
     public function processes(): HasMany
     {
         return $this->hasMany(Process::class, 'user_id');
+    }
+
+    public function blacklists(): HasMany
+    {
+        return $this->hasMany(Blacklist::class, 'user_id');
+    }
+
+    public function informationImport(): HasMany
+    {
+        return $this->hasMany(InformationImport::class, 'user_id');
     }
 
     public function getJWTIdentifier()

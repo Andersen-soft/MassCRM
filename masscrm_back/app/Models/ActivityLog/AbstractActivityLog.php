@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $data_old
  * @property string|null $data_new
  * @property string|null $additional_info_for_data
- * @property string|null $log_info
+ * @property array|null $log_info
  */
 abstract class AbstractActivityLog extends Model
 {
@@ -118,12 +118,12 @@ abstract class AbstractActivityLog extends Model
         return $this;
     }
 
-    public function getLogInfo(): ?string
+    public function getLogInfo(): ?array
     {
         return $this->log_info;
     }
 
-    public function setLogInfo(string $logInfo): AbstractActivityLog
+    public function setLogInfo(array $logInfo): AbstractActivityLog
     {
         $this->log_info = $logInfo;
 

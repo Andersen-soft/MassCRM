@@ -9,7 +9,7 @@ export const getCitiesListByRegionAction = createAction('GET_CITIES_LIST');
 
 export const getCountryList = () => async (dispatch: Dispatch) => {
   try {
-    const data = await HTTP.get('countries');
+    const { data } = await HTTP.get('countries');
     dispatch(getCountryListAction({ country: data }));
   } catch (error) {
     setNotification(error);
@@ -20,7 +20,7 @@ export const getRegionListByCountry = (code: string) => async (
   dispatch: Dispatch
 ) => {
   try {
-    const data = await HTTP.get(`countries/${code}/regions`);
+    const { data } = await HTTP.get(`countries/${code}/regions`);
     dispatch(getRegionListByCountryAction({ region: data }));
   } catch (error) {
     setNotification(error);
@@ -31,7 +31,7 @@ export const getCitiesListByRegion = (code: string) => async (
   dispatch: Dispatch
 ) => {
   try {
-    const data = await HTTP.get(`countries/regions/${code}`);
+    const { data } = await HTTP.get(`countries/regions/${code}`);
     dispatch(getCitiesListByRegionAction({ city: data }));
   } catch (error) {
     setNotification(error);

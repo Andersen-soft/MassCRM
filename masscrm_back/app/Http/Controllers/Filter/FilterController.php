@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Filter;
 
 use App\Commands\Filter\GetFiltersCommand;
 use App\Commands\Filter\GetIndustriesFilterCommand;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\Filter\GetFiltersRequest;
-use App\Http\Transformers\Industry\IndustryTransform;
+use App\Http\Resources\Filter\Industry as IndustryResource;
+use Illuminate\Http\JsonResponse;
 
-class FilterController extends Controller
+class FilterController extends BaseController
 {
     /**
      * @OA\Get(
@@ -64,16 +65,16 @@ class FilterController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function index(GetFiltersRequest $request)
+    public function index(GetFiltersRequest $request): JsonResponse
     {
-        return $this->response(
-            $this->dispatchNow(
-                new GetFiltersCommand(
-                    $request->get('filters', []),
-                    $request->get('language', 'en')
-                )
+        $data = $this->dispatchNow(
+            new GetFiltersCommand(
+                $request->get('filters', []),
+                $request->get('language', 'en')
             )
         );
+
+        return $this->success($data);
     }
 
     /**
@@ -97,13 +98,10 @@ class FilterController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function industries()
+    public function industries(): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetIndustriesFilterCommand()
-            ),
-            new IndustryTransform()
-        );
+        $industries = $this->dispatchNow(new GetIndustriesFilterCommand());
+
+        return $this->success(IndustryResource::collection($industries));
     }
 }

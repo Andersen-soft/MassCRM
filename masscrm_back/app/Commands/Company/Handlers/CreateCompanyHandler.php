@@ -7,21 +7,31 @@ use App\Models\Company\Company;
 use App\Models\User\User;
 use App\Models\Company\CompanySubsidiary;
 use App\Models\Company\CompanyVacancy;
+use App\Services\TransferCollection\TransferCollectionCompanyService;
 
 class CreateCompanyHandler
 {
+    private TransferCollectionCompanyService $transferCollectionCompanyService;
+
+    public function __construct(TransferCollectionCompanyService $transferCollectionCompanyService)
+    {
+        $this->transferCollectionCompanyService = $transferCollectionCompanyService;
+    }
+
     public function handle(CreateCompanyCommand $command): Company
     {
         $company = $this->createCompany($command->getCompanyFields());
         $company->user()->associate($command->getUser());
+
         $company->save();
         $this->addIndustries($company, $command->getIndustries());
 
-        if ($command->getUser()->hasRoles([User::USER_ROLE_MANAGER, User::USER_ROLE_NC1])) {
+        if ($command->getUser()->hasRoles([User::USER_ROLE_MANAGER, User::USER_ROLE_NC2])) {
             $this->addVacancies($company, $command->getVacancies());
         }
 
         $this->addSubsidiaries($company, $command->getSubsidiaries());
+        $this->transferCollectionCompanyService->updateCollectionCompany($company);
 
         return $company;
     }
@@ -51,8 +61,8 @@ class CreateCompanyHandler
         foreach ($vacancies as $vacancy) {
             $vacanciesToSave[] = (new CompanyVacancy())
                 ->setVacancy($vacancy['job'])
-                ->setSkills($vacancy['skills'])
-                ->setLink($vacancy['link']);
+                ->setSkills($vacancy['skills'] ?? null)
+                ->setLink($vacancy['link'] ?? null);
         }
         $company->vacancies()->saveMany($vacanciesToSave);
 
@@ -61,13 +71,7 @@ class CreateCompanyHandler
 
     private function addSubsidiaries(Company $company, array $subsidiaries): Company
     {
-        $subsidiariesToSave = [];
-        foreach ($subsidiaries as $subsidiary) {
-            $subsidiariesToSave[] = (new CompanySubsidiary())
-                ->setParentId($company->getId())
-                ->setChildId($subsidiary);
-        }
-        $company->companySubsidiary()->saveMany($subsidiariesToSave);
+        $company->companySubsidiary()->sync($subsidiaries);
 
         return $company;
     }

@@ -121,7 +121,23 @@ return [
     'login_already_exist_form_AD' => 'Login already exists.',
     'skype_already_exist' => 'Skype login already exists.',
     'email_already_exist' => 'E-mail already exists.',
+    'contact_email_already_exist' => 'This Email is already used for another contact.',
     'colleague_link_already_exist' => 'This LinkedIn profile is already used for another contact. The contact will be linked as a colleague',
+    'gender_required' => 'Gender is the required field for Countries: Germany, Austria, Luxemburg, Switzerland, Belgium, France.',
+    'social_networks_link_already_exist' => 'This profile link is already used for another contact.',
+    'social_networks_link_invalid_format' => 'Invalid link',
+    'blacklist' => [
+        'domain_already_exist' => 'The domain :input already exists in Blacklist.',
+        'domain_distinct' => 'The domain :input already exists in this list.',
+        'email_already_exist_like_domain' => 'The email :input already exists like a domain.',
+        'domain_exist_in_ignore_list' => 'Sorry, you cannot add :input to blacklist as it exists in ignore list. You can add an email with this domain.',
+        'domain_invalid_format' => 'The domain :input is invalid format.',
+        'email_invalid_format' => 'The email :input is invalid format.',
+    ],
+    'subsidiaries' => [
+        'company_have_other_type' => 'The company :input have type another type',
+        'wrong_count_relation_companies' => 'Wrong quantity relation Holding companies.'
+    ],
 
     /*
     |--------------------------------------------------------------------------

@@ -11,24 +11,37 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @package App
  * @property int $id
  * @property string $type_notification
+ * @property string|null $file_path
  * @property int $user_id
+ * @property int|null $operation_id
+ * @property bool $new
  * @property string $message
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
 class UsersNotification extends Model
 {
+    public const TYPE_IMPORT_FINISHED = 'import_finished';
+    public const TYPE_EXPORT_BLACKLIST_FINISHED = 'export_blacklist_finished';
+    public const TYPE_EXPORT_CONTACTS_FINISHED = 'export_contacts_finished';
+
     protected $fillable = [
         'id',
         'type_notification',
         'user_id',
-        'message'
+        'operation_id',
+        'new',
+        'message',
+        'file_path'
     ];
 
     protected $casts = [
         'type_notification' => 'string',
         'user_id' => 'integer',
+        'operation_id' => 'integer',
         'message' => 'string',
+        'file_path' => 'string',
+        'new' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];

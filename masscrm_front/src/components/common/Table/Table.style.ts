@@ -11,14 +11,14 @@ export const tableStyle = makeStyles(() =>
     customTable: {
       position: 'relative',
       boxShadow: 'none',
-      '& .MuiTableCell-root': {
+      '& .MuiTableCell-head': {
         cursor: 'pointer',
-        padding: '12px 24px',
+        padding: '10px',
         color: '#78829D',
         textTransform: 'capitalize',
         whiteSpace: 'nowrap'
       },
-      '& .MuiTableCell-root:after': {
+      '& .MuiTableCell-head:after': {
         cursor: 'pointer',
         padding: '12px 24px',
         color: '#78829D',
@@ -26,20 +26,23 @@ export const tableStyle = makeStyles(() =>
         whiteSpace: 'nowrap'
       },
       '& .smallTD': {
-        width: '30px',
-        padding: '12px 7px'
+        width: '30px'
       },
-      '& .MuiTableRow-root .smallTD:first-child': {
+      '& .MuiTableRow-root .MuiTableCell-root:first-child': {
         paddingLeft: '24px'
       }
     },
-    tableHeight: ({ otherHeight }: any) => ({
-      height: `calc(100vh - ${otherHeight})`
+    tableHeight: ({ otherHeight: height }: any) => ({
+      height: `calc(100vh - ${height})`
     }),
     customBody: {
       '& .MuiTableCell-root ': {
         color: '#212121',
-        fontWeight: '100'
+        fontWeight: '100',
+        padding: '10px',
+        '& :hover': {
+          textDecoration: 'underline dashed #939BB2'
+        }
       },
       '& .MuiTableRow-root:nth-child(odd)': {
         backgroundColor: '#F9F9FA'

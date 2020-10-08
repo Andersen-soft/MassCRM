@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Commands\User\Notification\GetUserNotificationListCommand;
-use App\Http\Controllers\Controller;
+use App\Helpers\Pagination;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\User\GetUserNotificationListRequest;
-use App\Http\Transformers\User\NotificationTransform;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use App\Http\Resources\User\Notification as NotificationResources;
+use App\Services\User\NotificationService;
 
-class UserNotificationController extends Controller
+class UserNotificationController extends BaseController
 {
     /**
      * @OA\Get(
@@ -70,17 +70,25 @@ class UserNotificationController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function index(GetUserNotificationListRequest $request): JsonResponse
-    {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetUserNotificationListCommand(
-                    Auth::user(),
-                    $request->get('limit', 50),
-                    $request->get('page', 1)
-                )
-            ),
-            new NotificationTransform()
+    public function index(
+        GetUserNotificationListRequest $request,
+        Pagination $pagination,
+        NotificationService $notificationService
+    ): JsonResponse {
+
+        $notifications = $notificationService->getNotificationList(
+            $request->user(),
+            $request->get('limit', 50),
+            $request->get('new')
         );
+
+        return $this->success(NotificationResources::collection($notifications), $pagination->getMeta($notifications));
+    }
+
+    public function update(int $id, NotificationService $notificationService): JsonResponse
+    {
+        $notification = $notificationService->updateStatus($id);
+
+        return $this->success(new NotificationResources($notification));
     }
 }

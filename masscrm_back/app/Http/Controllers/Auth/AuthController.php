@@ -2,21 +2,21 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Transformers\Auth\LoginTransform;
-use App\Http\Transformers\User\UserTransform;
 use Illuminate\Http\JsonResponse;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\Auth\LoginRequest;
 use Tymon\JWTAuth\Exceptions\UserNotDefinedException;
 use Tymon\JWTAuth\Exceptions\TokenBlacklistedException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 use App\Exceptions\Auth\AuthException;
 use App\Services\Auth\AuthService;
+use App\Http\Resources\Auth\Login;
+use App\Http\Resources\User\User as UserResource;
 
 /**
  * Class AuthController
  */
-class AuthController extends Controller
+class AuthController extends BaseController
 {
     /**
      * @OA\Post(
@@ -52,9 +52,10 @@ class AuthController extends Controller
      */
     public function login(LoginRequest $request, AuthService $authService): JsonResponse
     {
-        return $this->responseTransform(
-            $authService->login($request->get('login'), $request->get('password')),
-            new LoginTransform()
+        return $this->success(
+            new Login(
+                $authService->login($request->get('login'), $request->get('password')),
+            )
         );
     }
 
@@ -80,7 +81,7 @@ class AuthController extends Controller
             throw new AuthException('User not found.', JsonResponse::HTTP_FORBIDDEN);
         }
 
-        return $this->responseTransform($user, new UserTransform());
+        return $this->success(new UserResource($user));
     }
 
     /**
@@ -110,7 +111,7 @@ class AuthController extends Controller
             throw new AuthException('Token has expired.', JsonResponse::HTTP_UNAUTHORIZED);
         }
 
-        return $this->response(['message' => 'Successfully logged out.']);
+        return $this->success(['message' => 'Successfully logged out.']);
     }
 
     /**
@@ -144,6 +145,6 @@ class AuthController extends Controller
             throw new AuthException('Invalid token.', JsonResponse::HTTP_FORBIDDEN);
         }
 
-        return $this->responseTransform($token, new LoginTransform());
+        return $this->success(new Login($token));
     }
 }

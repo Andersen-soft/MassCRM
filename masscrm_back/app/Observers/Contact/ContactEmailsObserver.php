@@ -30,7 +30,7 @@ class ContactEmailsObserver
                 ->setModelName((new ReflectionClass($contactEmails))->getShortName())
                 ->setModelField($item)
                 ->setDataNew($contactEmails->{$item})
-                ->setLogInfo($contactEmails->toJson())
+                ->setLogInfo($contactEmails->getRawOriginal())
                 ->setAdditionalInfoForData($contactEmails->getEmail())
                 ->save();
         }
@@ -51,7 +51,7 @@ class ContactEmailsObserver
                     ->setModelField($key)
                     ->setDataNew($contactEmails->{$key})
                     ->setDataOld($contactEmails->getOriginal($key))
-                    ->setLogInfo($contactEmails->toJson())
+                    ->setLogInfo($contactEmails->getRawOriginal())
                     ->setAdditionalInfoForData($contactEmails->getEmail())
                     ->save();
             }
@@ -70,7 +70,7 @@ class ContactEmailsObserver
             ->setModelName((new ReflectionClass($contactEmails))->getShortName())
             ->setModelField(self::FIELD_EMAIL)
             ->setDataOld($contactEmails->getOriginal(self::FIELD_EMAIL))
-            ->setLogInfo($contactEmails->toJson())
+            ->setLogInfo($contactEmails->getRawOriginal())
             ->save();
     }
 }

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { TableBase } from 'src/components/common/Table';
 import { IStoreState } from 'src/interfaces/store';
 import debounce from 'lodash.debounce';
-import { getCurrentPage } from 'src/selectors';
+import { getCurrentPage, getLoader } from 'src/selectors';
 import { getAutocompleteData, getRoles, getUsers, setPage } from 'src/actions';
 import {
   STATUSES,
@@ -12,6 +12,7 @@ import {
   userTableMap
 } from './utilsUserTable';
 import { IFilterValuesUsers, IUser } from '../../../interfaces';
+import { Loader } from '../../common/Loader';
 import { OTHER_HEIGHT } from '../../../utils/table';
 
 export const UsersTable: FC = () => {
@@ -21,7 +22,6 @@ export const UsersTable: FC = () => {
   const usersRoles =
     useSelector((state: IStoreState) => state.users.roles) || {};
   const otherHeight = OTHER_HEIGHT.userTable;
-
   const dispatch = useDispatch();
 
   const [fullNameFilter, setFullNameFilter] = useState('');
@@ -201,18 +201,22 @@ export const UsersTable: FC = () => {
   };
 
   const count = TOTAL_COUNT && Math.ceil(TOTAL_COUNT / ROWS_COUNT);
+  const load = useSelector(getLoader);
 
   return (
-    <TableBase
-      config={tableConfig}
-      changeFilter={onChangeFilter}
-      filtersValues={filtersValues}
-      changeInput={handleChangeInput}
-      resetFilter={resetFilter}
-      autocompleteValues={autocompleteValues}
-      data={dataTable}
-      count={count}
-      otherHeight={otherHeight}
-    />
+    <>
+      <TableBase
+        config={tableConfig}
+        changeFilter={onChangeFilter}
+        filtersValues={filtersValues}
+        changeInput={handleChangeInput}
+        resetFilter={resetFilter}
+        autocompleteValues={autocompleteValues}
+        data={dataTable}
+        count={count}
+        otherHeight={otherHeight}
+      />
+      {load && <Loader />}
+    </>
   );
 };

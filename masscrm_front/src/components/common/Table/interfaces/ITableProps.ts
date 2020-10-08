@@ -2,7 +2,9 @@ import {
   IContactFiltersState,
   IFilterValuesUsers,
   IUserFiltersValues,
-  ISortingObject
+  ISortingObject,
+  IBlacklistFiltersState,
+  IExportInputFilterValues
 } from 'src/interfaces';
 import { IFilterValue, ITableConfig, ITableRow } from '.';
 
@@ -12,11 +14,17 @@ export interface ITableProps {
   currentPage?: number;
   count?: number;
   onChangePage?: Function;
-  changeFilter?: (obj: IFilterValue | IUserFiltersValues) => void;
+  changeFilter?: (
+    obj: IFilterValue | IUserFiltersValues | IExportInputFilterValues
+  ) => void;
   resetFilter?: (name: string) => void;
   autocompleteValues?: (name: string) => string[];
   changeInput?: (value: string, name: string) => void;
-  filtersValues: IFilterValuesUsers | IContactFiltersState;
+  filtersValues:
+    | IFilterValuesUsers
+    | IContactFiltersState
+    | IBlacklistFiltersState
+    | IExportInputFilterValues;
   inputFilter?: Function;
   data: Array<ITableRow>;
   onChangeData?: (fun: (item: ITableRow) => boolean) => void;

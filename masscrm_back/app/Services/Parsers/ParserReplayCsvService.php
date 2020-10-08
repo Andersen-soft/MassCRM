@@ -8,6 +8,8 @@ use App\Models\Industry;
 use App\Repositories\Contact\ContactEmailsRepository;
 use App\Services\Location\LocationService;
 use App\Services\Parsers\Mapping\IndustryMapping;
+use App\Services\TransferCollection\TransferCollectionCompanyService;
+use App\Services\TransferCollection\TransferCollectionContactService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -81,15 +83,21 @@ class ParserReplayCsvService extends ParserMain implements ParserServiceInterfac
     protected ContactEmailsRepository $contactEmailRepository;
     protected IndustryMapping $industryMapping;
     protected LocationService $locationService;
+    private TransferCollectionCompanyService $transferCollectionCompanyService;
+    private TransferCollectionContactService $transferCollectionContactService;
 
     public function __construct(
         ContactEmailsRepository $contactEmailRepository,
         IndustryMapping $industryMapping,
-        LocationService $locationService
+        LocationService $locationService,
+        TransferCollectionCompanyService $transferCollectionCompanyService,
+        TransferCollectionContactService $transferCollectionContactService
     ) {
         $this->contactEmailRepository = $contactEmailRepository;
         $this->industryMapping = $industryMapping;
         $this->locationService = $locationService;
+        $this->transferCollectionCompanyService = $transferCollectionCompanyService;
+        $this->transferCollectionContactService = $transferCollectionContactService;
     }
 
     public function parse(string $pathToFile): void
@@ -136,9 +144,12 @@ class ParserReplayCsvService extends ParserMain implements ParserServiceInterfac
                 $company = $this->createOrGetCompany();
                 if ($company instanceof Company) {
                     $contact->company()->associate($company);
+                    $this->transferCollectionCompanyService->updateCollectionCompany($company);
                 }
 
                 $contact->save();
+                $this->transferCollectionContactService->updateCollectionContact($contact);
+
                 try {
                     $contact->contactEmails()->create([
                         'email' => $this->line[self::EMAIL],

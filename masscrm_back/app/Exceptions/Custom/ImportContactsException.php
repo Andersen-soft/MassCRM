@@ -3,8 +3,12 @@
 namespace App\Exceptions\Custom;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
 
-class ImportContactsException extends Exception implements ImportContactsExceptionInterface
+class ImportContactsException extends Exception
 {
-    protected $code = 400;
+    public function __construct(string $message = '', int $code = JsonResponse::HTTP_BAD_REQUEST)
+    {
+        parent::__construct($message, $code);
+    }
 }

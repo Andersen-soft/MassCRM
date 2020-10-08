@@ -4,13 +4,11 @@ import { styleNames } from 'src/services';
 import {
   deleteContactList,
   getAddContactList,
-  getCountryList,
   getAutocompleteDate,
   setFilterSettings,
-  getFiltersData,
   setPage,
-  getIndustriesList,
-  setFilterValues
+  setFilterValues,
+  setMultiFilterValues
 } from 'src/actions';
 import {
   getContacts,
@@ -18,6 +16,7 @@ import {
   getUser,
   getOriginsFilter,
   getFilterSettings,
+  getMultiFilterValues,
   getCompanySizeFilter,
   getCompanyTypesFilter,
   getLoader,
@@ -28,6 +27,7 @@ import {
   VALIDATION_VALUE,
   MAP_AUTOCOMPLETE_RESPONSE,
   MAP_AUTOCOMPLETE_VALUES,
+  ROWS_COUNT,
   deleteItemFilter,
   addItemFilter
 } from 'src/utils/table/add.table';
@@ -38,28 +38,30 @@ import {
   IStoreState,
   ISortingObject
 } from 'src/interfaces';
-import { format, max, min, parse } from 'date-fns';
+import { format, max, min } from 'date-fns';
 import debounce from 'lodash.debounce';
 import { ITableHeaderItem } from 'src/components/common/Table/interfaces';
 import { initialFiltersState } from 'src/reducers/tableFilters.reducer';
+import { OTHER_HEIGHT } from 'src/utils/table';
+import { ContactModal } from '../ContactModal';
 import { TableConfigCallBack } from './configs/AddContactTable.config';
 import style from '../../Contact.scss';
-import { ContactModal } from '../ContactModal';
-import { OTHER_HEIGHT } from '../../../../utils/table';
 
 const sn = styleNames(style);
 
 export const ContactTable: FC<{
   daily?: boolean;
   isFullTable: boolean;
+  rowsForJob: boolean;
   myContact?: boolean;
-}> = ({ daily, isFullTable, myContact }) => {
-  const ROWS_COUNT = 50;
+}> = ({ daily, isFullTable, rowsForJob, myContact }) => {
+  const INITIAL_FILTERS_STATE = initialFiltersState;
   const TOTAL_COUNT = useSelector((state: IStoreState) => state.contacts.total);
   const companySizeAutocomplete = useSelector(getCompanySizeFilter);
   const originsAutocomplete = useSelector(getOriginsFilter);
   const companyTypesAutocomplete = useSelector(getCompanyTypesFilter);
   const filtersState = useSelector(getFilterValues);
+  const multiFiltersState = useSelector(getMultiFilterValues);
 
   const [visibleTable, setVisibleTable] = useState<boolean>(false);
 
@@ -80,9 +82,6 @@ export const ContactTable: FC<{
 
   const currentUser = useSelector(getUser);
 
-  const dailyPlan = useSelector(
-    (state: IStoreState) => state.contacts.plan.count
-  );
   const getGenderForRequest = useCallback(() => {
     return filtersState?.Gender?.map((item: string) => {
       if (item === 'Male') {
@@ -132,13 +131,13 @@ export const ContactTable: FC<{
     search: {
       created_at: CreatedAtContact(),
       updated_at: {
-        min: filtersState['Contact updated'].flat()?.length
+        min: filtersState['Contact updated']?.length
           ? getFormatDateForRequest(
               min(filtersState['Contact updated']),
               'yyyy-MM-dd'
             )
           : undefined,
-        max: filtersState['Contact updated'].flat()?.length
+        max: filtersState['Contact updated']?.length
           ? getFormatDateForRequest(
               max(filtersState['Contact updated']),
               'yyyy-MM-dd'
@@ -164,7 +163,7 @@ export const ContactTable: FC<{
       country: filtersState.Country,
       city: filtersState.City,
       region: filtersState.Region,
-      position: filtersState.Position || undefined,
+      position: filtersState.Position,
       linkedin: filtersState.Li || undefined,
       email: filtersState['E-mail'] || undefined,
       phone: filtersState.Phone || undefined,
@@ -226,6 +225,9 @@ export const ContactTable: FC<{
       bounces: Number(filtersState.Bounces) || undefined,
       mails: filtersState.Mails || undefined,
       my_notes: filtersState['My notes'] || undefined,
+      in_blacklist: filtersState.blacklist.map(item =>
+        item === 'Yes' ? 1 : 0
+      ),
       comment: filtersState.Comment || undefined,
       sale: {
         id: filtersState['Sale ID'] || undefined,
@@ -287,93 +289,94 @@ export const ContactTable: FC<{
           ? [filtersState['Job Skills']]
           : undefined
       },
-
       requires_validation: getValidationForRequest(filtersState.Validation)
     },
     sort: sortObject,
     listField: listField || (fieldsParamURL ? fieldsParamURL.split(',') : [])
   };
 
-  useEffect(() => {
-    dispatch(setFilterSettings(requestValues));
-    dispatch(getAddContactList(requestValues));
-    dispatch(getCountryList());
-    dispatch(getFiltersData());
-  }, [currentPage, filtersState, sortObject]);
-
   const contact: Array<IContactResult> = useSelector(getContacts) || [];
   const [open, setOpen] = useState(false);
   const [editContact, setEditContact] = useState<IContactResult>();
+
   const contactForForm = useMemo(
     () => ({
-      birthday,
       location,
       emails,
       social_networks,
-      requires_validation,
       company,
       colleague,
       origin,
       phones,
+      gender,
       ...fields
     }: IContactResult) => {
+      let companySize = '';
+      if (company?.max_employees === 1) {
+        companySize = 'Self Employed';
+      } else if (company.max_employees && company.min_employees) {
+        companySize = `${company?.min_employees} - ${company?.max_employees}`;
+      } else if (!company.max_employees && company.min_employees) {
+        companySize = `${company.min_employees} +`;
+      }
+
       return {
         ...fields,
-        social_networks: social_networks ? social_networks[0].link : '',
         country: location.country,
+        gender: gender ? String(gender) : '',
         region: location.region,
         city: location.city,
         emails: emails.length ? emails.map(email => email.email) : [],
+        phones: phones.length ? phones.map(phone => phone.phone) : [],
+        origin,
         email: '',
-        validation: !!requires_validation,
+        social_networks: social_networks?.map(item => item.link),
+        validation: emails.length ? Boolean(emails[0].verification) : false,
         colleague: colleague ? colleague[0] : '',
         company: company?.name,
         company_id: company?.id || 0,
         companyWebSite: company?.website,
-        companySize: company?.max_employees?.toString(),
+        companySize,
         companyLinkedIn: company?.linkedin,
         industry: company?.industries?.map(({ name }) => name),
+        company_holding: company?.holding?.length && company?.holding[0].id,
+        company_subsidiary:
+          company?.subsidiary?.length && company?.subsidiary[0].id,
         CTO: company?.sto_full_name,
-        birthday: birthday ? [parse(birthday, 'd.MM.yyyy', new Date())] : [],
-        company_type: company?.type,
-        company_founded: company?.founded
-          ? [parse(company?.founded, 'd.MM.yyyy', new Date())]
-          : [],
+        company_type: company?.type || '',
+        company_founded: company?.founded,
         vacancies: company?.vacancies
       };
     },
-    []
+    [editContact, contact]
   );
+
   const isFullList = listField && listField.length > 0;
-  const tableConfigHeader = TableConfigCallBack(isFullTable, !daily);
+  const tableConfigHeader = TableConfigCallBack(
+    isFullTable,
+    rowsForJob,
+    !daily
+  );
   const tableConfigRows: Array<ITableHeaderItem> = tableConfigHeader.rows;
   const newTableConfigRows = isFullList
     ? tableConfigRows.filter(({ code }) => !code || listField?.includes(code))
     : tableConfigRows;
 
   const dataTable = contact?.map(
-    addContactMapCallback(isFullTable, !daily, listField)
+    addContactMapCallback(isFullTable, rowsForJob, !daily, listField)
   );
 
   const load = useSelector(getLoader);
 
-  useEffect(() => {
-    if (contact?.length) setVisibleTable(true);
-  }, [dataTable]);
-
   const onChangeData = () => false;
 
-  const getData = () => dispatch(getAddContactList(requestValues));
-  useEffect(() => {
-    dispatch(getIndustriesList());
-    getData();
-    dispatch(setFilterValues(initialFiltersState));
-  }, []);
+  const getData = useCallback(
+    () => dispatch(getAddContactList(requestValues)),
+    [dispatch, requestValues]
+  );
 
   const deleteData = (ids: Array<number>) =>
-    deleteContactList(ids).then(() =>
-      dispatch(getAddContactList(requestValues))
-    );
+    deleteContactList(ids).then(getData);
 
   const [objectRes, setObjectRes] = useState<any>(null);
 
@@ -387,15 +390,6 @@ export const ContactTable: FC<{
     setObjectRes(MAP_AUTOCOMPLETE_RESPONSE[name](value, CreatedAtContact()));
     setInputValue(value);
   }, 500);
-
-  useEffect(() => {
-    (async () => {
-      if (inputValue.length > 1) {
-        const { data } = await getAutocompleteDate(objectRes);
-        setLoadedAutocomplete(data);
-      }
-    })();
-  }, [inputValue]);
 
   const makeArrayAutocomplete = (name: string) =>
     loadedAutocomplete?.reduce(
@@ -430,6 +424,8 @@ export const ContactTable: FC<{
         ];
       case '1C Project':
         return ['Yes', 'No'];
+      case 'blacklist':
+        return ['Yes', 'No'];
       case 'Company size':
         return (
           companySizeAutocomplete.map(item => `${item.min} - ${item.max}`) || []
@@ -463,9 +459,10 @@ export const ContactTable: FC<{
 
   const resetFilter = (name: string) => {
     dispatch(setPage(1));
-    dispatch(
-      setFilterValues({ [name]: Array.isArray(filtersState[name]) ? [] : '' })
-    );
+    dispatch(setFilterValues({ [name]: INITIAL_FILTERS_STATE[name] }));
+    if (Object.keys(multiFiltersState).includes(name)) {
+      dispatch(setMultiFilterValues({ [name]: [] }));
+    }
   };
 
   const handleClose = () => {
@@ -473,10 +470,9 @@ export const ContactTable: FC<{
   };
 
   const handleEdit = (idContact: number) => {
-    setEditContact(contact.filter(({ id }) => idContact === id)[0]);
+    setEditContact(contact.find(({ id }) => idContact === id));
     setOpen(true);
   };
-
   const count = TOTAL_COUNT && Math.ceil(TOTAL_COUNT / ROWS_COUNT);
 
   const sorting = useCallback(
@@ -486,9 +482,31 @@ export const ContactTable: FC<{
     [sortObject]
   );
 
+  useEffect(() => {
+    dispatch(setFilterSettings(requestValues));
+    getData();
+  }, [currentPage, filtersState, sortObject]);
+
+  useEffect(() => {
+    if (contact?.length) setVisibleTable(true);
+  }, [dataTable]);
+
+  useEffect(() => {
+    dispatch(setFilterValues(initialFiltersState));
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      if (inputValue.length > 1) {
+        const { data } = await getAutocompleteDate(objectRes);
+        setLoadedAutocomplete(data);
+      }
+    })();
+  }, [inputValue]);
+
   return (
     <div className={dataTable.length ? sn('data-table') : sn('data-without')}>
-      {dailyPlan || dataTable.length || visibleTable ? (
+      {dataTable.length || visibleTable ? (
         <TableBase
           config={{ ...tableConfigHeader, rows: newTableConfigRows }}
           clearAutocompleteList={clearAutocompleteList}

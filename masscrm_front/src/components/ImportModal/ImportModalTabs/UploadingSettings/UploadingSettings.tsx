@@ -107,11 +107,6 @@ export const UploadingSettings: React.FC<Props> = props => {
   const handleUpload = React.useCallback(
     (file: File) => {
       dispatch(importActions.uploadFileAction(file));
-      dispatch(
-        importActions.setFileInfoAction({
-          name: file.name
-        })
-      );
     },
     [dispatch]
   );

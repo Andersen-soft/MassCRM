@@ -12,24 +12,27 @@ class CreateContactCommand
 {
     protected array $emails;
     protected ?int $companyId;
+    protected ?array $origin;
     protected array $contactFields;
     protected array $colleagues;
     protected array $phones;
-    protected array $socialNetworks;
+    protected ?array $socialNetworks;
     protected bool $requiresValidation;
     protected User $user;
 
     public function __construct(
         array $emails,
+        ?array $origin,
         array $contactFields,
         array $colleagues,
         array $phones,
-        array $socialNetworks,
+        ?array $socialNetworks,
         bool $requiresValidation,
         User $user,
         int $companyId = null
     ) {
         $this->emails = $emails;
+        $this->origin = $origin;
         $this->companyId = $companyId;
         $this->contactFields = $contactFields;
         $this->colleagues = $colleagues;
@@ -37,6 +40,11 @@ class CreateContactCommand
         $this->socialNetworks = $socialNetworks;
         $this->requiresValidation = in_array($requiresValidation, ['1', 'true']);
         $this->user = $user;
+    }
+
+    public function getOrigin(): ?array
+    {
+        return $this->origin;
     }
 
     public function getEmails(): array
@@ -59,7 +67,7 @@ class CreateContactCommand
         return $this->phones;
     }
 
-    public function getSocialNetworks(): array
+    public function getSocialNetworks(): ?array
     {
         return $this->socialNetworks;
     }

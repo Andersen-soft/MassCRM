@@ -11,6 +11,9 @@ export interface IContactForm {
   onChangeCompany: Function;
   onChangeIndustry: Function;
   setSearchField: Function;
+  handleChange: Function;
+  handleChangeFirstLastName: Function;
+  setFieldValueHandler: Function;
   industries: Array<string>;
   companies: Array<string>;
   countries: Array<string>;

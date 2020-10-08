@@ -34,11 +34,13 @@ Route::group(['middleware' => 'auth.jwt'], static function () {
         Route::post('start-parse', 'Import\ImportContactsController@startParse')
             ->name('import.start-parse');
         Route::get('status', 'Import\ImportContactsController@getStatus');
+        Route::get('statistic', 'Import\ImportContactsController@getStatisticImport');
     });
-    Route::group(['prefix' => 'contacts'], function () {
+    Route::group(['prefix' => 'contacts'], static function () {
         Route::post('delete-list', 'Contact\ContactController@destroyMany')
             ->name('contacts.destroy-list');
         Route::get('counter-daily-plan', 'Contact\ContactController@getCounterDailyPlan');
+        Route::get('previous-companies/{id}', 'Contact\ContactController@getPreviousCompanies');
     });
 
     Route::group(['prefix' => 'attachment-files'], static function () {
@@ -54,9 +56,9 @@ Route::group(['middleware' => 'auth.jwt'], static function () {
         Route::get('company', 'ActivityLog\ActivityLogCompanyController@show');
     });
     Route::resource('contacts', 'Contact\ContactController')
-        ->except('create', 'edit');
+        ->only('store', 'update', 'index', 'show', 'destroy');
     Route::resource('companies', 'Company\CompanyController')
-        ->except('create', 'edit');
+        ->only('store', 'update', 'index', 'show', 'destroy');
     Route::group(['prefix' => 'companies'], function () {
         Route::post('delete-list', 'Company\CompanyController@destroyMany')
             ->name('companies.destroy-list');
@@ -66,6 +68,7 @@ Route::group(['middleware' => 'auth.jwt'], static function () {
         Route::get('roles', 'User\UserController@getRoles');
         Route::get('change-password/{id}', 'User\UserController@changePassword');
         Route::get('notifications', 'User\UserNotificationController@index');
+        Route::put('notifications/{id}', 'User\UserNotificationController@update');
     });
     Route::resource('users', 'User\UserController')
         ->only('store', 'update', 'show', 'index');
@@ -81,4 +84,17 @@ Route::group(['middleware' => 'auth.jwt'], static function () {
         Route::get('refresh', 'Auth\AuthController@refresh');
         Route::get('user', 'Auth\AuthController@user');
     });
+    Route::group(['prefix' => 'file'], static function () {
+        Route::get('get', 'File\FileController@getFile');
+    });
+
+    Route::resource('blacklists', 'Blacklist\BlacklistController')
+        ->only('store', 'update', 'index');
+    Route::group(['prefix' => 'blacklists'], static function () {
+        Route::get('export', 'Blacklist\BlacklistController@export');
+        Route::post('delete', 'Blacklist\BlacklistController@destroy');
+    });
+
+    Route::resource('export/processes', 'Export\ProcessController')
+        ->only('index');
 });

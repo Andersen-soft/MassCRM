@@ -7,9 +7,6 @@ use App\Models\Process;
 use App\Models\User\User;
 use App\Services\Process\ProcessService;
 use Exception;
-use App\Services\Parsers\Import\ParserImportCompanyService;
-use App\Services\Parsers\Import\ParserImportContactService;
-use App\Services\Parsers\ImportResult;
 use App\Services\Parsers\ParserImportFileService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -41,6 +38,8 @@ class ImportContactsJob implements ShouldQueue
     {
         /** @var $processService ProcessService */
         $processService = app()->make(ProcessService::class);
+        /** @var ParserImportFileService $parserImportFileService */
+        $parserImportFileService = app()->make(ParserImportFileService::class);
 
         try {
             $processService->updateStatusProcess(
@@ -48,23 +47,15 @@ class ImportContactsJob implements ShouldQueue
                 Process::TYPE_STATUS_PROCESS_IN_PROGRESS
             );
 
-            $user = User::find($this->importContacts->getCommand()->getResponsible());
-            $parser = new ParserImportFileService(
-                app()->make(ParserImportCompanyService::class),
-                app()->make(ParserImportContactService::class),
-                app()->make(ImportResult::class),
-                $this->importContacts,
-                $user
-            );
-            $parser->parse($this->importContacts->getFullPath());
+            $parserImportFileService->setParamsImport($this->importContacts);
+            $parserImportFileService->parse($this->importContacts->getFullPath());
 
         } catch (Exception $exception) {
-            logger($exception->getMessage());
-
             $processService->updateStatusProcess(
                 $this->importContacts->getProcess(),
-                Process::TYPE_STATUS_PROCESS_CANCEL
+                Process::TYPE_STATUS_PROCESS_FAILED
             );
+            logger($exception->getMessage());
         }
 
         $processService->updateStatusProcess(

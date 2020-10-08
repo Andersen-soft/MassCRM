@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IStoreState, IRoles } from 'src/interfaces';
-import { importActions, websocketActions } from 'src/actions';
+import { closeImportModalAction, websocketActions } from 'src/actions';
 import history from 'src/store/history';
 import { ImportModal, Authentication } from 'src/components';
 import { rolesConfig } from '../../data/header';
@@ -23,15 +23,15 @@ export const AuthPage: FC<Props> = ({ children, token, userRole }) => {
   }));
 
   const handleCloseImportModal = useCallback(() => {
-    dispatch(importActions.closeImportModalAction());
+    dispatch(closeImportModalAction(false));
   }, [dispatch]);
 
   useEffect(() => {
     if (hasRoles) {
-      const { availablePages, redirectUrls } = rolesConfig;
+      const { availablePages } = rolesConfig;
 
       if (!availablePages[roles[0]]?.includes(currentPage)) {
-        history.push(redirectUrls[roles[0]]);
+        history.push(availablePages[roles[0]][0]);
       }
     }
   }, [userRole, currentPage]);

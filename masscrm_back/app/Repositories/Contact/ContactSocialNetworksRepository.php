@@ -8,8 +8,8 @@ class ContactSocialNetworksRepository
 {
     public function checkUniqueness(string $link): bool
     {
-        return ContactSocialNetworks::select('id')
-            ->where('link', $link)
+        return ContactSocialNetworks::query()->select('id')
+            ->where('link', 'ILIKE', $link)
             ->exists();
     }
 }

@@ -1,4 +1,11 @@
-import React, { ChangeEvent, FC, useMemo, useCallback } from 'react';
+import React, {
+  ChangeEvent,
+  FC,
+  useMemo,
+  useCallback,
+  useState,
+  useEffect
+} from 'react';
 import { FormControl, TextField, Box } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 import { Search } from '@material-ui/icons';
@@ -18,35 +25,58 @@ export const SearchInput: FC<ISearchInputProps> = ({
   required,
   disabled,
   className,
-  inputValue,
   freeSolo = true,
   onBlur,
-  onFocus
+  onFocus,
+  multi
 }) => {
   const style = inputStyle();
   const classes = searchStyle();
   const rootClasses = useMemo(
     () => ({
-      root: `${style.input} ${classes.search} ${required &&
-        classes.required} ${className}`
+      root: `${style.input} ${multi ? style.multiInputForm : style.soloInput} ${
+        classes.search
+      } ${required && classes.required} ${className}`
     }),
     [className, classes.required, classes.search, required, style.input]
   );
 
+  const [valueState, setValueState] = useState<
+    string | ISearchItem | (string | ISearchItem)[] | null
+  >(value || '');
+
+  const [inputValueState, setInputValueState] = useState<
+    string | ISearchItem | (string | ISearchItem)[] | null
+  >(value || '');
+
+  useEffect(() => {
+    if (!value) {
+      setValueState('');
+      setInputValueState('');
+    }
+    if (multi && Array.isArray(value) && !value.length) {
+      setValueState([]);
+      setInputValueState('');
+    }
+  }, [value]);
+
   const handleChange = (event: ChangeEvent<{}>, val: string) => {
-    onChange(val);
+    setInputValueState(val);
+    !multi && onChange(val);
   };
 
   const handleChangeInput = ({
     target
   }: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(target.value);
+    !multi && onChange(target.value);
   };
 
   const handleSelect = (
     event: ChangeEvent<{}>,
-    val: string | ISearchItem | null
+    val: string | ISearchItem | (string | ISearchItem)[] | null
   ) => {
+    setValueState(val);
+    onChange(val);
     if (onSelect) {
       onSelect(val);
     }
@@ -72,19 +102,22 @@ export const SearchInput: FC<ISearchInputProps> = ({
         <Autocomplete
           id={name}
           options={items}
+          multiple={multi}
+          limitTags={1}
+          size='small'
           freeSolo={freeSolo}
-          value={value}
-          defaultValue={value}
-          inputValue={inputValue}
+          value={Array.isArray(value) && value.length ? value : valueState}
+          inputValue={inputValueState as string}
           onInputChange={handleChange}
-          onChange={onSelect && handleSelect}
+          onChange={handleSelect}
           getOptionSelected={handleGetOptionSelected}
           getOptionLabel={handleGetOptionLabel}
           disabled={disabled}
           onBlur={onBlur}
           onFocus={onFocus}
-          blurOnSelect
-          openOnFocus
+          blurOnSelect={!multi}
+          openOnFocus={!multi}
+          disableCloseOnSelect={multi}
           renderInput={params => (
             <div className={classes.searchWrap}>
               <TextField

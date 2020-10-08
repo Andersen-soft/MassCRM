@@ -47,12 +47,12 @@ export interface IImportedData {
 
 // TODO: correct it when such functional will be on backend
 export interface IInfo {
-  newContacts: number;
-  newCompanies: number;
-  duplicateContacts: number;
-  duplicateCompanies: number;
-  missedDuplicates?: number;
-  missedDuplicatesLink?: string;
-  unsProcesDuplicates?: number;
-  unsProcesDuplicatesLink?: string;
+  countNewContacts: number;
+  countNewCompanies: number;
+  countProcessedDuplicateContacts: number;
+  countProcessedDuplicateCompanies: number;
+  countMissedDuplicates?: number;
+  fileNameMissedDuplicates: string;
+  countUnsuccessfully?: number;
+  fileNameUnsuccessfullyDuplicates: string;
 }

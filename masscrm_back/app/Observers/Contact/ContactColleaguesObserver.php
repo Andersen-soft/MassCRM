@@ -29,7 +29,7 @@ class ContactColleaguesObserver
                 ->setModelName((new ReflectionClass($contactColleagues))->getShortName())
                 ->setModelField($item)
                 ->setDataNew($contactColleagues->{$item})
-                ->setLogInfo($contactColleagues->toJson())
+                ->setLogInfo($contactColleagues->getRawOriginal())
                 ->save();
         }
     }
@@ -49,7 +49,7 @@ class ContactColleaguesObserver
                     ->setModelField($key)
                     ->setDataNew($contactColleagues->{$key})
                     ->setDataOld($contactColleagues->getOriginal($key))
-                    ->setLogInfo($contactColleagues->toJson())
+                    ->setLogInfo($contactColleagues->getRawOriginal())
                     ->save();
             }
         }
@@ -67,7 +67,7 @@ class ContactColleaguesObserver
             ->setModelName((new ReflectionClass($contactColleagues))->getShortName())
             ->setModelField(self::FIELD_LINK)
             ->setDataOld($contactColleagues->getOriginal(self::FIELD_LINK))
-            ->setLogInfo($contactColleagues->toJson())
+            ->setLogInfo($contactColleagues->getRawOriginal())
             ->save();
     }
 }

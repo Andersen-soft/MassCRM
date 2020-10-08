@@ -7,7 +7,7 @@ import { getFilterSettings } from 'src/selectors';
 import { styleNames } from 'src/services';
 import { FieldArray, Formik, Form } from 'formik';
 import { IContactCell, IContactEdit } from './interfaces';
-import style from './ContactCell.scss';
+import style from '../cell.scss';
 
 const sn = styleNames(style);
 
@@ -39,7 +39,8 @@ export const ContactEdit: FC<IContactCell & IContactEdit> = ({
               render={arrayHelpers => (
                 <>
                   {values.items.map((item, index) => (
-                    <div className={sn('list-td_input')} key={`items.${item}`}>
+                    // eslint-disable-next-line react/no-array-index-key
+                    <div className={sn('list-td_input')} key={index}>
                       <CommonInput
                         name={`items.${index}`}
                         value={item}

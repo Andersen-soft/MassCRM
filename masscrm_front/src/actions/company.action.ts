@@ -3,9 +3,11 @@ import { Dispatch } from 'redux';
 import qs from 'qs';
 import HTTP from '../utils/http';
 import { setNotification } from './notification.action';
-import { ICompanyFilter, ICompanyUpdate } from '../interfaces';
+import { ICompany, ICompanyFilter, ICompanyUpdate } from '../interfaces';
+import { getCompanyForUpdate } from '../utils/map';
+import { store } from '../store/configureStore';
 
-export const getCompanyListAction = createAction('GET_INDUSTRY_LIST');
+export const getCompanyListAction = createAction('GET_COMPANY_LIST');
 
 export const getCompanyListRequest = (filter: ICompanyFilter) => {
   return HTTP.get(`companies`, {
@@ -20,18 +22,26 @@ export const getCompanyList = (filter: ICompanyFilter) => async (
   dispatch: Dispatch
 ) => {
   try {
-    const data = await getCompanyListRequest(filter);
-    dispatch(getCompanyListAction({ data: data.data }));
+    const { data } = await getCompanyListRequest(filter);
+    dispatch(getCompanyListAction({ data }));
   } catch (error) {
     setNotification(error);
   }
 };
 
 export const createCompany = async (company: ICompanyUpdate) => {
-  const data: ICompanyUpdate = await HTTP.post(`companies`, company);
+  const { data } = await HTTP.post(`companies`, company);
   return data.id;
 };
 
-export const updateCompany = async (id: number, company: ICompanyUpdate) => {
-  await HTTP.put(`companies/${id}`, company);
+export const updateCompany = async (
+  idCompany: number,
+  company: ICompanyUpdate,
+  contactID?: number
+) => {
+  const currentCompany = getCompanyForUpdate(
+    store.getState()?.contacts?.data?.find(({ id }) => id === contactID)
+      ?.company || ({} as ICompany)
+  );
+  await HTTP.put(`companies/${idCompany}`, { ...currentCompany, ...company });
 };

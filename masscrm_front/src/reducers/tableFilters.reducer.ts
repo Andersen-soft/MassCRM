@@ -13,7 +13,7 @@ export const initialFiltersState: IContactFiltersState = {
   Country: [],
   Region: [],
   City: [],
-  Position: '',
+  Position: [],
   Li: '',
   'Social Networks': '',
   Phone: '',
@@ -52,7 +52,20 @@ export const initialFiltersState: IContactFiltersState = {
   'Type of company': [],
   Job: '',
   'Job Skills': '',
+  blacklist: ['No'],
+  'Date of use': [],
+  'Work in': ['No'],
   Comment: ''
+};
+
+export const initialMultiFilterState = {
+  Responsible: [],
+  Country: [],
+  Region: [],
+  City: [],
+  Position: [],
+  Company: [],
+  Industry: []
 };
 
 export const filtersReducer = (

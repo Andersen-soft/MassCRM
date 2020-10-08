@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  */
 class CompanySubsidiary extends Pivot
 {
+    public $table = 'company_subsidiaries';
     public const SUBSIDIARY = 'subsidiary';
     public const HOLDING = 'holding';
     public $timestamps = false;

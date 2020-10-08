@@ -1,19 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Publish } from '@material-ui/icons';
 import { useSelector } from 'react-redux';
 import { styleNames } from 'src/services';
-import { CommonIcon } from 'src/components/common';
+import {
+  CommonIcon,
+  CustomCheckBox,
+  DefaultPopUp
+} from 'src/components/common';
 import { getContactsLength, getFilterSettings } from 'src/selectors';
 import { IContactFilter, IContactSearchDownload } from 'src/interfaces';
 import { downLoadReport } from 'src/actions';
+import { Dialog } from '@material-ui/core';
 import style from '../../TableSearch.scss';
+import { DownloadReportModal } from '../DownloadReportModal';
 
 const sn = styleNames(style);
 
 export const DownloadReport = () => {
   const filterSettings = useSelector(getFilterSettings);
   const [disabled, setDisabled] = useState<boolean>(false);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
+  const [showPreReportModal, setShowPreReportModal] = useState<boolean>(false);
+  const [inWork, setInWork] = useState<boolean>(false);
   const total = useSelector(getContactsLength);
+
+  const closePopup = useCallback(() => setShowReportModal(false), []);
 
   const onDownload = ({ search, sort }: IContactFilter) => async () => {
     const {
@@ -38,6 +49,7 @@ export const DownloadReport = () => {
       sale,
       service_id,
       social_networks,
+      in_blacklist,
       ...searchParams
     } = search || {};
 
@@ -45,38 +57,50 @@ export const DownloadReport = () => {
       ...searchParams,
       created: created_at,
       updated: updated_at,
-      firstName: first_name,
-      lastName: last_name,
-      fullName: full_name,
+      first_name,
+      last_name,
+      full_name,
       emails: email,
-      dateOfBirth: birthday,
-      addedToMailing: added_to_mailing,
-      colleaguesLink: colleague_link,
+      birthday,
+      added_to_mailing,
+      colleague_link,
       colleagues: colleague_name,
       comments: comment,
-      lastTouch: last_touch,
-      linkedIn: linkedin,
-      mailingTool: mailing_tool,
-      myNotes: my_notes,
+      last_touch,
+      linkedin,
+      mailing_tool,
+      my_notes,
+      service_id,
       phones: phone,
-      saleStatus: sale?.status,
-      saleCreated: sale?.created_at,
-      saleLink: sale?.link,
-      otherSocialNetworks: social_networks,
-      companyLinkedIn: company?.linkedin,
-      cto: company?.sto_full_name,
-      typeOfCompany: company?.type,
-      founded: company?.founded
+      sale_status: sale?.status,
+      sale_created: sale?.created_at,
+      sale_link: sale?.link,
+      social_networks,
+      company: company?.name,
+      company_website: company?.website,
+      company_linkedin: company?.linkedin,
+      company_cto: company?.sto_full_name,
+      company_type: company?.type,
+      company_size: company?.company_size,
+      company_industries: company?.industry,
+      company_subsidiary: company?.subsidiary,
+      company_holding: company?.holding,
+      founded: company?.founded,
+      jobs: company?.jobs,
+      jobs_skills: company?.skills,
+      in_blacklist
     };
+
     const searchKeys = Object.keys(newSearch || {});
     const searchDownload: IContactSearchDownload = {};
-
     searchKeys.forEach((item: string) => {
       if (!newSearch[item]) {
         return;
       }
+      if (newSearch[item] && Number(newSearch[item])) {
+        searchDownload[item] = newSearch[item];
+      }
       const isAvailableArray = (newSearch[item] as []).length > 0;
-
       if (Array.isArray(newSearch[item])) {
         if (isAvailableArray) {
           searchDownload[item] = newSearch[item];
@@ -95,7 +119,9 @@ export const DownloadReport = () => {
         }
       }
     });
+    setShowPreReportModal(false);
     setDisabled(true);
+    setShowReportModal(true);
     await downLoadReport({
       ...filterSettings,
       limit: total,
@@ -104,20 +130,52 @@ export const DownloadReport = () => {
         typeSort: sort?.type_sort || 'ASC'
       },
       search: searchDownload,
-      typeFile: 'csv'
+      typeFile: 'csv',
+      isInWork: inWork ? 1 : 0
     });
     setDisabled(false);
   };
 
+  const handleClickPreReportModal = () => {
+    setShowPreReportModal(prev => !prev);
+    setInWork(false);
+  };
+
+  const handleChangeInWork = () => setInWork(prev => !prev);
+
   return (
-    <div className={sn('tooltip')}>
-      <CommonIcon
-        IconComponent={Publish}
-        className={sn('table-search__icon')}
-        onClick={onDownload(filterSettings)}
-        disabled={disabled}
+    <>
+      <div className={sn('tooltip')}>
+        <CommonIcon
+          IconComponent={Publish}
+          className={sn('table-search__icon')}
+          onClick={handleClickPreReportModal}
+          disabled={disabled}
+        />
+        <span className={sn('tooltipText')}>Export contacts to the file</span>
+      </div>
+      <DownloadReportModal
+        open={showReportModal}
+        onClose={closePopup}
+        message='Data export will take time. You will be notified once this action is complete.'
       />
-      <span className={sn('tooltipText')}>Export contacts to the file</span>
-    </div>
+      <Dialog open={showPreReportModal}>
+        <DefaultPopUp
+          questionMessage={
+            <div className={sn('preExport')}>
+              <p className={sn('preExport__question')}>
+                Are you sure you want to export these contacts?
+              </p>
+              <div className={sn('preExport__checkboxBlock')}>
+                <CustomCheckBox onChange={handleChangeInWork} value={inWork} />
+                <p>Mark contacts as in work</p>
+              </div>
+            </div>
+          }
+          onClose={handleClickPreReportModal}
+          onConfirm={onDownload(filterSettings)}
+        />
+      </Dialog>
+    </>
   );
 };

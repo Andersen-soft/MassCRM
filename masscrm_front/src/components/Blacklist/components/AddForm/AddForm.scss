@@ -1,0 +1,56 @@
+.add-wrapper {
+  box-sizing: border-box;
+  width: 100%;
+  background: #fff;
+  border: 1px solid rgba(205, 214, 225, 0.3);
+  border-radius: 8px;
+  margin-top: 16px;
+  padding: 24px 24px 16px 24px;
+
+  .add-name {
+    font-size: 18px;
+    line-height: 22px;
+    color: #212121;
+  }
+
+  .add-textarea-tall {
+    background: #fff;
+    width: 100%;
+    margin-top: 24px;
+    padding: 8px;
+    border: 1px solid #e1e5ed;
+    box-sizing: border-box;
+    border-radius: 4px;
+    resize:none;
+    font-family: 'Roboto', Arial, serif;
+    height: calc(100vh - 335px);
+  }
+  .add-textarea-low {
+    background: #fff;
+    width: 100%;
+    margin-top: 24px;
+    padding: 8px;
+    border: 1px solid #e1e5ed;
+    box-sizing: border-box;
+    border-radius: 4px;
+    resize:none;
+    font-family: 'Roboto', Arial, serif;
+    height: 116px;
+  }
+
+  .add-textarea::-webkit-input-placeholder {
+    color: #939bb2;
+    font-size: 14px;
+    line-height: 18px;
+  }
+  .add-prompt {
+    font-size: 12px;
+    line-height: 16px;
+    color: #939bb2;
+    margin-bottom: 24px;
+  }
+
+  .add-button-group {
+    margin-left: -8px;
+  }
+}

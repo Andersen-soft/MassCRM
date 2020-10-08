@@ -13,7 +13,21 @@ use ReflectionClass;
 class ContactObserver
 {
     private CompanyRepository $companyRepository;
-    private const IGNORE_FIELDS_NAME = [Contact::USER_ID_FIELD, Contact::CREATED_AT_FIELD, Contact::UPDATED_AT_FIELD];
+    private const IGNORE_FIELDS_NAME = [
+        Contact::USER_ID_FIELD,
+        Contact::CREATED_AT_FIELD,
+        Contact::UPDATED_AT_FIELD,
+        Contact::EMAIL_COLLECTION_FIELD,
+        Contact::PHONE_COLLECTION_FIELD,
+        Contact::SOCIAL_NETWORK_COLLECTION_FIELD,
+        Contact::COLLEAGUE_COLLECTION_FIELD,
+        Contact::SEQUENCE_COLLECTION_FIELD,
+        Contact::MAIL_COLLECTION_FIELD,
+        Contact::NOTE_COLLECTION_FIELD,
+        Contact::SALE_COLLECTION_FIELD,
+        Contact::IN_BLACKLIST_FIELD,
+        Contact::IS_UPLOAD_COLLECTION_FIELD
+    ];
 
     public function __construct(CompanyRepository $companyRepository)
     {
@@ -53,14 +67,14 @@ class ContactObserver
                 ->setModelField($key)
                 ->setDataNew($value)
                 ->setDataOld($dataOld)
-                ->setLogInfo($contact->toJson())
+                ->setLogInfo($contact->getRawOriginal())
                 ->save();
         }
     }
 
     private function getCompanyName(int $companyId): ?string
     {
-        $company = $this->companyRepository->getCompanyId($companyId);
+        $company = $this->companyRepository->getCompanyById($companyId);
 
         if ($company) {
             return $company->getName();

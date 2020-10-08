@@ -6,6 +6,7 @@ import { checkBoxStyle } from './CustomCheckBox.style';
 
 export const CustomCheckBox: FC<ICustomCheckBoxProps> = ({
   value,
+  indeterminateCheckbox,
   onChange
 }) => {
   const style = checkBoxStyle();
@@ -17,6 +18,7 @@ export const CustomCheckBox: FC<ICustomCheckBoxProps> = ({
     <Checkbox
       classes={{ root: style.checkBox }}
       checked={value}
+      indeterminate={indeterminateCheckbox}
       onChange={handleChange}
       color='default'
       checkedIcon={<DoneIcon fontSize='small' />}

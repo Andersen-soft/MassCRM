@@ -6,11 +6,14 @@ use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Lang;
 
 /**
  * Class Process
  * @package App
  * @property int $id
+ * @property string $name
+ * @property string $file_path
  * @property string $status
  * @property string $type
  * @property Carbon $created_at
@@ -19,28 +22,39 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Process extends Model
 {
-    public const TYPE_PROCESS_IMPORT = 1;
-    public const TYPE_STATUS_PROCESS_CANCEL = 0;
-    public const TYPE_STATUS_PROCESS_WAIT = 1;
-    public const TYPE_STATUS_PROCESS_IN_PROGRESS = 2;
-    public const TYPE_STATUS_PROCESS_DONE = 3;
+    public const TYPE_PROCESS_IMPORT_CONTACT = 'import_contacts';
+    public const TYPE_PROCESS_EXPORT_CONTACT = 'export_contacts';
+    public const TYPE_PROCESS_EXPORT_BLACKLIST = 'export_blacklist';
+    public const TYPE_STATUS_PROCESS_FAILED = 'failed';
+    public const TYPE_STATUS_PROCESS_WAIT = 'waiting';
+    public const TYPE_STATUS_PROCESS_IN_PROGRESS = 'in_progress';
+    public const TYPE_STATUS_PROCESS_DONE = 'done';
 
     protected $fillable = [
         'id',
+        'name',
         'status',
         'type',
+        'file_path',
         'user_id',
         'created_at',
         'updated_at'
     ];
 
     protected $casts = [
-        'status' => 'integer',
-        'type' => 'integer',
+        'name' => 'string',
+        'file_path' => 'string',
+        'status' => 'string',
+        'type' => 'string',
         'user_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
+
+    public function getStatusName(): string
+    {
+        return Lang::get('export.statuses.' . $this->status);
+    }
 
     public function user(): BelongsTo
     {

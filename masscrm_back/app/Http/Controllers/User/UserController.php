@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use Illuminate\Http\JsonResponse;
 
 use App\Models\User\User;
@@ -15,9 +15,6 @@ use App\Http\Requests\User\{
     GetUserListRequest
 };
 
-use App\Http\Transformers\User\UserTransform;
-use App\Http\Transformers\Auth\LoginTransform;
-
 use App\Commands\User\{
     CreateUserCommand,
     GetUserListCommand,
@@ -29,8 +26,11 @@ use App\Commands\User\{
 
 use App\Services\User\UserService;
 use App\Services\Auth\AuthService;
+use App\Helpers\Pagination;
+use App\Http\Resources\User\User as UserResource;
+use App\Http\Resources\Auth\Login as LoginResource;
 
-class UserController extends Controller
+class UserController extends BaseController
 {
     public function __construct()
     {
@@ -82,7 +82,6 @@ class UserController extends Controller
      */
     public function store(CreateUserRequest $request): JsonResponse
     {
-        $fromActiveDirectory = $request->get('fromActiveDirectory', false);
         $user = $this->dispatchNow(
             new CreateUserCommand(
                 $request->get('email'),
@@ -94,11 +93,11 @@ class UserController extends Controller
                 $request->get('position', null),
                 $request->get('comment', null),
                 $request->get('skype'),
-                $fromActiveDirectory
+                $request->get('fromActiveDirectory', false)
             )
         );
 
-        return $this->responseTransform($user, new UserTransform());
+        return $this->success(new UserResource($user));
     }
 
     /**
@@ -146,7 +145,7 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, $id): JsonResponse
     {
-        return $this->responseTransform($this->dispatchNow(
+        $user = $this->dispatchNow(
             new UpdateUserCommand(
                 (int) $id,
                 $request->get('email'),
@@ -159,7 +158,9 @@ class UserController extends Controller
                 $request->get('position', null),
                 $request->get('comment', null)
             )
-        ), new UserTransform());
+        );
+
+       return $this->success(new UserResource($user));
     }
 
     /**
@@ -184,7 +185,11 @@ class UserController extends Controller
      */
     public function getUserFromToken(SetPasswordTokenRequest $request, UserService $userService): JsonResponse
     {
-        return $this->responseTransform($userService->fetchUserFromToken($request->get('token')), new UserTransform());
+        return $this->success(
+            new UserResource(
+                $userService->fetchUserFromToken($request->get('token'))
+            )
+        );
     }
 
     /**
@@ -222,9 +227,10 @@ class UserController extends Controller
             )
         );
 
-        return $this->responseTransform(
-            $authService->login($user->getLogin(), $request->get('password')),
-            new LoginTransform()
+        return $this->success(
+            new LoginResource(
+                $authService->login($user->getLogin(), $request->get('password'))
+            )
         );
     }
 
@@ -267,7 +273,7 @@ class UserController extends Controller
      */
     public function getRoles(UserService $userService): JsonResponse
     {
-        return $this->response($userService->getListRoles());
+        return $this->success($userService->getListRoles());
     }
 
     /**
@@ -293,9 +299,7 @@ class UserController extends Controller
      */
     public function show($id): JsonResponse
     {
-        return $this->responseTransform($this->dispatchNow(
-            new GetUserCommand((int)$id)
-        ), new UserTransform());
+        return $this->success(new UserResource($this->dispatchNow(new GetUserCommand($id))));
     }
 
     /**
@@ -399,19 +403,18 @@ class UserController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function index(GetUserListRequest $request): JsonResponse
+    public function index(GetUserListRequest $request, Pagination $pagination): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetUserListCommand(
-                    $request->get('search', []),
-                    $request->get('sort', []),
-                    $request->get('limit', 50),
-                    $request->get('page', 1)
-                )
-            ),
-            new UserTransform()
+        $users = $this->dispatchNow(
+            new GetUserListCommand(
+                $request->get('search', []),
+                $request->get('sort', []),
+                $request->get('limit', 50),
+                $request->get('page', 1)
+            )
         );
+
+        return $this->success(UserResource::collection($users), $pagination->getMeta($users));
     }
 
     /**
@@ -445,6 +448,8 @@ class UserController extends Controller
      */
     public function changePassword($id): JsonResponse
     {
-        return $this->response($this->dispatchNow(new ChangePasswordUserCommand((int) $id)));
+        return $this->success(
+            $this->dispatchNow(new ChangePasswordUserCommand((int) $id))
+        );
     }
 }

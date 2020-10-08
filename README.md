@@ -1,4 +1,4 @@
-![logo](./logo.jpg)
+![logo](./documentation/logo.jpg)
 
 # About us
 
@@ -11,7 +11,7 @@ Our system let users:
 - import to the system data of your clients from the file
 - export your database to the file
 
-We have collected key examples of usage. Please, explore the range of Andersen CRM Sales features by getting into [User Guide](Andersen%20CRM%20Marketing%20Guide.docx.pdf).
+We have collected key examples of usage. Please, explore the range of Andersen CRM Sales features by getting into [User Guide](./documentation/Andersen%20CRM%20Marketing%20Guide.docx.pdf).
 Download the file for more convenient reading.
 
 # Technologies
@@ -59,7 +59,6 @@ bash 1stlocalrun.sh
 | Jane Smith  | cZ4JJA8yHW | NC1     |
 | Mike Jones  | V5eiayvzKj | NC2     |
 
-
 File down.sh gives you an ability to stop the project and change owner of logs folder to current user for cleaning. It  destroys previously created docker network, so sudo password will be promted for it and owner changeng.
 
 ```text
@@ -105,8 +104,8 @@ All contributions are considered as original BSD unless it's explicitly stated o
 
 We require pull request submitters to sign the contributor agreement. Please downloand the Agreement, complete it and sign, then scan and email a pdf file to [masscrm.legal@andersenlab.com](mailto:masscrm.legal@andersenlab.com).
 
-- [ICLA: Individual Contributor License Agreement](./ICLA%20CRM%20Marketing.pdf)
-- [CCLA: Corporate Contributor License Agreement](./CCLA%20CRM%20Marketing.pdf)
+- [ICLA: Individual Contributor License Agreement](./documentation/ICLA%20CRM%20Marketing.pdf)
+- [CCLA: Corporate Contributor License Agreement](./documentation/CCLA%20CRM%20Marketing.pdf)
 
 Once your Pull Request has passed the rewiew and it's ready to be merged, it will be included in upcoming release.
 

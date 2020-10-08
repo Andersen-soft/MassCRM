@@ -13,8 +13,11 @@ import {
   Contact,
   Demo,
   CompanyPage,
-  AuthPage
+  AuthPage,
+  Blacklist,
+  ExportPage
 } from 'src/components';
+import { ContactPage } from '../ContactPage';
 
 export const App = () => {
   const dispatch = useDispatch();
@@ -29,6 +32,8 @@ export const App = () => {
       (user && window.location.pathname !== '/set_password')
     ) {
       dispatch(setPage());
+    }
+    if (Cookies.get('token')) {
       dispatch(continueSession());
     }
   }, []);
@@ -57,6 +62,15 @@ export const App = () => {
           </Route>
           <Route exact path='/all_contacts'>
             <Contact />
+          </Route>
+          <Route exact path='/blacklist'>
+            <Blacklist />
+          </Route>
+          <Route exact path='/contact'>
+            <ContactPage />
+          </Route>
+          <Route exact path='/export'>
+            <ExportPage />
           </Route>
         </AuthPage>
       </Switch>

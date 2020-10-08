@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 class BaseModel extends Model
 {
     public const MODE_ALL = 'all';
+    public const JOIN = 'join';
 
     public const DATE_TIME_FORMAT = 'd.m.Y H:i';
     public const DATE_FORMAT = 'd.m.Y';

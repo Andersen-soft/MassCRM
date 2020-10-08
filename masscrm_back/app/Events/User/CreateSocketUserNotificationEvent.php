@@ -15,11 +15,20 @@ class CreateSocketUserNotificationEvent
     public string $typeNotification;
     public string $message;
     public array $users;
+    public ?string $filePath;
+    public ?int $operationId;
 
-    public function __construct(string $typeNotification, string $message, array $users = [])
-    {
+    public function __construct(
+        string $typeNotification,
+        string $message,
+        array $users = [],
+        string $filePath = '',
+        int $operationId = null
+    ) {
         $this->typeNotification = $typeNotification;
         $this->message = $message;
         $this->users = $users;
+        $this->filePath = $filePath;
+        $this->operationId = $operationId;
     }
 }

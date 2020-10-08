@@ -9,7 +9,6 @@ export const inputStyle = makeStyles(() =>
         width: '100%',
         minHeight: '40px',
         border: 'solid 1px #E1E5ED',
-        overflow: 'hidden',
         '&:hover': {
           borderColor: '#B6BECF'
         }
@@ -37,6 +36,23 @@ export const inputStyle = makeStyles(() =>
       '& .MuiInputLabel-outlined.MuiInputLabel-shrink': {
         transform: 'translate(14px, -4px) scale(1)',
         fontSize: '0.85em'
+      }
+    },
+    soloInput: {
+      '& .MuiOutlinedInput-root': {
+        overflow: 'hidden'
+      }
+    },
+    multiInputForm: {
+      '& .MuiOutlinedInput-root': {
+        maxHeight: '180px',
+        overflow: 'auto'
+      }
+    },
+    multiInputFilter: {
+      '& .MuiOutlinedInput-root': {
+        maxHeight: '350px',
+        overflow: 'auto'
       }
     },
     inputError: {

@@ -2,31 +2,28 @@
 
 namespace App\Http\Controllers\Contact;
 
-use App\Commands\Contact\{
-    CreateContactCommand,
-    DestroyContactsCommand,
-    GetContactCommand,
-    GetContactListCommand,
-    UpdateContactCommand
-};
-
-use App\Http\Requests\Contact\{
-    CreateContactRequest,
-    GetContactListRequest,
-    UpdateContactRequest
-};
-
-use App\Http\Controllers\Controller;
+use App\Helpers\Pagination;
+use App\Commands\Contact\CreateContactCommand;
+use App\Commands\Contact\DestroyContactsCommand;
+use App\Commands\Contact\GetContactCommand;
+use App\Commands\Contact\UpdateContactCommand;
+use App\Commands\Contact\GetContactListCommand;
+use App\Http\Requests\Contact\CreateContactRequest;
+use App\Http\Requests\Contact\GetContactListRequest;
+use App\Http\Requests\Contact\UpdateContactRequest;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\DestroyManyRequest;
-use App\Http\Transformers\Contact\ContactTransform;
 use App\Models\Contact\Contact;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use App\Services\Contact\ContactService;
+use Illuminate\Http\JsonResponse;
+use App\Http\Resources\Contact\Contact as ContactResources;
 
-class ContactController extends Controller
+class ContactController extends BaseController
 {
-    public function __construct()
+    private ContactService $contactService;
+
+    public function __construct(ContactService $contactService)
     {
         $this->middleware('permission:createContact', ['only' => ['store']]);
         $this->middleware('permission:deleteContactById', ['only' => ['destroy']]);
@@ -34,6 +31,8 @@ class ContactController extends Controller
         $this->middleware('permission:updateContact', ['only' => ['update']]);
         $this->middleware('permission:showContactById', ['only' => ['show']]);
         $this->middleware('permission:getListContacts', ['only' => ['index']]);
+
+        $this->contactService = $contactService;
     }
 
     /**
@@ -72,9 +71,7 @@ class ContactController extends Controller
      *                          @OA\Property(property="full_name", type="string"),
      *                     ),
      *                 ),
-     *                 @OA\Property(property="social_networks", type="array",
-     *                     @OA\Items(type="string")
-     *                 ),
+     *                 @OA\Property(property="social_networks", type="string"),
      *                 @OA\Property(property="comment", type="string"),
      *                 @OA\Property(property="company_id", type="integer"),
      *                 @OA\Property(property="skype", type="string"),
@@ -108,10 +105,7 @@ class ContactController extends Controller
      *                    "colleagues": {
      *                          {"full_name": "Potgraven"}, {"link":"http://test.com/32111"}
      *                    },
-     *                    "social_networks": {
-     *                         "vk.com/1233",
-     *                         "test.com/12344"
-     *                    },
+     *                    "social_networks": "http://vk.com/1233",
      *                    "comment": "Is good worker",
      *                    "company_id": 1,
      *                    "skype": "skype",
@@ -145,20 +139,23 @@ class ContactController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function store(CreateContactRequest $request)
+    public function store(CreateContactRequest $request): JsonResponse
     {
-        return $this->responseTransform($this->dispatchNow(
+        $contact = $this->dispatchNow(
             new CreateContactCommand(
                 $request->get('emails'),
+                $request->get('origin'),
                 $this->getContactFields($request->toArray()),
                 $request->get('colleagues', []),
                 $request->get('phones', []),
-                $request->get('social_networks', []),
+                $request->get('social_networks'),
                 $request->get('requires_validation'),
-                Auth::user(),
+                $request->user(),
                 $request->get('company_id', null)
             )
-        ), new ContactTransform());
+        );
+
+        return $this->success(new ContactResources($contact));
     }
 
     /**
@@ -184,13 +181,13 @@ class ContactController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function destroy($id)
+    public function destroy($id, Request $request): JsonResponse
     {
-        return $this->response(
+        return $this->success(
             $this->dispatchNow(
                 new DestroyContactsCommand(
                     [(int)$id],
-                    Auth::user(),
+                    $request->user(),
                 )
             ) ?? []
         );
@@ -229,16 +226,17 @@ class ContactController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function destroyMany(DestroyManyRequest $request)
+    public function destroyMany(DestroyManyRequest $request): JsonResponse
     {
-        return $this->response(
-        $this->dispatchNow(
-                new DestroyContactsCommand(
-                    $request->get('ids'),
-                    Auth::user(),
-                )
-            ) ?? []
+        $command = new DestroyContactsCommand(
+            $request->get('ids'),
+            $request->user(),
+            $request->get('search', []),
+            $request->get('page', GetContactListCommand::DEFAULT_PAGE),
+            $request->get('limit', GetContactListCommand::DEFAULT_LIMIT)
         );
+
+        return $this->success($this->contactService->deleteContacts($command) ?? []);
     }
 
     /**
@@ -276,16 +274,7 @@ class ContactController extends Controller
      *                     @OA\Property(property="city", type="string"),
      *                 ),
      *                 @OA\Property(property="position", type="string"),
-     *                 @OA\Property(property="colleagues", type="array",
-     *                     @OA\Items(type="object",
-     *                          required={"link", "full_name"},
-     *                          @OA\Property(property="link", type="string"),
-     *                          @OA\Property(property="full_name", type="string"),
-     *                     ),
-     *                 ),
-     *                 @OA\Property(property="social_networks", type="array",
-     *                     @OA\Items(type="string"),
-     *                 ),
+     *                 @OA\Property(property="social_networks", type="string"),
      *                 @OA\Property(property="skype", type="string"),
      *                 @OA\Property(property="origin", type="string"),
      *                 @OA\Property(property="opens", type="integer"),
@@ -302,6 +291,9 @@ class ContactController extends Controller
      *                 @OA\Property(property="birthday", type="date", format="Y-m-d"),
      *                 @OA\Property(property="service_id", type="integer"),
      *                 @OA\Property(property="comment", type="string"),
+     *                 @OA\Property(property="note", type="array",
+     *                     @OA\Items(type="string")
+     *                 ),
      *                 example={
      *                    "emails": {
      *                          "test1@test.com", "test2@test.com"
@@ -318,20 +310,7 @@ class ContactController extends Controller
      *                          "region": "Vitebsk",
      *                          "city": "Polotsk",
      *                    },
-     *                    "colleagues": {
-     *                          {
-     *                              "id": 123,
-     *                              "link": "http://test.com/32111",
-     *                              "full_name":"Andreas Brakel"
-     *                          },
-     *                          {
-     *                              "link": "http://test.com/32111",
-     *                              "full_name": "Andreas Brakel"
-     *                          }
-     *                    },
-     *                    "social_networks": {
-     *                          "link":"http://vk.com/1265", "link":"http://vk.com/9872"
-     *                    },
+     *                    "social_networks": "http://vk.com/1265",
      *                    "company_id": 1,
      *                    "skype": "skype",
      *                    "last_touch": "2020-03-12",
@@ -347,6 +326,7 @@ class ContactController extends Controller
      *                    "bounces": 0,
      *                    "confidence": 99,
      *                    "service_id": 1235594456,
+     *                    "note": {"test To the test"}
      *                }
      *             )
      *         )
@@ -365,21 +345,25 @@ class ContactController extends Controller
      *     @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function update(UpdateContactRequest $request, $id)
+    public function update(int $id, UpdateContactRequest $request): JsonResponse
     {
-        return $this->responseTransform($this->dispatchNow(
+        $contact =  $this->contactService->updateContact(
             new UpdateContactCommand(
-                (int)$id,
-                Auth::user(),
+                $id,
+                $request->user(),
                 $request->get('emails', []),
-                $request->get('phones', []),
+                $request->get('origin'),
+                $request->get('phones'),
                 $this->getContactFields($request->toArray()),
-                $request->get('colleagues', []),
-                $request->get('social_networks', []),
-                $request->get('requires_validation', null),
-                $request->get('company_id', null),
+                $request->get('colleagues'),
+                $request->get('social_networks'),
+                $request->get('requires_validation', false),
+                $request->get('company_id'),
+                $request->get('note'),
             )
-        ), new ContactTransform());
+        );
+
+        return $this->success(new ContactResources($contact));
     }
 
     private function getContactFields(array $request): array
@@ -429,14 +413,13 @@ class ContactController extends Controller
      *     @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetContactCommand((int)$id)
-            ),
-            new ContactTransform()
+        $contact = $this->dispatchNow(
+            new GetContactCommand((int)$id)
         );
+
+        return $this->success(new ContactResources($contact));
     }
 
     /**
@@ -697,20 +680,19 @@ class ContactController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function index(GetContactListRequest $request)
+    public function index(GetContactListRequest $request, Pagination $pagination): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetContactListCommand(
-                    Auth::user(),
-                    $request->get('search', []),
-                    $request->get('sort', []),
-                    $request->get('page', 1),
-                    $request->get('limit', 10),
-                )
-            ),
-            new ContactTransform(true)
+        $command = new GetContactListCommand(
+            $request->user(),
+            $request->get('search', []),
+            $request->get('sort', []),
+            $request->get('page', GetContactListCommand::DEFAULT_PAGE),
+            $request->get('limit', GetContactListCommand::DEFAULT_LIMIT)
         );
+
+        $contacts = $this->contactService->getContactListBySearchParams($command);
+
+        return $this->success(ContactResources::collection($contacts), $pagination->getMeta($contacts));
     }
 
     /**
@@ -734,8 +716,38 @@ class ContactController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function getCounterDailyPlan(ContactService $contactService): JsonResponse
+    public function getCounterDailyPlan(Request $request, ContactService $contactService): JsonResponse
     {
-        return $this->response($contactService->getCounterDailyPlanUser(auth()->id()));
+        return $this->success($contactService->getCounterDailyPlanUser($request->user()));
+    }
+
+    /**
+     * @OA\GET(
+     *     path="contacts/previous-companies/{id}",
+     *     tags={"Contact"},
+     *     description="Fetch list previous companies",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response="200",
+     *         description="Successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *                 @OA\Property(property="data", type="array",
+     *                     @OA\Items(type="object",
+     *                         required={"company_name", "company_id", "position", "updated_at"},
+     *                         @OA\Property(property="company_name", type="string", example="MassCRM Andersen"),
+     *                         @OA\Property(property="company_id", type="integer", example=123),
+     *                         @OA\Property(property="position", type="boolean", example="DevOps Practice Lead"),
+     *                         @OA\Property(property="updated_at", type="boolean", example="25.09.2020"),
+     *                    )
+     *                )
+     *           )
+     *     ),
+     *     @OA\Response(response="401", ref="#/components/responses/401"),
+     * )
+     */
+    public function getPreviousCompanies(int $id, ContactService $contactService): JsonResponse
+    {
+        return $this->success($contactService->getListPreviousCompanies($id));
     }
 }

@@ -29,6 +29,7 @@ const DatePickerBody: FC<IPickerProps> = ({
   emptyLabel,
   disabledYear,
   hasDataRangeFilter,
+  onClean,
   ...props
 }: IPickerProps) => {
   const pickerClasses = pickerStyle();

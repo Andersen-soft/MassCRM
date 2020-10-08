@@ -5,16 +5,21 @@ import {
   setFilterSettingsAction,
   setListFieldAction,
   setFilterValuesAction,
+  setMultiFilterValuesAction,
   setSortValuesAction,
   setSortAction
 } from 'src/actions/';
-import { initialFiltersState } from './tableFilters.reducer';
+import {
+  initialFiltersState,
+  initialMultiFilterState
+} from './tableFilters.reducer';
 import { initialSortingState } from './tableSorting.reducer';
 
 const initialState: IFilterStore = {
   data: {},
   settings: {},
   values: initialFiltersState,
+  multiValues: initialMultiFilterState,
   sort: initialSortingState
 };
 
@@ -31,16 +36,10 @@ export const filterReducer = handleActions(
     [`${setListFieldAction}`]: (
       state: IFilterStore,
       { payload }: Action<any>
-    ) => {
-      const list = state.settings?.listField || [];
-      const listField: Array<string> = list.includes(payload)
-        ? list?.filter(element => payload !== element)
-        : [...list, payload];
-      return {
-        ...state,
-        settings: { ...state.settings, listField }
-      };
-    },
+    ) => ({
+      ...state,
+      settings: { ...state.settings, listField: payload }
+    }),
     [`${setFilterValuesAction}`]: (
       state: IFilterStore,
       { payload }: Action<any>
@@ -48,6 +47,16 @@ export const filterReducer = handleActions(
       ...state,
       values: {
         ...state.values,
+        ...payload
+      }
+    }),
+    [`${setMultiFilterValuesAction}`]: (
+      state: IFilterStore,
+      { payload }: Action<any>
+    ) => ({
+      ...state,
+      multiValues: {
+        ...state.multiValues,
         ...payload
       }
     }),

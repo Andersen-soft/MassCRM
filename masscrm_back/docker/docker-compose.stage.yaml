@@ -9,9 +9,9 @@ services:
       - 9000:9000
       - 8090:8090
     volumes:
-      - /dockerlogs/server-logs-fpm:/var/log/docker
-      - /dockerlogs/storage_logs_nginx:/var/www/storage/logs
-      # - /dockerlogs/files_fpm:/var/www/storage/files
+      - /dockerlogs/server_logs_fpm:/var/log/docker
+      - /dockerlogs/storage_logs_fpm:/var/www/storage/logs
+      #- /dockerlogs/files_fpm:/var/www/storage/files
       
 
   nginx:
@@ -21,9 +21,9 @@ services:
     ports:
       - 80:80
     volumes:
-      - /dockerlogs/server-logs-nginx:/var/log/nginx
-      - /dockerlogs/storage_logs_fpm:/var/www/storage/logs
-      # - /dockerlogs/files_nginx:/var/www/storage/files
+      - /dockerlogs/server_logs_nginx:/var/log/nginx
+      - /dockerlogs/storage_logs_nginx:/var/www/storage/logs
+      - /dockerlogs/files_nginx:/var/www/storage/files
     depends_on:
       - php-fpm
 

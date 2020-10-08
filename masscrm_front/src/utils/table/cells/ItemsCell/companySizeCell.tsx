@@ -6,35 +6,47 @@ import { getAddContactList, updateCompany } from 'src/actions';
 import { EditPopup } from '..';
 import { ICompanySizeCell } from './interfaces';
 import { ItemsEdit } from './ItemsEdit';
+import { ICompanySize } from '../../../../interfaces';
 
 export const companySizeCell = ({
   id,
   min_employees,
   max_employees,
+  contactID,
   ...props
 }: ICompanySizeCell) => (
   tdProps: React.PropsWithChildren<TableCellBaseProps>
 ) => {
   const dispatch = useDispatch();
   const filter = useSelector(getFilterSettings);
-  const createSizeType = ({ min, max }: { min: number; max: number }) =>
-    `${min}-${max}`;
+  const createSizeType = ({ name }: { name: string }) => name;
+  const sizes = useSelector(getCompanySizeFilter);
 
-  const items = useSelector(getCompanySizeFilter)?.map(createSizeType);
+  const items = sizes?.map(createSizeType);
+
+  const selectedSizeCompanyByMin = (min_employ: number) =>
+    sizes?.find(({ min }: ICompanySize) => min_employ === min)?.name;
+
+  const selectedSizeCompanyByName = (nameSize: string) =>
+    sizes?.find(({ name }: ICompanySize) => name === nameSize);
 
   const currentValue =
     min_employees && max_employees
-      ? createSizeType({ min: min_employees, max: max_employees })
+      ? selectedSizeCompanyByMin(min_employees)
       : '';
 
   const ContentTD = () => <div>{currentValue}</div>;
 
   const sendData = async (newData: string) => {
-    const size = newData.split('-');
-    await updateCompany(id, {
-      min_employees: +size[0],
-      max_employees: +size[1]
-    });
+    const size: ICompanySize | undefined = selectedSizeCompanyByName(newData);
+    await updateCompany(
+      id,
+      {
+        min_employees: size?.min,
+        max_employees: size?.max
+      },
+      contactID
+    );
     dispatch(getAddContactList(filter));
   };
 

@@ -14,3 +14,6 @@ export * from './IPhone';
 export * from './IFilterValues';
 export * from './ISorting';
 export * from './ISocialNetwork';
+export * from './INotification';
+export * from './IBlacklist';
+export * from './IExport';

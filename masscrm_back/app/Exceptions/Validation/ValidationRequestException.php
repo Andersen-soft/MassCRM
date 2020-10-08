@@ -2,31 +2,21 @@
 
 namespace App\Exceptions\Validation;
 
-use App\Services\PayloadBuilder;
-use Exception;
+use App\Exceptions\BaseException;
 use Illuminate\Http\JsonResponse;
 
-class ValidationRequestException extends Exception
+class ValidationRequestException extends BaseException
 {
-    private array $errorsList;
-    private PayloadBuilder $payloadBuilder;
+    private array $errors;
 
-    public function __construct(array $errorsList = [])
+    public function __construct(array $errors = [])
     {
-        parent::__construct();
-        $this->errorsList = $errorsList;
+        parent::__construct('', JsonResponse::HTTP_BAD_REQUEST);
+        $this->errors= $errors;
     }
 
-    public function report(PayloadBuilder $payloadBuilder): void
+    public function getErrors(): array
     {
-        $this->payloadBuilder = $payloadBuilder;
-    }
-
-    public function render(): JsonResponse
-    {
-        return new JsonResponse($this->payloadBuilder->getResponseBody(
-            ['errors' => $this->errorsList],
-            false
-        ), JsonResponse::HTTP_BAD_REQUEST);
+        return $this->errors;
     }
 }

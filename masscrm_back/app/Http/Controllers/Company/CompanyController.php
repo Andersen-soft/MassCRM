@@ -8,16 +8,17 @@ use App\Commands\Company\DestroyManyCompanyCommand;
 use App\Commands\Company\GetCompanyCommand;
 use App\Commands\Company\GetCompanyListCommand;
 use App\Commands\Company\UpdateCompanyCommand;
-use App\Http\Controllers\Controller;
+use App\Helpers\Pagination;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\Company\CreateCompanyRequest;
 use App\Http\Requests\Company\GetCompanyListRequest;
 use App\Http\Requests\Company\UpdateCompanyRequest;
 use App\Http\Requests\DestroyManyRequest;
-use App\Http\Transformers\Company\CompanyTransform;
 use App\Models\Company\Company;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
+use App\Http\Resources\Company\Company as CompanyResources;
 
-class CompanyController extends Controller
+class CompanyController extends BaseController
 {
     public function __construct()
     {
@@ -100,17 +101,19 @@ class CompanyController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function store(CreateCompanyRequest $request)
+    public function store(CreateCompanyRequest $request): JsonResponse
     {
-        return $this->responseTransform($this->dispatchNow(
+        $company = $this->dispatchNow(
             new CreateCompanyCommand(
                 $this->getCompanyFields($request->toArray()),
-                Auth::user(),
+                $request->user(),
                 $request->get('industries', []),
                 $request->get('vacancies', []),
                 $request->get('subsidiaries', [])
             )
-        ), new CompanyTransform());
+        );
+
+        return $this->success(new CompanyResources($company));
     }
 
     private function getCompanyFields(array $request): array
@@ -119,7 +122,7 @@ class CompanyController extends Controller
         $company = new Company();
         foreach ($request as $key => $value) {
             if ($company->isField($key)) {
-                if (in_array($key, [Company::WEBSITE_FIELD, Company::LINKEDIN_FIELD])) {
+                if (!empty($value) && in_array($key, [Company::WEBSITE_FIELD, Company::LINKEDIN_FIELD])) {
                     $value = strtolower($value);
                 }
                 $companyFields[$key] = $value;
@@ -152,9 +155,9 @@ class CompanyController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
-        return $this->response($this->dispatchNow(new DestroyCompanyCommand((int)$id)) ?? []);
+        return $this->success($this->dispatchNow(new DestroyCompanyCommand((int)$id)) ?? []);
     }
 
     /**
@@ -190,9 +193,9 @@ class CompanyController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function destroyMany(DestroyManyRequest $request)
+    public function destroyMany(DestroyManyRequest $request): JsonResponse
     {
-        return $this->response($this->dispatchNow(new DestroyManyCompanyCommand($request->get('ids'))) ?? []);
+        return $this->success($this->dispatchNow(new DestroyManyCompanyCommand($request->get('ids'))) ?? []);
     }
 
     /**
@@ -222,12 +225,9 @@ class CompanyController extends Controller
      */
     public function show($id)
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetCompanyCommand((int)$id)
-            ),
-            new CompanyTransform()
-        );
+        $company = $this->dispatchNow(new GetCompanyCommand((int)$id));
+
+        return $this->success(new CompanyResources($company));
     }
 
     /**
@@ -315,16 +315,18 @@ class CompanyController extends Controller
      */
     public function update(UpdateCompanyRequest $request, $id)
     {
-        return $this->responseTransform($this->dispatchNow(
+        $company = $this->dispatchNow(
             new UpdateCompanyCommand(
                 (int)$id,
                 $this->getCompanyFields($request->toArray()),
                 $request->get('industries', []),
-                $request->get('vacancies', []),
-                $request->get('subsidiaries', []),
-                Auth::user()
+                $request->get('vacancies'),
+                $request->get('subsidiaries'),
+                $request->user()
             )
-        ), new CompanyTransform());
+        );
+
+        return $this->success(new CompanyResources($company));
     }
 
     /**
@@ -466,20 +468,19 @@ class CompanyController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function index(GetCompanyListRequest $request)
+    public function index(GetCompanyListRequest $request, Pagination $pagination)
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetCompanyListCommand(
-                    Auth::user(),
-                    $request->get('search', []),
-                    $request->get('sort', []),
-                    $request->get('page', 1),
-                    $request->get('limit', 10),
-                    $request->get('mode', null),
-                )
-            ),
-            new CompanyTransform()
+        $company = $this->dispatchNow(
+            new GetCompanyListCommand(
+                $request->user(),
+                $request->get('search', []),
+                $request->get('sort', []),
+                $request->get('page', 1),
+                $request->get('limit', 10),
+                $request->get('mode', null),
+            )
         );
+
+        return $this->success(CompanyResources::collection($company), $pagination->getMeta($company));
     }
 }

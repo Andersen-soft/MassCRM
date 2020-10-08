@@ -36,15 +36,20 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
     && ln -s $(composer config --global home) /root/composer
 
 COPY docker/php-fpm/php-ini.ini /usr/local/etc/php/conf.d/90-custom.ini
+COPY docker/php-fpm/www.conf  /usr/local/etc/php-fpm.d/www.conf
 COPY --chown=www-data:www-data . /var/www/
 WORKDIR /var/www/
 RUN composer install
 #RUN chown -R www-data:www-data /var/www
 RUN chmod +x /var/www/storage/bash/*
 COPY docker/php-fpm/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN crontab -l | { cat; echo "3 2 * * * /bin/bash -c /var/www/storage/bash/lemblacklist.sh"; } | crontab -
+RUN crontab -l | { cat; echo "3 4 * * * /bin/bash -c /var/www/storage/bash/repblacklist.sh"; } | crontab -
+RUN crontab -l | { cat; echo "2 0 * * * /bin/bash -c /var/www/storage/bash/transfcomp.sh"; } | crontab -
+RUN crontab -l | { cat; echo "0 21 * * * /bin/bash -c /var/www/storage/bash/transfcont.sh"; } | crontab -
 RUN php artisan config:cache
 RUN php artisan migrate
 RUN php artisan cache:clear
 RUN php artisan view:clear
-RUN php artisan route:clear
+RUN php artisan route:cache
 CMD ["/usr/bin/supervisord"]

@@ -7,7 +7,9 @@ import { columnsListStyle } from './ColumnsList.style';
 export const ColumnsList: FC<IColumnsList> = ({
   items,
   itemsChecked,
-  onChangeFilter
+  indeterminateCheckbox,
+  onChangeFilter,
+  onChangeAllFilter
 }) => {
   const style = columnsListStyle();
   const handlerOnChange = useCallback(
@@ -19,10 +21,22 @@ export const ColumnsList: FC<IColumnsList> = ({
     itemsChecked?.includes(itemCode) || false;
 
   return (
-    <Box className={style.filter}>
-      {items.map(
-        ({ name, code }) =>
-          code && (
+    <Box className={style.wrapper}>
+      <FormControlLabel
+        label={indeterminateCheckbox ? 'Reset all' : 'Select all'}
+        control={
+          <CustomCheckBox
+            indeterminateCheckbox={indeterminateCheckbox}
+            onChange={onChangeAllFilter}
+            value={false}
+          />
+        }
+      />
+      <div className={style.filter}>
+        {items.reduce((result: JSX.Element[], { name, code }) => {
+          if (!code) return result;
+          return [
+            ...result,
             <FormControlLabel
               key={code}
               label={name}
@@ -33,8 +47,9 @@ export const ColumnsList: FC<IColumnsList> = ({
                 />
               }
             />
-          )
-      )}
+          ];
+        }, [])}
+      </div>
     </Box>
   );
 };

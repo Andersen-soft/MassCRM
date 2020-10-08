@@ -1,0 +1,95 @@
+version: '3'
+services:
+  db-pg:
+    container_name: db-pg
+    image: postgres
+    restart: always
+    ports:
+      - 2345:5432
+    environment:
+      POSTGRES_DB: "masscrm"
+      POSTGRES_USER: "masscrm"
+      POSTGRES_PASSWORD: "masscrmpgpass"      
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+    networks:
+      - masscrm
+      
+  front:
+    container_name: front-nginx-115
+    build:
+      context: ./masscrm_front
+      dockerfile: ./docker/Dockerfile
+    restart: always
+    env_file:
+      - ./masscrm_front/.env
+    ports:
+      - "80:80"
+    depends_on:
+      - php-fpm
+    networks:
+      - masscrm
+
+  php-fpm:
+    container_name: back-php-fpm74
+    build:
+         context: ./masscrm_back
+         dockerfile: ./docker/php-fpm/Dockerfile.local
+    restart: always
+    # env here is default .env file in the root of context
+    ports:
+      - 9000:9000
+      - 8090:8090
+    volumes:
+      - server_logs_fpm:/var/log/docker
+      - storage_logs_nginx:/var/www/storage/logs
+      - files_fpm:/var/www/storage/files
+    depends_on:
+       - db-pg  
+    networks:
+      - masscrm
+
+  back-nginx:
+    container_name: back-nginx115
+    build:
+     context: ./masscrm_back
+     dockerfile: ./docker/nginx/Dockerfile
+    restart: always
+    ports:
+      - 8088:80
+    volumes:
+      - server_logs_nginx:/var/log/nginx
+      - storage_logs_fpm:/var/www/storage/logs
+      - files_nginx:/var/www/storage/files
+    depends_on:
+      - php-fpm
+    networks:
+      - masscrm
+
+  back-redis:
+    container_name: back-redis
+    build:
+     context: ./masscrm_back
+     dockerfile: ./docker/redis/Dockerfile
+    # env_file:
+    #   - .env
+    command: redis-server --requirepass 'redis123321'
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - masscrm
+      
+networks:
+  masscrm:
+volumes:
+  postgres-db:
+  redis_data:
+  server_logs_fpm:
+  storage_logs_nginx:
+  server_logs_nginx:
+  storage_logs_fpm:
+  files_nginx:
+  files_fpm:

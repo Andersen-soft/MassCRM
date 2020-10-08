@@ -7,10 +7,24 @@ use App\Exceptions\Custom\NotFoundException;
 use App\Models\Company\Company;
 use App\Models\Company\CompanyVacancy;
 use App\Models\User\User;
+use App\Repositories\Company\CompanyRepository;
+use App\Services\TransferCollection\TransferCollectionCompanyService;
 use Carbon\Carbon;
 
 class UpdateCompanyHandler
 {
+    private CompanyRepository $companyRepository;
+    private TransferCollectionCompanyService $transferCollectionCompanyService;
+
+    public function __construct(
+        CompanyRepository $companyRepository,
+        TransferCollectionCompanyService $transferCollectionCompanyService
+    )
+    {
+        $this->companyRepository = $companyRepository;
+        $this->transferCollectionCompanyService = $transferCollectionCompanyService;
+    }
+
     public function handle(UpdateCompanyCommand $command)
     {
         $company = Company::find($command->getCompanyId());
@@ -18,65 +32,72 @@ class UpdateCompanyHandler
             throw new NotFoundException('Company value(' . $command->getCompanyId() . ') not found');
         }
 
+        $previousTypeCompany = $company->type;
         $company->setUpdatedAt(Carbon::now());
         $company->user()->associate($command->getUser());
         $company->update($command->getCompanyFields());
         $this->updateIndustries($company, $command->getIndustries());
-        $this->updateSubsidiaries($company, $command->getSubsidiaries());
-        if ($command->getUser()->hasRoles([User::USER_ROLE_MANAGER, User::USER_ROLE_NC1])) {
+        $this->updateSubsidiaries($company, $command->getSubsidiaries(), $previousTypeCompany);
+        if ($command->getUser()->hasRoles([User::USER_ROLE_MANAGER, User::USER_ROLE_NC2])) {
             $this->updateVacancies($company, $command->getVacancies());
         }
 
         return $company;
     }
 
-    private function updateIndustries(Company $company, array $industries): Company
+    private function updateIndustries(Company $company, array $industries): void
     {
         if (!empty($industries)) {
             $company->industries()->sync($industries);
+            $company->industries_collection = $this->transferCollectionCompanyService->getIndustries($company);
+            $company->save();
         }
-
-        return $company;
     }
 
-    private function updateSubsidiaries(Company $company, array $subsidiaries): Company
+    private function updateSubsidiaries(Company $company, ?array $subsidiaries, ?string $previousTypeCompany): void
     {
-        if (!empty($subsidiaries)) {
+        if ($previousTypeCompany !== $company->type) {
+            $this->companyRepository->deleteCompanyFromSubsidiary($company->id);
+        }
+
+        if (isset($subsidiaries)) {
             $company->companySubsidiary()->sync($subsidiaries);
+            $company->subsidiaries_collection = $this->transferCollectionCompanyService->getSubsidiaries($company);
+            $company->save();
         }
-
-        return $company;
     }
 
-    private function updateVacancies(Company $company, array $vacancies): Company
+    private function updateVacancies(Company $company, ?array $vacancies): void
     {
-        if (empty($vacancies)) {
-            return $company;
+        if (!isset($vacancies)) {
+            return;
         }
 
         $companyVacancy = $company->vacancies()->pluck('vacancy', 'id')->toArray();
         foreach ($vacancies as $vacancy) {
             $query = CompanyVacancy::query();
-            $query = isset($vacancy['id'])
+            $query = !empty($vacancy['id'])
                 ? $query->where('id', $vacancy['id'])
                 : $query->where('vacancy', $vacancy['job']);
 
-            $cV = $query->first();
-            if ($cV instanceof CompanyVacancy) {
-                unset($companyVacancy[$cV->getId()]);
+            $newVacancy = $query->first();
+            if ($newVacancy instanceof CompanyVacancy) {
+                unset($companyVacancy[$newVacancy->id]);
             } else {
-                $cV = new CompanyVacancy(['company_id' => $company->getId()]);
+                $newVacancy = new CompanyVacancy();
             }
 
-            $cV->setVacancy($vacancy['job'])
-                ->setSkills($vacancy['skills'])
-                ->setLink($vacancy['link']);
-            $cV->save();
+            $newVacancy->vacancy = $vacancy['job'];
+            $newVacancy->skills = $vacancy['skills'] ?? null;
+            $newVacancy->link = $vacancy['link'] ?? null;
+            $company->vacancies()->save($newVacancy);
         }
+
         if (!empty($companyVacancy)) {
             CompanyVacancy::destroy(array_keys($companyVacancy));
         }
 
-        return $company;
+        $company->vacancies_collection = $this->transferCollectionCompanyService->getVacancies($company);
+        $company->save();
     }
 }

@@ -1,0 +1,91 @@
+#!groovy
+pipeline {
+    agent{
+    label "master"
+    }
+    options { 
+    disableConcurrentBuilds()
+    buildDiscarder(logRotator(numToKeepStr: "5")) 
+    }
+    environment{
+        WORKING_ENV = "$env.BRANCH_NAME"
+        image1 = "front-masscrm"
+        registry = "https://nexus-docker.andersenlab.dev"
+        registryCredentials = 'nexus.andersenlab.dev'
+        dockerCreds="masscrm-$env.BRANCH_NAME-docker"
+    }
+    
+    stages { 
+        stage('Sonarqube') {
+         when {
+            expression { return (env.BRANCH_NAME == 'dev') }
+            }
+            environment {
+               scannerHome = tool 'SonarQube'
+            }
+            steps {
+              withSonarQubeEnv('SonarQube_6.0'){
+              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=MassCRM-front:1 -Dsonar.projectName=MassCRM-front -Dsonar.projectVersion=1.0 -Dsonar.sources=masscrm_front"
+              sh "/var/lib/jenkins/workspace/waitForSonarQube.sh"
+              }
+            }
+        }
+        
+
+
+        stage('build docker images'){
+            when {
+            expression { return (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'stage')   }
+            } 
+            steps{
+              script{
+                def envfilemap = ['dev':'env.dev', 'stage': 'env.stage']
+                def envfile = envfilemap[env.BRANCH_NAME] 
+                configFileProvider([configFile(fileId: "$envfile", variable: 'CONFIG_PATH')]) {
+                    sh "cp $CONFIG_PATH .env"
+                    sh "cp $CONFIG_PATH masscrm_front/.env"
+                }
+                docker.withRegistry(registry, registryCredentials){
+                    def nginxImage = docker.build('${image1}:${WORKING_ENV}', "-f ./masscrm_front/docker/Dockerfile ./masscrm_front")
+                    nginxImage.push()
+                    }
+                }
+            }
+        }
+
+        stage('Remove Unused docker image') {
+            when {
+            expression { return (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'stage') }
+            } 
+            steps{
+                sh "docker rmi $image1:$WORKING_ENV >/dev/null 2>&1" 
+            }
+        }
+
+        stage('Pull docker image on host') {
+            when {
+            expression { return (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'stage') }
+            } 
+            steps{
+                script{
+                    def servermap = ['dev':'tcp://10.10.15.69:2376', 'stage': 'tcp://10.10.15.18:2376']
+                    def server = servermap[env.BRANCH_NAME]
+                    def composefilemap = ['dev':'masscrm_front/docker/docker-compose.dev.yaml', 'stage':'masscrm_front/docker/docker-compose.stage.yaml']
+                    def composefile = composefilemap[env.BRANCH_NAME]
+                    docker.withServer("$server",dockerCreds){
+                        docker.withRegistry(registry,registryCredentials){
+                            sh 'docker stop ${image1} || true && docker rm ${image1} || true && docker image prune -f || true'
+                            sh "docker-compose --file $composefile pull"
+                            sh "docker-compose -f $composefile up --force-recreate -d"
+                             }
+                    }
+                }
+            }
+        }
+    }
+       post{
+        cleanup{
+            cleanWs()
+        }
+    }
+}

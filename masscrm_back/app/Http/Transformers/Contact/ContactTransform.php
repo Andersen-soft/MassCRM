@@ -31,7 +31,7 @@ class ContactTransform extends TransformerAbstract
      *        "id", "company_id", "responsible", "created_at", "first_name", "last_name", "full_name",
      *        "gender", "birthday", "location", "position", "linkedin", "skype", "last_touch", "added_to_mailing",
      *        "mailing_tool", "origin", "opens", "views", "deliveries", "replies", "bounces", "confidence",
-     *        "service_id", "emails"
+     *        "service_id", "emails", "in_blacklist"
      *    },
      *    @OA\Property(property="id", type="integer", example=123),
      *    @OA\Property(property="company_id", type="integer", example=123),
@@ -63,6 +63,7 @@ class ContactTransform extends TransformerAbstract
      *    @OA\Property(property="confidence", type="integer", example=99),
      *    @OA\Property(property="service_id", type="integer", example=1233654),
      *    @OA\Property(property="comment", type="string", example="good worker"),
+     *    @OA\Property(property="in_blacklist", type="boolean", example=false),
      *    @OA\Property(property="emails", type="array",
      *        @OA\Items(type="object",
      *            required={"id", "email","verification"},

@@ -3,27 +3,27 @@ module.exports = {
     browser: true,
     es6: true,
     node: true,
-    jest: true,
+    jest: true
   },
   extends: [
     'airbnb',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
     'prettier/react',
-    'prettier/@typescript-eslint',
+    'prettier/@typescript-eslint'
   ],
   globals: {
     Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly',
+    SharedArrayBuffer: 'readonly'
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
-      useJSXTextNode: true,
+      useJSXTextNode: true
     },
     ecmaVersion: 2018,
-    sourceType: 'module',
+    sourceType: 'module'
   },
   plugins: ['react', '@typescript-eslint', 'react-hooks'],
   rules: {
@@ -39,7 +39,7 @@ module.exports = {
     '@typescript-eslint/no-non-null-assertion': 0,
     '@typescript-eslint/no-var-requires': 0,
     '@typescript-eslint/interface-name-prefix': 0,
-    '@typescript-eslint/camelcase': "off",
+    '@typescript-eslint/camelcase': 'off',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
@@ -47,8 +47,8 @@ module.exports = {
         vars: 'all',
         args: 'after-used',
         ignoreRestSiblings: true,
-        argsIgnorePattern: '_',
-      },
+        argsIgnorePattern: '_'
+      }
     ],
     'jsx-a11y/label-has-associated-control': ['error', { assert: 'either' }],
     'jsx-a11y/label-has-for': 'off',
@@ -67,16 +67,16 @@ module.exports = {
       'error',
       {
         singleQuote: true,
-        jsxSingleQuote: true,
-      },
-    ],
+        jsxSingleQuote: true
+      }
+    ]
   },
   settings: {
     'import/resolver': {
       node: {
         extensions: ['.js', '.json', '.ts', '.tsx'],
-        paths: ['.'],
-      },
-    },
-  },
+        paths: ['.']
+      }
+    }
+  }
 };

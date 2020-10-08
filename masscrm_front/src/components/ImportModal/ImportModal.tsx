@@ -3,8 +3,12 @@ import { Dialog, DialogActions, DialogContent } from '@material-ui/core';
 import { ClickAwayListenerProps as MaterialClickAwayListenerProps } from '@material-ui/core/ClickAwayListener';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
-
-import { importActions } from 'src/actions/import.action';
+import {
+  importActions,
+  changeImportFormStateAction,
+  setFileInfoAction,
+  setShowStartImportMessageAction
+} from 'src/actions/import.action';
 import { IMPORT_FORM_INITIAL_VALUES } from 'src/reducers/import.reducer';
 import {
   IStoreState,
@@ -12,11 +16,9 @@ import {
   IImportedData
 } from 'src/interfaces';
 import { useTabsState } from 'src/hooks/tabs.hook';
-
 import { Tabs, TabsConfig, TabConfig } from '../common/Tabs';
 import { CommonAlert } from '../common/CommonAlert';
 import { MessageModal } from '../common/MessageModal';
-
 import { UploadingSettings } from './ImportModalTabs/UploadingSettings';
 import { FieldMatching } from './ImportModalTabs/FieldMatching';
 import { Duplicates } from './ImportModalTabs/Duplicates';
@@ -28,6 +30,7 @@ import { ImportModalActions } from './ImportModalActions';
 interface Props {
   open: boolean;
   onClose?: () => void;
+  importTabs?: string | number;
 }
 
 const TABS_CONFIG: TabsConfig = [
@@ -48,12 +51,7 @@ const TABS_CONFIG: TabsConfig = [
     label: 'Import'
   }
 ];
-const TABS_LIST = TABS_CONFIG.map((tabConfig: TabConfig) => tabConfig.key);
-const DEFAULT_SELECTED_TAB = TABS_CONFIG[0].key;
-const TABS_STATE_PARAMS = {
-  tabsList: TABS_LIST,
-  defaultSelected: DEFAULT_SELECTED_TAB
-};
+
 const ALERT_DELAY = 5000;
 let ALERT_TIMEOUT: NodeJS.Timeout;
 const CLICK_AWAY_LISTENER_PROPS: Partial<MaterialClickAwayListenerProps> = {
@@ -61,11 +59,18 @@ const CLICK_AWAY_LISTENER_PROPS: Partial<MaterialClickAwayListenerProps> = {
 };
 
 export const ImportModal: React.FC<Props> = props => {
+  const importStore = useSelector((state: IStoreState) => state.import);
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { open, onClose } = props;
+  const { open, onClose, importTabs } = props;
 
-  const importStore = useSelector((state: IStoreState) => state.import);
+  const TABS_LIST = TABS_CONFIG.map((tabConfig: TabConfig) => tabConfig.key);
+  const DEFAULT_SELECTED_TAB = importTabs || TABS_CONFIG[0].key;
+  const TABS_STATE_PARAMS = {
+    tabsList: TABS_LIST,
+    defaultSelected: DEFAULT_SELECTED_TAB
+  };
+
   const memoizedClasses = React.useMemo(
     () => ({
       dialog: { paper: classes.root },
@@ -122,7 +127,7 @@ export const ImportModal: React.FC<Props> = props => {
   const handleReasetForm = React.useCallback(() => {
     form.setValues(IMPORT_FORM_INITIAL_VALUES);
     dispatch(
-      importActions.setFileInfoAction({
+      setFileInfoAction({
         name: '',
         size: ''
       })
@@ -147,16 +152,14 @@ export const ImportModal: React.FC<Props> = props => {
   const handleCheckRequiredFieldsErr = React.useCallback(
     (selectedTab: string | number) => {
       const isSelectedReqField = importStore.formState.fields.find(
-        field => field === 'Email' || field === 'E-mail' || field === 'Company'
+        field => field === 'Email' || field === 'E-mail'
       );
       const isError = !isSelectedReqField && selectedTab === 'Duplicates';
 
       if (importStore.fieldsSelectList.length > 1 && isError && !errorMessage) {
         changeErrorMessage('');
         clearTimeout(ALERT_TIMEOUT);
-        changeErrorMessage(
-          'Please select required column:  "E-mail" and/ or "Company"'
-        );
+        changeErrorMessage('Please select required column:  "E-mail"');
 
         ALERT_TIMEOUT = setTimeout(() => handleCloseAlert(), ALERT_DELAY);
       }
@@ -200,7 +203,7 @@ export const ImportModal: React.FC<Props> = props => {
   }, [form, handleCheckRequiredFieldsErr, importStore.importStatus, tabsState]);
 
   const hadnleCloseStartImportMessage = React.useCallback(() => {
-    dispatch(importActions.setShowStartImportMessageAction(false));
+    dispatch(setShowStartImportMessageAction(false));
   }, [dispatch]);
 
   // Load data for origin, fields and column separator
@@ -219,7 +222,7 @@ export const ImportModal: React.FC<Props> = props => {
 
   // Save form state to store
   React.useEffect(() => {
-    dispatch(importActions.changeImportFormStateAction(form.values));
+    dispatch(changeImportFormStateAction(form.values));
   }, [dispatch, form.values]);
 
   React.useEffect(() => {

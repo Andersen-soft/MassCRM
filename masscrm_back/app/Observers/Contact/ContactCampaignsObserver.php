@@ -36,7 +36,7 @@ class ContactCampaignsObserver
                     ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
                     ->setModelField(ContactCampaigns::SEQUENCE_FIELD)
                     ->setDataNew($contactCampaigns->status->getName())
-                    ->setLogInfo($contactCampaigns->toJson())
+                    ->setLogInfo($contactCampaigns->getRawOriginal())
                     ->setAdditionalInfoForData($contactCampaigns->getSequence())
                     ->save();
             }
@@ -48,7 +48,7 @@ class ContactCampaignsObserver
                 ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
                 ->setModelField($key)
                 ->setDataNew($contactCampaigns->{$key})
-                ->setLogInfo($contactCampaigns->toJson())
+                ->setLogInfo($contactCampaigns->getRawOriginal())
                 ->save();
         }
     }
@@ -75,7 +75,7 @@ class ContactCampaignsObserver
                     ->setModelField(ContactCampaigns::STATUS_ID_FIELD)
                     ->setDataNew($contactCampaigns->status->getName())
                     ->setDataOld($campaignStatus ? $campaignStatus->getName () : null)
-                    ->setLogInfo($contactCampaigns->toJson())
+                    ->setLogInfo($contactCampaigns->getRawOriginal())
                     ->setAdditionalInfoForData($contactCampaigns->getSequence())
                     ->save();
             } else {
@@ -87,7 +87,7 @@ class ContactCampaignsObserver
                     ->setModelField($key)
                     ->setDataNew($contactCampaigns->{$key})
                     ->setDataOld($contactCampaigns->getOriginal($key))
-                    ->setLogInfo($contactCampaigns->toJson())
+                    ->setLogInfo($contactCampaigns->getRawOriginal())
                     ->setAdditionalInfoForData($contactCampaigns->getSequence())
                     ->save();
             }
@@ -106,7 +106,7 @@ class ContactCampaignsObserver
             ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
             ->setModelField(ContactCampaigns::SEQUENCE_FIELD)
             ->setDataOld($contactCampaigns->getOriginal(ContactCampaigns::SEQUENCE_FIELD))
-            ->setLogInfo($contactCampaigns->toJson())
+            ->setLogInfo($contactCampaigns->getRawOriginal())
             ->save();
     }
 }

@@ -23,12 +23,9 @@ abstract class AbstractReport implements SearchType
         $listSequences = [];
         $listSequencesStatus = [];
 
-        /** @var ContactCampaigns $sequence */
-        foreach ($contact->sequences as $sequence) {
-            if ($sequence->status->isActive()) {
-                $listSequences[] = $sequence->getSequence();
-                $listSequencesStatus[] = $sequence->status->getName();
-            }
+        foreach ($contact->sequence_collection as $sequence) {
+            $listSequences[] = $sequence['sequence'];
+            $listSequencesStatus[] = $sequence['status'];
         }
 
         return [
@@ -41,11 +38,8 @@ abstract class AbstractReport implements SearchType
     {
         $listNetworks = [];
 
-        /** @var ContactSocialNetworks $network */
-        foreach ($contact->contactSocialNetworks as $network) {
-            if ($network->isActive()) {
-                $listNetworks[] = $network->getLink();
-            }
+        foreach ($contact->social_network_collection as $network) {
+            $listNetworks[] = $network['link'];
         }
 
         return [
@@ -57,11 +51,8 @@ abstract class AbstractReport implements SearchType
     {
         $phones = [];
 
-        /** @var ContactPhones $phone */
-        foreach ($contact->contactPhones as $phone) {
-            if ($phone->isActive()) {
-                $phones[] = $phone->getPhone();
-            }
+        foreach ($contact->phone_collection as $phone) {
+            $phones[] = $phone['phone'];
         }
 
         return [
@@ -96,18 +87,23 @@ abstract class AbstractReport implements SearchType
         $requiresValidationEmails = [];
 
         /** @var ContactEmails $email */
-        foreach ($contact->contactEmails as $email) {
-            if ($email->isActive()) {
-                $emails[] = $email->getEmail();
-                $requiresValidationEmails[] = $email->isVerification() ?
+        foreach ($contact->email_collection as $email) {
+                $emails[] = $email['email'];
+                $requiresValidationEmails[] = $email['verification'] ?
                     Lang::get('report.yes') :
                     Lang::get('report.no');
-            }
         }
 
         return [
             'requires_validation' => $requiresValidationEmails,
             'emails' => $emails
+        ];
+    }
+
+    protected function getInBlacklist(Contact $contact): array
+    {
+        return [
+            'in_blacklist' => $contact->in_blacklist ? Lang::get('report.yes') : Lang::get('report.no')
         ];
     }
 
@@ -120,17 +116,17 @@ abstract class AbstractReport implements SearchType
         $salesCreated = [];
 
         /** @var ContactSale $sale */
-        foreach ($contact->sales as $sale) {
-            $salesIs1cProject[] = $sale->isProjectC1() ? Lang::get('report.yes') : Lang::get('report.no');
-            $salesLink[] = $sale->getLink();
-            if ($sale->status) {
-                $salesStatus[] = $sale->status->getName();
+        foreach ($contact->sale_collection as $sale) {
+            $salesIs1cProject[] = $sale['project_c1'] ? Lang::get('report.yes') : Lang::get('report.no');
+            $salesLink[] = $sale['link'];
+            if (!empty($sale['status'])) {
+                $salesStatus[] = $sale['status'];
             }
-            if ($sale->source) {
-                $salesSources[] = $sale->source->getName();
+            if (!empty($sale['source'])) {
+                $salesSources[] = $sale['source'];
             }
 
-            $salesCreated[] = $sale->getCreatedAtDate();
+            $salesCreated[] = $sale['create_at'];
         }
 
         return [
@@ -138,7 +134,7 @@ abstract class AbstractReport implements SearchType
             'sale_status' => $salesStatus,
             'sale_project_c1' => $salesIs1cProject,
             'source' => $salesSources,
-            'sale_сreated' => $salesCreated,
+            'sale_created' => $salesCreated,
         ];
     }
 
@@ -146,9 +142,8 @@ abstract class AbstractReport implements SearchType
     {
         $messages = [];
 
-        /** @var ContactMails $mail */
-        foreach ($contact->mails as $mail) {
-            $messages[] = $mail->getMessage();
+        foreach ($contact->mail_collection as $mail) {
+            $messages[] = $mail['message'];
         }
 
         return [
@@ -161,8 +156,8 @@ abstract class AbstractReport implements SearchType
         $notes = [];
 
         /** @var ContactNotes $note */
-        foreach ($contact->notes as $note) {
-            $notes[] = $note->getMessage();
+        foreach ($contact->note_collection as $note) {
+            $notes[] = $note['message'];
         }
 
         return [
@@ -176,13 +171,13 @@ abstract class AbstractReport implements SearchType
         if ($contact->company) {
 
             /** @var Industry $industry */
-            foreach ($contact->company->industries as $industry) {
-                $industries[] = $industry->getName();
+            foreach ($contact->company->industries_collection as $industry) {
+                $industries[] = $industry['name'];
             }
         }
 
         return [
-            'industries' => $industries
+            'company_industries' => $industries
         ];
     }
 
@@ -190,18 +185,21 @@ abstract class AbstractReport implements SearchType
     {
         $jobs = [];
         $jobsSkills = [];
+        $jobsLink = [];
         if ($contact->company) {
 
             /** @var CompanyVacancy $vacancy */
-            foreach ($contact->company->vacancies as $vacancy) {
-                $jobs[] = $vacancy->getVacancy();
-                $jobsSkills[] = $vacancy->getSkills();
+            foreach ($contact->company->vacancies_collection as $vacancy) {
+                $jobs[] = $vacancy['job'];
+                $jobsSkills[] = $vacancy['skills'];
+                $jobsLink[] = $vacancy['link'];
             }
         }
 
         return [
             'jobs' => $jobs,
-            'jobs_skills' => $jobsSkills
+            'jobs_skills' => $jobsSkills,
+            'jobs_urls' => $jobsLink
         ];
     }
 
@@ -212,7 +210,7 @@ abstract class AbstractReport implements SearchType
 
             /** @var Company $relation */
             foreach ($contact->company->companySubsidiary as $relation) {
-                $relationCompanies[] = $relation->getName();
+                $relationCompanies[] = $relation->name;
             }
 
             if ($contact->company->isSubsidiary()) {
@@ -231,12 +229,12 @@ abstract class AbstractReport implements SearchType
     {
         $size = [];
         if ($contact->company) {
-            if ($contact->company->getMinEmployees()) {
-                $size[] = $contact->company->getMinEmployees();
+            if ($contact->company->min_employees) {
+                $size[] = $contact->company->min_employees;
             }
 
-            if ($contact->company->getMaxEmployees()) {
-                $size[] = $contact->company->getMaxEmployees();
+            if ($contact->company->max_employees) {
+                $size[] = $contact->company->max_employees;
             }
         }
 

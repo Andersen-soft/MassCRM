@@ -1,0 +1,103 @@
+#!groovy
+pipeline {
+    agent{
+    label "master"
+    }
+    options { 
+    disableConcurrentBuilds()
+    buildDiscarder(logRotator(numToKeepStr: "5")) 
+    }
+    environment{
+        WORKING_ENV = "$env.BRANCH_NAME"
+        image1 = "nginx-masscrm"
+        image2 = "php-fpm7.4-masscrm"
+        image3 = "redis-masscrm"
+        registry = "https://nexus-docker.andersenlab.dev"
+        registryCredentials = 'nexus.andersenlab.dev'
+        dockerCreds="masscrm-$env.BRANCH_NAME-docker"
+    }
+    
+    stages { 
+        stage('Sonarqube') {
+         when {
+            expression { return (env.BRANCH_NAME == 'dev_') }
+            }
+            environment {
+               scannerHome = tool 'SonarQube'
+            }
+            steps {
+              withSonarQubeEnv('SonarQube_6.0'){
+              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=MassCRM-back:1 -Dsonar.projectName=MassCRM-back -Dsonar.projectVersion=1.0 -Dsonar.sources=masscrm_back/ -Dsonar.exclusions=masscrm_back/database/**/*,masscrm_back/storage/**/*"
+              sh "/var/lib/jenkins/workspace/waitForSonarQube.sh"
+              }
+            }
+        }
+
+        stage('build docker images'){
+            when {
+            expression { return (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'stage')   }
+            } 
+            steps{
+              script{
+                def envfilemap = ['dev':'env_dev', 'stage': 'env_stage']
+                def envfile = envfilemap[env.BRANCH_NAME] 
+              configFileProvider([configFile(fileId: "$envfile", variable: 'CONFIG_PATH')]) {
+                    sh "cp $CONFIG_PATH ./masscrm_back/.env"
+                    sh "cp $CONFIG_PATH ./masscrm_back/docker/.env"
+                    sh "cp $CONFIG_PATH .env"                  
+                                
+               }
+                docker.withRegistry(registry, registryCredentials){
+                    def nginxImage = docker.build('${image1}:${WORKING_ENV}', "-f ./masscrm_back/docker/nginx/Dockerfile ./masscrm_back")
+                    nginxImage.push()
+                    def phpfpmImage = docker.build('${image2}:${WORKING_ENV}', "-f ./masscrm_back/docker/php-fpm/Dockerfile ./masscrm_back")
+                    phpfpmImage.push()
+                    def redisImage = docker.build('${image3}:${WORKING_ENV}', "-f ./masscrm_back/docker/redis/Dockerfile ./masscrm_back")
+                    redisImage.push()
+                    }
+                }
+            }
+        }
+
+        stage('Remove Unused docker images') {
+            when {
+            expression { return (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'stage') }
+            } 
+            steps{
+                sh "docker rmi $image1:$WORKING_ENV >/dev/null 2>&1" 
+                sh "docker rmi $image2:$WORKING_ENV >/dev/null 2>&1"
+                sh "docker rmi $image3:$WORKING_ENV >/dev/null 2>&1"
+            }
+        }
+
+        stage('Pull docker image on host') {
+            when {
+            expression { return (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'stage') }
+            } 
+            steps{
+                script{
+                    def servermap = ['dev':'tcp://10.10.15.69:2376', 'stage': 'tcp://10.10.15.18:2376']
+                    def server = servermap[env.BRANCH_NAME]
+                    def composefilemap = ['dev':'masscrm_back/docker/docker-compose.dev.yaml', 'stage':'masscrm_back/docker/docker-compose.stage.yaml']
+                    def composefile = composefilemap[env.BRANCH_NAME]
+                    docker.withServer("$server",dockerCreds){
+                        docker.withRegistry(registry,registryCredentials){
+                            sh 'docker stop ${image1} || true'
+                            sh 'docker stop ${image2} || true'
+                            sh 'docker stop ${image3} || true'
+                            sh 'docker rm ${image1} ||true && docker rm ${image2} ||true && docker rm ${image3} ||true'
+                            sh "docker-compose --file $composefile pull"
+                            sh "docker-compose -f $composefile up --force-recreate -d"
+                            sh "docker image prune -f"
+                             }
+                    }
+                }
+            }
+        }
+    }
+      post{
+        cleanup{
+          cleanWs()
+        }
+      }
+}

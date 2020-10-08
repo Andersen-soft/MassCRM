@@ -34,6 +34,7 @@ import { IUser } from 'src/interfaces';
 import { getRolesText } from 'src/utils/roles/getRolesText';
 import { useStyles } from 'src/components/UsersCRM/AddUserForm/AddUserForm.styles';
 import { RolesInfo } from './RolesInfo';
+import { addUserFormSchema } from '../../../utils/form/validate';
 
 interface IAddUserFormProps {
   id?: number;
@@ -64,8 +65,6 @@ const rolesDisplay: IRolesDisplay = {
   NC1: 'nc1',
   NC2: 'nc2'
 };
-
-const keys = ['email', 'login', 'name', 'surname', 'roles', 'skype'];
 
 const INITIAL_VALUES = {
   email: '',
@@ -127,30 +126,11 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
     [ldapUsers]
   );
 
-  const validate = (val: IAddUserFormInputs) => {
-    const errors: {
-      [index: string]: string | Array<string> | undefined;
-      email?: string;
-      login?: string;
-      name?: string;
-      surname?: string;
-      roles?: string;
-      skype?: string;
-    } = {};
-
-    keys.forEach((item: string) => {
-      if (!val[item] || (val[item] as string)?.length === 0) errors[item] = ' ';
-    });
-
-    return errors;
-  };
-
   const submitHandler = useCallback((formState: IAddUserFormInputs) => {
     const userRoles = formState?.roles?.map(
       (role: string) => rolesDisplay[role]
     );
     const data = { ...formState, roles: userRoles };
-
     if (id) {
       dispatch(
         patchUser(
@@ -201,8 +181,8 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
     initialValues,
     validateOnBlur: true,
     validateOnChange: true,
-    validate,
-    onSubmit: submitHandler
+    onSubmit: submitHandler,
+    validationSchema: addUserFormSchema
   });
 
   const handleCheckOpen = useCallback(() => {
@@ -244,11 +224,17 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
   }, []);
 
   useEffect(() => {
-    if (ldapUsers && ldapUsers.length === 1) {
+    if (ldapUsers?.length === 1) {
       formik.setFieldValue('fromActiveDirectory', true);
       formik.setFieldValue('name', ldapUsers[0].name);
       formik.setFieldValue('surname', ldapUsers[0].surname);
       formik.setFieldValue('login', ldapUsers[0].login);
+    }
+    if (!ldapUsers.length) {
+      formik.setFieldValue('fromActiveDirectory', false);
+      formik.setFieldValue('name', initialValues.name);
+      formik.setFieldValue('surname', initialValues.surname);
+      formik.setFieldValue('login', initialValues.login);
     }
   }, [ldapUsers]);
 
@@ -296,7 +282,10 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
             value={formik.values.login}
             placeholder='Login'
             width='270px'
-            disabled={!!id && formik.values.fromActiveDirectory}
+            disabled={
+              (!!id || Boolean(ldapUsers?.length)) &&
+              formik.values.fromActiveDirectory
+            }
             onChangeValue={formik.handleChange}
             errorMessage={formik.errors.login}
           />
@@ -339,6 +328,7 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
             value={formik.values.comment}
             placeholder='Type a text'
             onChange={formik.handleChange}
+            width='230px'
           />
         </div>
 

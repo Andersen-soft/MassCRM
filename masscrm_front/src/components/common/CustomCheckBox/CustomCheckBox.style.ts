@@ -6,7 +6,7 @@ export const checkBoxStyle = makeStyles(() =>
       padding: 0,
       '& .MuiIconButton-root': {
         '&:hover': {
-          color: '#69738F',
+          color: '#69738f',
           backgroundColor: 'none'
         }
       },
@@ -17,7 +17,7 @@ export const checkBoxStyle = makeStyles(() =>
         width: '19px'
       },
       '& .MuiCheckbox-root': {
-        color: '#78829D'
+        color: '#78829d'
       }
     }
   })

@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Country;
 use App\Commands\Location\GetCitiesCommand;
 use App\Commands\Location\GetCountriesCommand;
 use App\Commands\Location\GetRegionsCommand;
-use App\Http\Controllers\Controller;
-use App\Http\Transformers\Location\CityTransform;
-use App\Http\Transformers\Location\CountryTransform;
-use App\Http\Transformers\Location\RegionTransform;
+use App\Http\Controllers\BaseController;
+use App\Http\Resources\Location\CityCollection;
+use App\Http\Resources\Location\RegionCollection;
+use App\Http\Resources\Location\CountryCollection;
+use Illuminate\Http\JsonResponse;
 
-class CountryController extends Controller
+class CountryController extends BaseController
 {
     /**
      * @OA\Get(
@@ -33,12 +34,11 @@ class CountryController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function countries()
+    public function countries(): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(new GetCountriesCommand()),
-            new CountryTransform()
-        );
+        $countries = $this->dispatchNow(new GetCountriesCommand());
+
+        return $this->success(new CountryCollection($countries));
     }
 
     /**
@@ -70,12 +70,11 @@ class CountryController extends Controller
      *     @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function regions(string $code)
+    public function regions(string $code): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(new GetRegionsCommand($code)),
-            new RegionTransform()
-        );
+        $regions =  $this->dispatchNow(new GetRegionsCommand($code));
+
+        return $this->success(new RegionCollection($regions));
     }
 
     /**
@@ -107,11 +106,10 @@ class CountryController extends Controller
      *     @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function cities(string $code)
+    public function cities(string $code): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(new GetCitiesCommand($code)),
-            new CityTransform()
-        );
+        $cities = $this->dispatchNow(new GetCitiesCommand($code));
+
+        return $this->success(new CityCollection($cities));
     }
 }

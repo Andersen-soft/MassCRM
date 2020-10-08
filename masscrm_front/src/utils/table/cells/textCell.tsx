@@ -1,43 +1,65 @@
 import React from 'react';
 import { TableCellBaseProps } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
-import { IContact } from 'src/interfaces';
+import { IContact, IContactResult } from 'src/interfaces';
 import { getAddContactList, updateContact, updateCompany } from 'src/actions';
 import { TableCellText } from 'src/components/common/Table/components';
 import { getFilterSettings } from 'src/selectors';
-import { SocialIcon } from '../../../components/common/SocialIcon';
+import { format } from 'date-fns';
 
-export const textCell = (
-  id: number,
-  name: string,
+interface ITextCell {
+  id: number;
+  name: string;
+  value?: string;
+  switchValue?: boolean;
+  required?: boolean;
+  isCompany?: boolean;
+  link?: string;
+  validation?: (val: string) => string | false;
+  contact?: IContactResult;
+  type?: 'link' | 'text' | 'switch' | 'linkedin' | 'skype';
+  isDate?: boolean;
+  href?: string;
+}
+
+export const textCell = ({
+  id,
+  name,
+  isCompany,
+  link,
   value = '',
-  required?: boolean,
-  isCompany?: boolean,
-  link?: string,
-  socialName?: string,
-  validation?: (val: string) => string | false
-) => ({ className }: React.PropsWithChildren<TableCellBaseProps>) => {
+  contact,
+  isDate,
+  ...props
+}: ITextCell) => ({
+  className
+}: React.PropsWithChildren<TableCellBaseProps>) => {
   const dispatch = useDispatch();
   const filter = useSelector(getFilterSettings);
 
-  const onSubmitHandler = (val?: string) => {
+  const onSubmitHandler = (val?: string | boolean) => {
     const newValue: IContact = {};
-    newValue[name] = val;
+
+    newValue[name] =
+      isDate && val && typeof val === 'string'
+        ? format(new Date(val), 'd.MM.yyyy')
+        : val;
+
     const doAfterSave = () => dispatch(getAddContactList(filter));
+
     return isCompany
-      ? updateCompany(id, newValue).then(doAfterSave)
+      ? updateCompany(id, newValue, contact?.id).then(doAfterSave)
       : updateContact(newValue, id).then(doAfterSave);
   };
 
   return (
     <TableCellText
-      onSubmitChanges={onSubmitHandler}
+      {...props}
       value={value}
+      onSubmitChanges={onSubmitHandler}
       className={className}
-      required={required}
       link={link}
-      td={socialName && <SocialIcon socialName={socialName} link={link} />}
-      validation={validation}
+      isDate={isDate}
     />
   );
 };

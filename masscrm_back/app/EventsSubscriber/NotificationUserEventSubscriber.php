@@ -73,7 +73,9 @@ class NotificationUserEventSubscriber
         $this->notificationUserService->sendNotificationUserToSocket(
             $event->typeNotification,
             $event->message,
-            $event->users
+            $event->users,
+            $event->filePath,
+            $event->operationId
         );
     }
 }

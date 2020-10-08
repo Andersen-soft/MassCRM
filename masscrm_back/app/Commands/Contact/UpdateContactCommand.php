@@ -12,34 +12,40 @@ class UpdateContactCommand
 {
     protected int $contactId;
     protected array $emails;
-    protected array $phones;
+    protected ?array $origin;
+    protected ?array $phones;
     protected ?int $companyId;
     protected array $contactFields;
-    protected array $colleagues;
-    protected array $socialNetworks;
-    protected ?bool $requiresValidation;
+    protected ?array $colleagues;
+    protected ?array $socialNetworks;
+    protected ?array $note;
+    protected bool $requiresValidation;
     protected User $user;
 
     public function __construct(
         int $contactId,
         User $user,
         array $emails,
-        array $phones,
+        ?array $origin,
+        ?array $phones,
         array $contactFields,
-        array $colleagues,
-        array $socialNetworks,
-        bool $requiresValidation = null,
-        int $companyId = null
+        ?array $colleagues,
+        ?array $socialNetworks,
+        bool $requiresValidation,
+        ?int $companyId = null,
+        ?array $notes
     ) {
         $this->contactId = $contactId;
         $this->user = $user;
         $this->emails = $emails;
+        $this->origin = $origin;
         $this->phones = $phones;
         $this->companyId = $companyId;
         $this->contactFields = $contactFields;
         $this->colleagues = $colleagues;
         $this->socialNetworks = $socialNetworks;
-        $this->requiresValidation = $requiresValidation ? in_array($requiresValidation, ['1', 'true']) : null;
+        $this->requiresValidation = $requiresValidation ? in_array($requiresValidation, ['1', 'true']) : false;
+        $this->notes = $notes;
     }
 
     public function getEmails(): array
@@ -47,9 +53,19 @@ class UpdateContactCommand
         return $this->emails;
     }
 
-    public function getPhones(): array
+    public function getOrigin(): ?array
+    {
+        return $this->origin;
+    }
+
+    public function getPhones(): ?array
     {
         return $this->phones;
+    }
+
+    public function getNotes(): ?array
+    {
+        return $this->notes;
     }
 
     public function getContactFields(): array
@@ -57,17 +73,17 @@ class UpdateContactCommand
         return $this->contactFields;
     }
 
-    public function getColleagues(): array
+    public function getColleagues(): ?array
     {
         return $this->colleagues;
     }
 
-    public function getSocialNetworks(): array
+    public function getSocialNetworks(): ?array
     {
         return $this->socialNetworks;
     }
 
-    public function isRequiresValidation(): ?bool
+    public function isRequiresValidation(): bool
     {
         return $this->requiresValidation;
     }

@@ -10,6 +10,9 @@ use App\Models\User\User;
  */
 class GetContactListCommand
 {
+    public const DEFAULT_LIMIT = 10;
+    public const DEFAULT_PAGE = 1;
+
     protected int $page;
     protected int $limit;
     protected array $search;
@@ -20,8 +23,8 @@ class GetContactListCommand
         User $user,
         array $search,
         array $sort,
-        int $page = 1,
-        int $limit = 10
+        int $page = self::DEFAULT_PAGE,
+        int $limit = self::DEFAULT_LIMIT
     ) {
         $this->search = $search;
         $this->sort = $sort;

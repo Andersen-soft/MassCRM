@@ -68,7 +68,8 @@ class UserService
 
     public function loginUserSuperAdmin(): ?string
     {
-        $user = $this->userRepository->fetchUserFromLogin('superAdmin');
+        /** @var User|null $user */
+        $user = User::query()->where('active', '=', true)->first();
         if ($user) {
             return auth()->login($user);
         }

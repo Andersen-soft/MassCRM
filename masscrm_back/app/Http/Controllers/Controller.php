@@ -2,14 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PayloadBuilder;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
-use League\Fractal\TransformerAbstract;
-use Illuminate\Container\Container;
 
 /**
  * @OA\Info(
@@ -33,44 +29,6 @@ use Illuminate\Container\Container;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
-
-    protected function responseTransform(
-        $response,
-        TransformerAbstract $transformer,
-        int $status = 200,
-        array $headers = []
-    ) {
-        $container = Container::getInstance();
-        /** @var PayloadBuilder $payloadBuilder */
-        $payloadBuilder = $container->make(PayloadBuilder::class);
-
-        if ($response instanceof LengthAwarePaginator) {
-            $response = $payloadBuilder->responseWithPagination($response, $transformer);
-        } else {
-            $response = is_iterable($response)
-                ? $payloadBuilder->responseCollection($response, $transformer)
-                : $payloadBuilder->responseItem($response, $transformer);
-        }
-
-        return response()->json(
-            $payloadBuilder->getResponseBody($response, true),
-            $status,
-            $headers
-        );
-    }
-
-    protected function response($response, int $status = 200, array $headers = [])
-    {
-        $container = Container::getInstance();
-        /** @var PayloadBuilder $payloadBuilder */
-        $payloadBuilder = $container->make(PayloadBuilder::class);
-
-        return response()->json(
-            $payloadBuilder->getResponseBody($response, true),
-            $status,
-            $headers
-        );
-    }
 }
 
 //Base error & responses (400, 401, 403, 404, etc.)
@@ -99,11 +57,10 @@ class Controller extends BaseController
  * @OA\Schema(
  *    schema="ValidationError",
  *    @OA\Property(property="success", type="boolean", example=false),
- *    @OA\Property(property="payload", type="object",
- *        @OA\Property(property="errors", type="object",
- *           @OA\Property(property="field_name", type="array",
- *              @OA\Items(type="string", example="The <field_name> field is required.")
- *           ),
+ *    @OA\Property(property="data", type="object"),
+ *    @OA\Property(property="errors", type="object",
+ *        @OA\Property(property="field_name", type="array",
+ *            @OA\Items(type="string", example="The <field_name> field is required.")
  *        ),
  *    ),
  * )

@@ -4,6 +4,7 @@ export const searchStyle = makeStyles(() =>
   createStyles({
     searchWrap: {
       display: 'flex',
+      alignItems: 'center',
       position: 'relative',
       '& .MuiAutocomplete-endAdornment': {
         right: 0,
@@ -11,8 +12,6 @@ export const searchStyle = makeStyles(() =>
       }
     },
     search: {
-      maxWidth: '230px',
-      width: '230px',
       '& .MuiAutocomplete-inputRoot .MuiAutocomplete-input': {
         padding: 0
       },
@@ -25,8 +24,14 @@ export const searchStyle = makeStyles(() =>
         display: 'none'
       },
       '& .Mui-error': {
-        borderColor: '#FD5757'
+        borderColor: '#fd5757'
       }
+    },
+    checkbox: {
+      display: 'none'
+    },
+    input: {
+      width: '230px'
     }
   })
 );

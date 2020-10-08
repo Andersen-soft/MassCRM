@@ -23,10 +23,11 @@ export const ColumnsFilter: FC<{ isFullTable: boolean }> = ({
   const { listField } = useSelector(getFilterSettings);
   const contactHeader: Array<ITableHeaderItem> = TableConfigCallBack(
     isFullTable,
+    true,
     true
   ).rows;
 
-  const contactColumns = contactHeader?.map(
+  const contactColumns = contactHeader.map(
     ({ code, name }: ITableHeaderItem) => ({ code, name })
   );
   const currentParam = new URLSearchParams(location.search);
@@ -38,7 +39,18 @@ export const ColumnsFilter: FC<{ isFullTable: boolean }> = ({
   });
 
   const onChangeFilter = (code: string) => {
-    dispatch(setListField(code));
+    const list = listField || [];
+    const codeArray: Array<string> = list.includes(code)
+      ? list?.filter(element => code !== element)
+      : [...list, code];
+    dispatch(setListField(codeArray));
+  };
+
+  const onChangeAllFilter = () => {
+    const newListField = listField?.length
+      ? []
+      : contactColumns.map(item => item.code).filter(item => !!item);
+    dispatch(setListField(newListField));
   };
 
   return (
@@ -51,6 +63,8 @@ export const ColumnsFilter: FC<{ isFullTable: boolean }> = ({
               items={contactColumns}
               itemsChecked={listField}
               onChangeFilter={onChangeFilter}
+              onChangeAllFilter={onChangeAllFilter}
+              indeterminateCheckbox={!!listField?.length}
             />
           }
         />

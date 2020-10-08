@@ -1,0 +1,1 @@
+docker rm -f front-nginx-115 back-nginx115 back-php-fpm74 db-pg back-redis

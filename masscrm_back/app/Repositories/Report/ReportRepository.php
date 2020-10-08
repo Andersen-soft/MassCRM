@@ -2,7 +2,7 @@
 
 namespace App\Repositories\Report;
 
-use App\Models\BaseModel;
+use App\Repositories\Contact\ContactRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Contact\Contact;
@@ -16,54 +16,55 @@ class ReportRepository implements SearchType
     private const LAST_MONTH_AND_DAY_YEAR = 1231;
     private const START_MONTH_AND_DAY_YEAR = 101;
     private const FORMAT_MASK_STRING_TO_INT = '9999';
+    private ContactRepository $contactRepository;
+
+    //TODO "companies.id" was deleted from groupBy
     private const GROUP_BY_QUERY = [
-        'contacts.id', 'companies.id', 'industries.id', 'company_vacancies.id','companies_clone.id',
-        'contact_campaigns.id', 'campaign_statuses.id', 'contact_social_networks.id','contact_colleagues.id',
-        'contact_phones.id', 'contact_emails.id', 'contact_sales.id', 'sources.id','sale_statuses.id',
-        'contact_mails.id', 'contact_notes.id'
+        'contacts.id'
     ];
 
-    private function getRelationTablesQuery(Builder $query): Builder
+    public function __construct(ContactRepository $contactRepository)
     {
-        return $query->leftJoin('companies', 'companies.id', '=', 'contacts.company_id')
-            ->leftJoin('companies_industries', 'companies_industries.company_id', '=', 'companies.id')
-            ->leftJoin('industries', 'industries.id', '=', 'companies_industries.industry_id')
-            ->leftJoin('company_vacancies', 'company_vacancies.company_id', '=', 'companies.id')
-            ->leftJoin('company_subsidiaries', 'company_subsidiaries.parent_id', '=', 'companies.id')
-            ->leftJoin('companies as companies_clone', 'companies_clone.id', '=', 'company_subsidiaries.child_id')
-            ->leftJoin('contact_campaigns', 'contact_campaigns.contact_id', '=', 'contacts.id')
-            ->leftJoin('campaign_statuses', 'campaign_statuses.id', '=', 'contact_campaigns.status_id')
-            ->leftJoin('contact_social_networks', 'contact_social_networks.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_colleagues', 'contact_colleagues.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_phones', 'contact_phones.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_emails', 'contact_emails.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_sales', 'contact_sales.contact_id', '=', 'contacts.id')
-            ->leftJoin('sources', 'sources.id', '=', 'contact_sales.source_id')
-            ->leftJoin('sale_statuses', 'sale_statuses.id', '=', 'contact_sales.status_id')
-            ->leftJoin('contact_mails', 'contact_mails.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_notes', 'contact_notes.contact_id', '=', 'contacts.id');
+        $this->contactRepository = $contactRepository;
     }
 
-    public function buildQueryReport(array $input): Builder
+    private function getRelationTablesQuery(array $search, Builder $query): Builder
     {
-        $query = Contact::query()->with('contactEmails')->select(['contacts.*']);
-        $query = $this->getRelationTablesQuery($query);
-        $query = $this->setParamsSearch($input, $query);
-        $query = $this->setParamSort($input, $query);
-        if (!empty($input['limit'])) {
-            $query->limit((int)$input['limit']);
+        if (empty($search)) {
+            return $query;
         }
+
+        foreach ($search as $key => $value) {
+            if (empty(self::LIST_FIELDS[$key]['join'])) {
+                continue;
+            }
+            foreach (self::LIST_FIELDS[$key]['join'] as $item) {
+                if (!$this->contactRepository->isJoined($query, $item['table'])) {
+                    $query->leftJoin($item['table'], $item['first'], '=', $item['second']);
+                }
+            }
+        }
+
+        return $query;
+    }
+
+    public function buildQueryReport(array $search, array $sort): Builder
+    {
+        $query = Contact::query()->select(['contacts.*']);
+        $query = $this->getRelationTablesQuery($search, $query);
+        $query = $this->setParamsSearch($search, $query);
+        $query = $this->setParamSort($sort, $query);
 
         return $query->groupBy(self::GROUP_BY_QUERY);
     }
 
-    private function setParamsSearch(array $input, Builder $query): Builder
+    private function setParamsSearch(array $search, Builder $query): Builder
     {
-        if (empty($input['search'])) {
+        if (empty($search)) {
             return $query;
         }
 
-        foreach ($input['search'] as $key => $value) {
+        foreach ($search as $key => $value) {
             switch (self::LIST_FIELDS[$key]['typeSearch']) {
                 case self::TYPE_SEARCH_FIELD_MULTI_SELECT:
                     $query->where(static function (Builder $query) use ($value, $key) {
@@ -87,9 +88,13 @@ class ReportRepository implements SearchType
                     $query = $this->filterBirthday($value, $query, $key);
                     break;
                 case self::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE:
-                    $query->whereRaw(
-                        $value['min'] . ' BETWEEN companies.min_employees AND companies.max_employees'
-                    )->where('companies.max_employees', '<=', $value['max']);
+                    if (!empty($value['max'])) {
+                        $query->whereRaw(
+                            $value['min'] . ' BETWEEN companies.min_employees AND companies.max_employees'
+                        )->where('companies.max_employees', '<=', $value['max']);
+                    } else {
+                        $query->where('companies.min_employees', '>=', $value['min']);
+                    }
                     break;
                 case self::TYPE_SEARCH_FIELD_BOUNCES:
                     if ($value) {
@@ -173,16 +178,16 @@ class ReportRepository implements SearchType
         });
     }
 
-    private function setParamSort(array $input, Builder $query): Builder
+    private function setParamSort(array $sort, Builder $query): Builder
     {
-        if (!empty($input['sort'])
-            && !empty($input['sort']['fieldName'])
-            && !empty($input['sort']['typeSort'])
-            && array_key_exists($input['sort']['fieldName'], self::LIST_FIELDS)
+        if (!empty($sort)
+            && !empty($sort['fieldName'])
+            && !empty($sort['typeSort'])
+            && array_key_exists($sort['fieldName'], self::LIST_FIELDS)
         ) {
-            $field = $input['sort']['fieldName'];
+            $field = $sort['fieldName'];
             $sortField = self::LIST_FIELDS[$field]['sortField'] ?? self::LIST_FIELDS[$field]['field'];
-            $query = $query->orderBy($sortField, $input['sort']['typeSort']);
+            $query = $query->orderBy($sortField, $sort['typeSort']);
         }
 
         return $query;

@@ -28,7 +28,7 @@ class CompanySubsidiaryObserver
             ->setModelName((new ReflectionClass($companySubsidiary))->getShortName())
             ->setModelField(CompanySubsidiary::SUBSIDIARIES_FIELD)
             ->setDataNew($companyChild->getName())
-            ->setLogInfo($companyChild->toJson())
+            ->setLogInfo($companyChild->getRawOriginal())
             ->save();
     }
 
@@ -47,7 +47,7 @@ class CompanySubsidiaryObserver
             ->setModelName((new ReflectionClass($companySubsidiary))->getShortName())
             ->setModelField(CompanySubsidiary::SUBSIDIARIES_FIELD)
             ->setDataOld($companyChild->getName())
-            ->setLogInfo($companyChild->toJson())
+            ->setLogInfo($companyChild->getRawOriginal())
             ->save();
     }
 }

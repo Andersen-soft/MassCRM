@@ -16,8 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property bool $active
- * @property string $skills
- * @property string $link
+ * @property string|null $skills
+ * @property string|null $link
  */
 class CompanyVacancy extends Model
 {
@@ -96,24 +96,24 @@ class CompanyVacancy extends Model
         return $query->where('active', true);
     }
 
-    public function getSkills(): string
+    public function getSkills(): ?string
     {
         return $this->skills;
     }
 
-    public function setSkills(string $skills): CompanyVacancy
+    public function setSkills(?string $skills): CompanyVacancy
     {
         $this->skills = $skills;
 
         return $this;
     }
 
-    public function getLink(): string
+    public function getLink(): ?string
     {
         return $this->link;
     }
 
-    public function setLink(string $link): CompanyVacancy
+    public function setLink(?string $link): CompanyVacancy
     {
         $this->link = $link;
 

@@ -28,6 +28,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Lemlist and Reply credential
+    |--------------------------------------------------------------------------
+    */
+
+    'lemlist_username' => env('LEMLIST_USERNAME'),
+    'lemlist_password' => env('LEMLIST_PASSWORD'),
+    'lemlist_blacklist_api_url' => env('LEMLIST_BLACKLIST_API_URL'),
+    'reply_api_key' => env('REPLY_API_KEY'),
+    'reply_blacklist_domains_api_url' => env('REPLY_BLACKLIST_DOMAINS_API_URL'),
+    'reply_blacklist_emails_api_url' => env('REPLY_BLACKLIST_EMAILS_API_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | SSO server authorization Andersen
     |--------------------------------------------------------------------------
     |
@@ -203,7 +216,6 @@ return [
         App\Providers\Contact\ContactServiceProvider::class,
         App\Providers\Company\CompanyServiceProvider::class,
         App\Providers\User\UserServiceProvider::class,
-        App\Providers\User\NotificationUserServiceProvider::class,
         App\Providers\Location\LocationServiceProvider::class,
         App\Providers\AttachmentFile\AttachmentFileContactServiceProvider::class,
         App\Providers\AttachmentFile\AttachmentFileCompanyServiceProvider::class,

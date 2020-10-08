@@ -9,11 +9,22 @@ import {
 import { genderStyle } from './Gender.style';
 import { IGenderProps } from './interfaces';
 
-export const Gender: FC<IGenderProps> = ({ onChangeHandler, name, value }) => {
+export const Gender: FC<IGenderProps> = ({
+  onChangeHandler,
+  name,
+  value,
+  required,
+  errorMessage
+}) => {
   const style = genderStyle();
 
   const radioBtn = (
-    <Radio color='default' size='small' classes={{ root: style.radioBtn }} />
+    <Radio
+      color='default'
+      size='small'
+      classes={{ root: style.radioBtn }}
+      required={required}
+    />
   );
 
   return (
@@ -32,7 +43,9 @@ export const Gender: FC<IGenderProps> = ({ onChangeHandler, name, value }) => {
       >
         <FormControlLabel value='m' control={radioBtn} label='Male' />
         <FormControlLabel value='f' control={radioBtn} label='Female' />
+        <FormControlLabel value='' control={radioBtn} label='Not defined' />
       </RadioGroup>
+      {errorMessage && <Box className={style.error}>{errorMessage}</Box>}
     </Box>
   );
 };

@@ -49,6 +49,10 @@ export const DateRange: FC<IDateRangeProps> = ({
     setDates(value || []);
   };
 
+  const handleOnClean = () => {
+    onChange(name, '');
+  };
+
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Box className={sn('date-range')}>
@@ -62,6 +66,7 @@ export const DateRange: FC<IDateRangeProps> = ({
           onOpen={openCalendar}
           onClose={closeCalendar}
           onChange={handleDateChange}
+          onClean={handleOnClean}
         />
         {dates.length > 0 && !isOpen ? (
           <Close

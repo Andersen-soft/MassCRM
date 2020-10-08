@@ -15,7 +15,7 @@ export const useStyles = makeStyles(
     },
     fieldsContainer: {
       width: '100%',
-      padding: '8px 64px',
+      padding: '8px 20px',
       display: 'flex',
       flexWrap: 'wrap',
       justifyContent: 'space-between'

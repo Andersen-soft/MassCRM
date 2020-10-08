@@ -29,7 +29,7 @@ class ContactSocialNetworksObserver
                 ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
                 ->setModelField($item)
                 ->setDataNew($contactSocialNetworks->{$item})
-                ->setLogInfo($contactSocialNetworks->toJson())
+                ->setLogInfo($contactSocialNetworks->getRawOriginal())
                 ->save();
         }
     }
@@ -49,7 +49,7 @@ class ContactSocialNetworksObserver
                     ->setModelField($key)
                     ->setDataNew($contactSocialNetworks->{$key})
                     ->setDataOld($contactSocialNetworks->getOriginal($key))
-                    ->setLogInfo($contactSocialNetworks->toJson())
+                    ->setLogInfo($contactSocialNetworks->getRawOriginal())
                     ->save();
             }
         }
@@ -67,7 +67,7 @@ class ContactSocialNetworksObserver
             ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
             ->setModelField(self::FIELD_LINK)
             ->setDataOld($contactSocialNetworks->getOriginal(self::FIELD_LINK))
-            ->setLogInfo($contactSocialNetworks->toJson())
+            ->setLogInfo($contactSocialNetworks->getRawOriginal())
             ->save();
     }
 }

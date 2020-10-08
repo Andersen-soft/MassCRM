@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\ActivityLog;
 
 use App\Commands\ActivityLog\Company\ShowActivityLogCompanyCommand;
-use App\Http\Controllers\Controller;
+use App\Helpers\Pagination;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\ActivityLog\ShowActivityLogListRequest;
-use App\Http\Transformers\ActivityLog\ActivityLogTransform;
+use App\Http\Resources\ActivityLog\ActivityLog;
+use Illuminate\Http\JsonResponse;
 
-class ActivityLogCompanyController extends Controller
+class ActivityLogCompanyController extends BaseController
 {
     /**
      * @OA\Get(
@@ -71,17 +73,19 @@ class ActivityLogCompanyController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function show(ShowActivityLogListRequest $request)
+    public function show(ShowActivityLogListRequest $request, Pagination $pagination): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new ShowActivityLogCompanyCommand(
-                    $request->get('id'),
-                    $request->get('page', 1),
-                    $request->get('limit', 50)
-                )
-            ),
-            new ActivityLogTransform()
+        $activityLogsCompany = $this->dispatchNow(
+            new ShowActivityLogCompanyCommand(
+                $request->get('id'),
+                $request->get('page', 1),
+                $request->get('limit', 50)
+            )
+        );
+
+        return $this->success(
+            ActivityLog::collection($activityLogsCompany),
+            $pagination->getMeta($activityLogsCompany)
         );
     }
 }

@@ -1,26 +1,15 @@
-import React, {
-  ChangeEvent,
-  FC,
-  useCallback,
-  useEffect,
-  useState
-} from 'react';
+import React, { ChangeEvent, FC, useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Formik, FormikHelpers } from 'formik';
 import {
   createContact,
   getCitiesListByRegion,
-  getCountryList,
   getRegionListByCountry,
-  getCompanyList,
-  getIndustriesList,
   createCompany,
-  getContactListDaily,
   updateCompany,
-  getFiltersData,
-  getContactList,
   updateContact,
-  getContact
+  getContact,
+  getAddContactList
 } from 'src/actions';
 import {
   getCountries,
@@ -29,12 +18,12 @@ import {
   getCompanySizeFilter,
   getOriginsFilter,
   getCompanyTypesFilter,
-  getUser
+  getUser,
+  getFilterSettings
 } from 'src/selectors';
 import {
   ICompany,
   ICompanySize,
-  ICompanyUpdate,
   IContact,
   ICountry,
   ILocation,
@@ -44,13 +33,18 @@ import { Dialog } from '@material-ui/core';
 import { getIndustries } from 'src/selectors/industry.selector';
 import { OccupiedMessage, LinkedInBlock } from 'src/components/common/PopUp';
 import { contactFormSchema } from 'src/utils/form/validate';
+import { CompanyBuilder } from 'src/utils/form/companyBuilder';
+import { ContactBuilder } from 'src/utils/form/contactBuilder';
+import { IContactsJobs } from 'src/interfaces/IContactJobInput';
 import { IContactFormInputs, IErrorsContact } from './interfaces';
 import { ContactFormUI, ContactFormModalUI } from '.';
 
 export const ContactForm: FC<{
   onCloseModal?: () => void;
+  onCancelModal?: () => void;
   contact?: IContactFormInputs;
-}> = ({ onCloseModal, contact }) => {
+  setIsTouchedForm?: (val: boolean) => void;
+}> = ({ onCloseModal, contact, setIsTouchedForm, onCancelModal }) => {
   const dispatch = useDispatch();
   const countries = useSelector(getCountries);
   const regions = useSelector(getRegion);
@@ -59,27 +53,27 @@ export const ContactForm: FC<{
   const companySizeFilter = useSelector(getCompanySizeFilter);
   const origins = useSelector(getOriginsFilter);
   const companyTypes = useSelector(getCompanyTypesFilter);
-
   const [isEditedFullName, setIsEditedFullName] = useState<boolean>(false);
   const [errorsList, setErrorsList] = useState<IErrorsContact>({ open: false });
   const { name: nameUser, surname: surnameUser, roles } = useSelector(getUser);
-  const isFullForm = Boolean(roles?.nc2 || roles?.manager || roles?.superAdmin);
+  const isFullForm = Boolean(roles?.manager || roles?.superAdmin);
+  const formForVacancies = Boolean(
+    roles?.nc2 || roles?.manager || roles?.superAdmin
+  );
+  const filter = useSelector(getFilterSettings);
+
+  const setTouchedHandler = useCallback(() => {
+    setIsTouchedForm && setIsTouchedForm(true);
+  }, [setIsTouchedForm]);
 
   const nameMapCallBack = ({ name }: { name: string }) => name;
 
   const getNamesList = (obj: Array<{ name: string }>) =>
     obj?.map(nameMapCallBack);
 
-  useEffect(() => {
-    dispatch(getCountryList());
-    dispatch(getFiltersData());
-    dispatch(getIndustriesList());
-    dispatch(getCompanyList({ mode: 'all' }));
-  }, []);
-
   const successCallback = (resetCallback: (val: object) => void) => {
     resetCallback({});
-    dispatch(onCloseModal ? getContactList() : getContactListDaily());
+    dispatch(getAddContactList(filter));
     onCloseModal && onCloseModal();
   };
 
@@ -139,10 +133,12 @@ export const ContactForm: FC<{
     last_name: '',
     full_name: '',
     company: '',
+    company_subsidiary: '',
+    company_holding: '',
     colleagues: [],
     emails: [],
     companySize: '',
-    gender: 'f',
+    gender: '',
     position: '',
     linkedin: '',
     validation: false,
@@ -153,11 +149,13 @@ export const ContactForm: FC<{
     industry: [],
     CTO: '',
     phones: [],
-    social_networks: '',
     confidence: 0,
     formCondition: isFullForm,
-    birthday: [],
-    company_founded: []
+    comment: '',
+    social_networks: [],
+    country: '',
+    region: '',
+    city: ''
   };
 
   const handleSubmit = (
@@ -225,71 +223,52 @@ export const ContactForm: FC<{
       origin,
       birthday,
       phones,
-      company_founded
+      company_founded,
+      company_type
     };
+
     const location: ILocation = { country };
-    if (region) location.region = region;
-    if (city) location.city = city;
 
-    const data: IContact = {
-      responsible: initialValues.responsible,
-      first_name,
-      last_name,
-      gender,
-      emails,
-      location,
-      company_id,
-      linkedin,
-      position,
-      skype,
-      confidence: Number(confidence),
-      full_name: full_name || `${first_name} ${last_name}`,
-      requires_validation: requires_validation ? '0' : '1',
-      birthday: birthday && birthday.toString()
-    };
-    if (origin?.length) {
-      [data.origin] = [...origin];
-    }
+    const data = new ContactBuilder()
+      .setResponsible(responsible)
+      .setFirstName(first_name)
+      .setLastName(last_name)
+      .setGender(gender)
+      .setLocation(location, region, city)
+      .setEmails(emails)
+      .setCompanyId(company_id)
+      .setPosition(position)
+      .setSkype(skype)
+      .setConfidence(confidence)
+      .setFullName(full_name, isEditedFullName)
+      .setRequestValidation(requires_validation)
+      .setBirthday(birthday)
+      .setOrigin(origin)
+      .setLinkedIn(linkedin)
+      .setComment(comment)
+      .setSocialNetworks(social_networks)
+      .setPhones(phones);
 
-    if (isFullForm && colleagues) {
-      data.colleagues = colleagues;
-    }
+    const selectedSizeCompany = companySizeFilter?.find(
+      ({ name, min }: ICompanySize) =>
+        name === companySize || Number(companySize) >= min
+    );
 
-    if (comment) {
-      data.comment = comment;
-    }
+    const newCompany = new CompanyBuilder()
+      .setName(company)
+      .setWebsite(companyWebSite)
+      .setIndustries(industries, industry)
+      .setMinEmployees(selectedSizeCompany)
+      .setMaxEmployees(selectedSizeCompany)
+      .setFounded(company_founded)
+      .setCompanyType(company_type)
+      .setCompanySubsidiary(company_subsidiary)
+      .setCompanyHolding(company_holding)
+      .setVacancies(formForVacancies, vacancies)
+      .setCTOFullName(CTO)
+      .setCompanyLinkedIn(companyLinkedIn);
 
-    if (social_networks) {
-      data.social_networks = [social_networks];
-    }
-
-    if (phones?.length) {
-      data.phones = phones;
-    }
-
-    const selectedSizeCompany = companySizeFilter?.filter(
-      ({ name }: ICompanySize) => name === companySize
-    )[0];
-
-    const newCompany: ICompanyUpdate = {
-      name: company,
-      website: companyWebSite,
-      industries: industries
-        .filter(({ name }) => industry?.includes(name))
-        .map(({ id }) => id),
-      min_employees: selectedSizeCompany?.min,
-      max_employees: selectedSizeCompany?.max,
-      founded: company_founded && company_founded.toString()
-    };
-
-    if (company_type) newCompany.type = company_type;
-    if (company_subsidiary) newCompany.subsidiaries = [company_subsidiary];
-    if (company_holding) newCompany.holding = [company_holding];
-    if (isFullForm) newCompany.vacancies = vacancies;
-    if (CTO) newCompany.sto_full_name = CTO;
-    if (CTO) newCompany.linkedin = companyLinkedIn;
-
-    const sendData = (myData: IContact) =>
+    const sendData = (myData: ContactBuilder) =>
       contact?.id
         ? updateMyContact(myData, formikHelpers.resetForm, contact.id, values)
         : createNewContact(myData, formikHelpers.resetForm, values);
@@ -299,7 +278,6 @@ export const ContactForm: FC<{
         simpleErr: error?.linkedin || error?.website || error?.name,
         open: true
       });
-
     if (company_id) {
       updateCompany(company_id, newCompany)
         .then(() => {
@@ -318,6 +296,7 @@ export const ContactForm: FC<{
 
   const onChangeCountry = useCallback(
     (setFieldValue: (key: string, data?: string) => void) => (val: string) => {
+      setTouchedHandler();
       setFieldValue('country', val);
       const codeOfCountry = countries?.filter(
         ({ name }: ICountry) => name === val
@@ -343,9 +322,13 @@ export const ContactForm: FC<{
 
   const onChangeCompany = useCallback(
     (
-      setFieldValue: (key: string, data?: string | string[] | number) => void
+      setFieldValue: (
+        key: string,
+        data?: string | string[] | number | IContactsJobs
+      ) => void
     ) => (company?: ICompany) => {
-      setFieldValue('company', company?.name);
+      setTouchedHandler();
+
       if (company) {
         const {
           id,
@@ -356,11 +339,16 @@ export const ContactForm: FC<{
           type
         } = company;
         setFieldValue('company_id', id);
+        setFieldValue('company', company.name);
         setFieldValue('companyWebSite', website);
         setFieldValue('companyLinkedIn', linkedin);
         setFieldValue('CTO', sto_full_name);
         setFieldValue('industry', companyIndustry?.map(nameMapCallBack));
         setFieldValue('company_type', type);
+        setFieldValue('company_subsidiary', company?.subsidiary?.[0]?.id);
+        setFieldValue('company_holding', company?.holding?.[0]?.id);
+        setFieldValue('company_founded', company?.founded);
+        setFieldValue('vacancies', company?.vacancies || []);
         setFieldValue(
           'companySize',
           companySizeFilter?.filter(
@@ -369,22 +357,28 @@ export const ContactForm: FC<{
         );
       }
     },
+    [dispatch]
+  );
+
+  const onChangeSubsidiary = useCallback(
+    (setFieldValue: (key: string, data?: number | string) => void) => (
+      val: ICompany
+    ) => {
+      setFieldValue('company_subsidiary', val.id);
+      setFieldValue('company_holding', '');
+    },
     []
   );
 
-  const onChangeSubsidiary = (
-    setFieldValue: (key: string, data?: number | string) => void
-  ) => (val: ICompany) => {
-    setFieldValue('company_subsidiary', val.id);
-    setFieldValue('company_holding', '');
-  };
-
-  const onChangeHolding = (
-    setFieldValue: (key: string, data?: number | string) => void
-  ) => (val: ICompany) => {
-    setFieldValue('company_holding', val.id);
-    setFieldValue('company_subsidiary', '');
-  };
+  const onChangeHolding = useCallback(
+    (setFieldValue: (key: string, data?: number | string) => void) => (
+      val: ICompany
+    ) => {
+      setFieldValue('company_holding', val.id);
+      setFieldValue('company_subsidiary', '');
+    },
+    []
+  );
 
   const onChangeFullName = (
     setFieldValue: (key: string, data?: string) => void
@@ -406,6 +400,7 @@ export const ContactForm: FC<{
   const onChangeIndustry = (
     setFieldValue: (key: string, data?: string[]) => void
   ) => (val: Array<string>) => {
+    setTouchedHandler();
     setFieldValue('industry', val);
   };
 
@@ -453,38 +448,58 @@ export const ContactForm: FC<{
       <Dialog maxWidth='sm' open={errorsList.open} onClose={closePopup}>
         {errorDialog()}
       </Dialog>
-      {onCloseModal ? (
-        <Formik
-          initialValues={initialValues}
-          validateOnBlur={false}
-          validateOnChange
-          validationSchema={contactFormSchema}
-          onSubmit={handleSubmit}
-        >
-          {formikProps => (
+      <Formik
+        initialValues={initialValues}
+        validateOnChange
+        validationSchema={contactFormSchema(roles)}
+        onSubmit={handleSubmit}
+      >
+        {({ setTouched, touched, setFieldValue, ...formikProps }) => {
+          const handleChange = (name: string) => ({
+            target: { value }
+          }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            setTouchedHandler();
+            setFieldValue(name, value);
+          };
+
+          const handleChangeFirstLastName = (name: string) => ({
+            target: { value }
+          }: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+            setTouchedHandler();
+            setFieldValue(name, value);
+            setIsEditedFullName(false);
+          };
+
+          const setFieldValueHandler = (name: string, value: any) => {
+            setTouchedHandler();
+            setFieldValue(name, value);
+          };
+
+          return onCloseModal ? (
             <ContactFormModalUI
-              formik={{ ...formikProps }}
+              role={roles}
+              formik={{ setTouched, touched, setFieldValue, ...formikProps }}
               edit={!!onCloseModal}
-              onCancel={onCloseModal}
+              onCancel={onCancelModal}
               origins={origins}
               companyTypes={companyTypes}
+              handleChange={handleChange}
+              handleChangeFirstLastName={handleChangeFirstLastName}
+              setFieldValueHandler={setFieldValueHandler}
               {...props}
             />
-          )}
-        </Formik>
-      ) : (
-        <Formik
-          initialValues={initialValues}
-          validateOnBlur={false}
-          validateOnChange
-          validationSchema={contactFormSchema}
-          onSubmit={handleSubmit}
-        >
-          {formikProps => (
-            <ContactFormUI formik={{ ...formikProps }} {...props} />
-          )}
-        </Formik>
-      )}
+          ) : (
+            <ContactFormUI
+              role={roles}
+              formik={{ setTouched, touched, setFieldValue, ...formikProps }}
+              handleChange={handleChange}
+              handleChangeFirstLastName={handleChangeFirstLastName}
+              setFieldValueHandler={setFieldValueHandler}
+              {...props}
+            />
+          );
+        }}
+      </Formik>
     </>
   );
 };

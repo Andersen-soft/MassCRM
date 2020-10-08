@@ -1,0 +1,20 @@
+[program:queue]
+command=/var/www/storage/bash/startQueue.sh
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/startQueue.err.log
+stdout_logfile=/var/log/startQueue.out.log
+
+[program:ratchet]
+command=/var/www/storage/bash/startRatchet.sh
+autostart=true
+autorestart=true
+stderr_logfile=/var/log/startRatchet.err.log
+stdout_logfile=/var/log/startRatchet.out.log
+
+
+[program:php]
+command = docker-php-entrypoint php-fpm
+
+[supervisord]
+nodaemon=true

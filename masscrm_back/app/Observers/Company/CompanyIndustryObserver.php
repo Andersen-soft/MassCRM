@@ -28,7 +28,7 @@ class CompanyIndustryObserver
             ->setModelName((new ReflectionClass($companyIndustry))->getShortName())
             ->setModelField(CompanyIndustry::INDUSTRY_FIELD)
             ->setDataNew($industry->getName())
-            ->setLogInfo($industry->toJson())
+            ->setLogInfo($industry->getRawOriginal())
             ->save();
     }
 
@@ -51,7 +51,7 @@ class CompanyIndustryObserver
             ->setModelName((new ReflectionClass($companyIndustry))->getShortName())
             ->setModelField(CompanyIndustry::INDUSTRY_FIELD)
             ->setDataOld($industry->getName())
-            ->setLogInfo($industry->toJson())
+            ->setLogInfo($industry->getRawOriginal())
             ->save();
     }
 }

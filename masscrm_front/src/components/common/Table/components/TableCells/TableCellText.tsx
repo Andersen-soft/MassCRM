@@ -1,16 +1,21 @@
-import React, { FC, useState, MouseEvent } from 'react';
+import React, { FC, useState, MouseEvent, useMemo } from 'react';
 import { Popover } from '@material-ui/core';
 import { SingleInputForm } from 'src/components/common/SingleInputForm';
+import { Done } from '@material-ui/icons';
 import { ITableCellText } from './interfaces';
+import { CommonIcon } from '../../../CommonIcon';
+import { SocialIcon } from '../../../SocialIcon';
 
 export const TableCellText: FC<ITableCellText> = ({
   value,
   className,
-  onSubmitChanges,
-  required,
   link,
-  td,
-  validation
+  required,
+  onSubmitChanges,
+  type,
+  switchValue,
+  href,
+  ...props
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const handleClose = () => {
@@ -23,19 +28,45 @@ export const TableCellText: FC<ITableCellText> = ({
 
   const onChangeValue = () => false;
 
-  const inputProps = { value, onChangeValue, required };
+  const inputProps = {
+    value,
+    onChangeValue,
+    required
+  };
+
+  const switchTD = useMemo(
+    () =>
+      switchValue ? (
+        <CommonIcon IconComponent={Done} style={{ color: '#46C662' }} />
+      ) : (
+        <></>
+      ),
+    [switchValue, type]
+  );
+
+  const td = useMemo(() => {
+    switch (true) {
+      case type === 'link':
+        return (
+          <a href={href || value} rel='noreferrer' target='_blank'>
+            {link}
+          </a>
+        );
+      case type === 'switch':
+        return switchTD;
+      case type === 'linkedin':
+        return <SocialIcon socialName='linkedin' link={link || value} />;
+      case type === 'skype':
+        return <SocialIcon socialName='skype' link={link || value} />;
+      default:
+        return <div>{value}</div>;
+    }
+  }, [link, value, type]);
 
   return (
     <>
       <td className={className} onDoubleClick={onDoubleClickHandler}>
-        {td ||
-          (link ? (
-            <a href={value} rel='noreferrer' target='_blank'>
-              {link}
-            </a>
-          ) : (
-            <div>{value}</div>
-          ))}
+        {td}
       </td>
       <Popover
         open={!!anchorEl}
@@ -51,10 +82,12 @@ export const TableCellText: FC<ITableCellText> = ({
         }}
       >
         <SingleInputForm
-          inputProps={inputProps}
+          {...props}
           onSubmit={onSubmitChanges}
+          inputProps={inputProps}
           onCancel={handleClose}
-          validation={validation}
+          type={type}
+          switchValue={switchValue}
         />
       </Popover>
     </>

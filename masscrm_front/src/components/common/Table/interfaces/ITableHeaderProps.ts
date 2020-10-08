@@ -1,7 +1,9 @@
 import {
+  IBlacklistFiltersState,
   IContactFiltersState,
   IFilterValuesUsers,
-  ISortingObject
+  ISortingObject,
+  IExportInputFilterValues
 } from 'src/interfaces';
 import { ITableConfig } from './ITableConfig';
 
@@ -16,7 +18,11 @@ export interface ITableHeaderProps {
   autocompleteValues?: (value: string) => string[];
   changeFilter?: Function;
   changeInput?: (value: string, name: string) => void;
-  filtersValues: IFilterValuesUsers | IContactFiltersState;
+  filtersValues:
+    | IFilterValuesUsers
+    | IContactFiltersState
+    | IBlacklistFiltersState
+    | IExportInputFilterValues;
   inputFilter?: Function;
   data?: Array<object>;
   sorting?: (parameter: ISortingObject) => void;

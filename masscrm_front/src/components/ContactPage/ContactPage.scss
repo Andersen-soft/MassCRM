@@ -1,0 +1,24 @@
+.info_part {
+  margin-top:16px;
+  background-color: #FFFFFF;
+  height: auto;
+  border-radius: 8px;
+}
+
+.attachment_activity_part {
+  margin-top:16px;
+  background-color: #FFFFFF;
+  height: auto;
+  border-radius: 8px;
+  padding: 25px 0 25px 0;
+  .attachmentTitle {
+    margin: 0 25px 0 24px;
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 18px;
+    line-height: 22px;
+  }
+}
+
+

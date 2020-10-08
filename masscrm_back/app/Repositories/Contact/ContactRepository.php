@@ -3,14 +3,18 @@
 namespace App\Repositories\Contact;
 
 use App\Models\BaseModel;
+use App\Models\Blacklist;
 use App\Models\Company\Company;
 use App\Models\Contact\Contact;
 use App\Models\User\User;
+use App\Services\Parsers\Import\Contact\ImportEmail;
 use App\Services\Reports\SearchType;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 
 class ContactRepository
 {
@@ -19,38 +23,46 @@ class ContactRepository
     private const START_MONTH_AND_DAY_YEAR = 101;
     private const FORMAT_MASK_STRING_TO_INT = '9999';
 
-    private function getRelationTablesQuery(Builder $query): Builder
+    public function isJoined(Builder $query, string $table): bool
     {
-        return $query->leftJoin('companies', 'companies.id', '=', 'contacts.company_id')
-            ->leftJoin('companies_industries', 'companies_industries.company_id', '=', 'companies.id')
-            ->leftJoin('industries', 'industries.id', '=', 'companies_industries.industry_id')
-            ->leftJoin('company_vacancies', 'company_vacancies.company_id', '=', 'companies.id')
-            ->leftJoin('company_subsidiaries', 'company_subsidiaries.parent_id', '=', 'companies.id')
-            ->leftJoin('companies as companies_clone', 'companies_clone.id', '=', 'company_subsidiaries.child_id')
-            ->leftJoin('contact_campaigns', 'contact_campaigns.contact_id', '=', 'contacts.id')
-            ->leftJoin('campaign_statuses', 'campaign_statuses.id', '=', 'contact_campaigns.status_id')
-            ->leftJoin('contact_social_networks', 'contact_social_networks.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_colleagues', 'contact_colleagues.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_phones', 'contact_phones.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_emails', 'contact_emails.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_sales', 'contact_sales.contact_id', '=', 'contacts.id')
-            ->leftJoin('sources', 'sources.id', '=', 'contact_sales.source_id')
-            ->leftJoin('sale_statuses', 'sale_statuses.id', '=', 'contact_sales.status_id')
-            ->leftJoin('contact_mails', 'contact_mails.contact_id', '=', 'contacts.id')
-            ->leftJoin('contact_notes', 'contact_notes.contact_id', '=', 'contacts.id');
+        return Collection::make($query->getQuery()->joins)->pluck('table')->contains($table);
+    }
+
+    private function getRelationTablesQuery(array $search, Builder $query): Builder
+    {
+        if (empty($search)) {
+            return $query;
+        }
+
+        foreach ($search as $parent => $fields) {
+            foreach ($fields as $field => $value) {
+                $filterConfig = BaseModel::getFilterConfig($field, $parent);
+                if (empty($filterConfig) || !isset($filterConfig[BaseModel::JOIN])) {
+                    continue;
+                }
+                foreach ($filterConfig[BaseModel::JOIN] as $item) {
+                    if (!$this->isJoined($query, $item['table'])) {
+                        $query->leftJoin($item['table'], $item['first'], '=', $item['second']);
+                    }
+                }
+            }
+        }
+
+        return $query;
     }
 
     public function getContactList(array $search, array $sort, int $limit = 10, User $user = null): LengthAwarePaginator
     {
         $query = Contact::query()->select(['contacts.*']);
-        $query = $this->getRelationTablesQuery($query);
+        $query = $this->getRelationTablesQuery($search, $query);
         if ($user) {
             $query->where('contacts.user_id', $user->getId());
         }
         $query = $this->setParamsSearch($search, $query);
         $query = $this->setParamSort($sort, $query);
 
-        return $query->groupBy('contacts.id', 'companies.id')->paginate($limit);
+        //TODO "companies.id" was deleted from groupBy
+        return $query->groupBy('contacts.id')->paginate($limit);
     }
 
     private function setParamsSearch(array $search, Builder $query): Builder
@@ -95,9 +107,13 @@ class ContactRepository
                         $query = $this->filterBirthday($value, $query, $filterConfig[BaseModel::FIELD]);
                         break;
                     case SearchType::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE:
-                        $query->whereRaw(
-                            $value['min'] . ' BETWEEN companies.min_employees AND companies.max_employees'
-                        )->where('companies.max_employees', '<=', $value['max']);
+                        if (!empty($value['max'])) {
+                            $query->whereRaw(
+                                $value['min'] . ' BETWEEN companies.min_employees AND companies.max_employees'
+                            )->where('companies.max_employees', '<=', $value['max']);
+                        } else {
+                            $query->where('companies.min_employees', '>=', $value['min']);
+                        }
                         break;
                     case SearchType::TYPE_SEARCH_FIELD_BOUNCES:
                         if ($value) {
@@ -182,7 +198,11 @@ class ContactRepository
     private function setParamSort(array $sort, Builder $query): Builder
     {
         if (empty($sort)) {
-            return $query;
+            return $query->orderBy('contacts.id' , 'desc');
+        }
+
+        if ($sort['field_name'] === Contact::CREATED_AT_FIELD) {
+            return $query->orderBy('contacts.id' , $sort['type_sort']);
         }
 
         return $query->orderBy($sort['field_name'], $sort['type_sort']);
@@ -199,20 +219,18 @@ class ContactRepository
             ->count('id');
     }
 
-    public function checkUniqueContact(array $emails, string $linkedin = null, array $socialNetworks = []): ?Contact
+    public function checkUniqueContact(array $emails, ?string $linkedIn): ?Contact
     {
-        $query = Contact::query()->with(['contactEmails', 'contactSocialNetworks']);
+        $query = Contact::query()->with(['contactEmails']);
 
-        $query->whereHas('contactEmails', function ($query) use ($emails) {
-            $query->whereIn('email', $emails);
-        });
-        if ($linkedin) {
-            $query->orWhere('linkedin', $linkedin);
-        }
-        if (!empty($socialNetworks)) {
-            $query->orWhereHas('contactSocialNetworks', function ($query) use ($socialNetworks) {
-                $query->whereIn('link', $socialNetworks);
+        if (!in_array(Contact::EXCEPT_EMAIL_TEMPLATE, $emails, true) && !empty($emails)) {
+            $query->whereHas('contactEmails', static function (Builder $query) use ($emails) {
+                $query->whereIn('email', $emails);
             });
+        }
+
+        if ($linkedIn) {
+            $query->orWhere('linkedin', 'ILIKE', $linkedIn);
         }
 
         return $query->first();
@@ -229,5 +247,31 @@ class ContactRepository
     public function getContactFromLinkLinkedIn(string $link): ?Contact
     {
         return Contact::query()->where('linkedin', '=', $link)->first();
+    }
+
+    public function getListContactExistEmail(string $email, bool $flag): LazyCollection
+    {
+        preg_match(Blacklist::REGEX_EMAIL, $email, $emailMatch);
+
+        $query = Contact::query()->select(['contacts.*'])
+            ->join('contact_emails', 'contact_emails.contact_id', '=', 'contacts.id');
+
+        if ($emailMatch) {
+            $query->where('contact_emails.email', 'ILIKE', $email);
+        } else {
+            $query->where('contact_emails.email', 'ILIKE', '%@' . $email);
+        }
+
+        return $query->where('contacts.in_blacklist', '=', !$flag)->cursor();
+    }
+
+    public function getContactForTransfer(): ?Contact
+    {
+        return Contact::query()->select('*')->where('is_upload_collection', '=', false)->first();
+    }
+
+    public function getContactById(int $id): ?Contact
+    {
+        return Contact::query()->find($id);
     }
 }

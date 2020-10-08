@@ -133,6 +133,7 @@ export const FieldMatching: React.FC<Props> = props => {
         <div className={classes.fieldsContainer}>
           {docInfo?.headers.map((header: string, index: number) => (
             <FieldLabel
+              key={index}
               label={isHeaders ? `${header}:` : `Column ${index + 1}:`}
               className={classes.fieldLabel}
               labelClassName={classes.fieldLabelText}

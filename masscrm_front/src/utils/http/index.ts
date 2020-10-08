@@ -4,11 +4,13 @@ import { backendUrl } from 'src/constants';
 
 const redirectOnTokenExpiration = (error: AxiosError) => {
   const token = Cookies.get('token');
-  if (token && error.response?.status === 401) {
-    // token has expired or user isn't logged in
-    // redirecting to login page
+  const tokenError = [
+    'Token has expired',
+    'Invalid token.',
+    'Wrong number of segments'
+  ];
+  if (token && tokenError.includes(error.response?.data.errors.join(''))) {
     Cookies.remove('token');
-
     window.location.href = '/';
   }
 };
@@ -36,18 +38,9 @@ instance.interceptors.request.use(
 );
 
 instance.interceptors.response.use(
-  ({ data }) => {
-    if (data.payload.access_token) {
-      return data.payload.access_token;
-    }
-    if (data.payload.login) {
-      return data.payload;
-    }
-    if (data.payload.id) {
-      return data.payload;
-    }
-    if (data.payload) {
-      return data.payload;
+  ({ data: { data } }) => {
+    if (data.access_token) {
+      return data.access_token;
     }
     return data;
   },
@@ -59,13 +52,11 @@ instance.interceptors.response.use(
 );
 
 const onFullfiled = (response: any) => {
-  return response.data.payload;
+  return response.data;
 };
 
 const onRejected = (reject: any) => {
-  redirectOnTokenExpiration(reject);
-
-  return Promise.reject(reject.response.data.payload.errors);
+  return Promise.reject(reject.response.data.errors);
 };
 
 const HTTP = axios.create({

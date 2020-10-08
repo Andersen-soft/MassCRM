@@ -5,6 +5,9 @@ namespace App\Commands\Contact\Handlers;
 use App\Commands\Contact\CreateContactCommand;
 use App\Models\Company\Company;
 use App\Repositories\Contact\ContactRepository;
+use App\Services\Blacklist\BlacklistService;
+use App\Services\TransferCollection\TransferCollectionCompanyService;
+use App\Services\TransferCollection\TransferCollectionContactService;
 use App\Models\Contact\{
     Contact,
     ContactColleagues,
@@ -16,23 +19,37 @@ use App\Models\Contact\{
 class CreateContactHandler
 {
     private ContactRepository $contactRepository;
+    private BlacklistService $blacklistService;
+    private TransferCollectionContactService $transferCollectionContactService;
 
-    public function __construct(ContactRepository $contactRepository)
+    public function __construct(
+        ContactRepository $contactRepository,
+        BlacklistService $blacklistService,
+        TransferCollectionContactService $transferCollectionContactService
+    )
     {
         $this->contactRepository = $contactRepository;
+        $this->blacklistService = $blacklistService;
+        $this->transferCollectionContactService = $transferCollectionContactService;
     }
 
     public function handle(CreateContactCommand $command): Contact
     {
         $contact = $this->createContact($command->getContactFields());
+
+        $origin = $command->getOrigin();
+        $contact->origin = isset($origin) ? implode(';', $command->getOrigin()) : null;
+
         $contact->user()->associate($command->getUser());
         $this->addCompany($contact, $command->getCompanyId());
+        $contact->in_blacklist = $this->isEmailsInBlacklist($command->getEmails());
         $contact->save();
 
         $this->addColleagues($contact, $command->getColleagues());
         $this->addPhones($contact, $command->getPhones());
         $this->addEmails($contact, $command->getEmails(), $command->isRequiresValidation());
         $this->addSocialNetworks($contact, $command->getSocialNetworks());
+        $this->transferCollectionContactService->updateCollectionContact($contact);
 
         return $contact;
     }
@@ -54,7 +71,7 @@ class CreateContactHandler
         $emailsToSave = [];
         foreach ($emails as $key => $email) {
             $contactEmail = (new ContactEmails())
-                ->setEmail(strtolower($email));
+                ->setEmail($email);
             if (!$key) {
                 $contactEmail->setVerification($verification);
             }
@@ -63,6 +80,17 @@ class CreateContactHandler
         $contact->contactEmails()->saveMany($emailsToSave);
 
         return $contact;
+    }
+
+    private function isEmailsInBlacklist(array $emails): bool
+    {
+        foreach ($emails as $key => $email) {
+            if ($this->blacklistService->checkEmailInBlackList($email)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function addPhones(Contact $contact, array $phones): Contact
@@ -77,7 +105,7 @@ class CreateContactHandler
         return $contact;
     }
 
-    private function addSocialNetworks(Contact $contact, array $socialNetworks): Contact
+    private function addSocialNetworks(Contact $contact, ?array $socialNetworks): Contact
     {
         if (empty($socialNetworks)) {
             return $contact;
@@ -87,6 +115,7 @@ class CreateContactHandler
         foreach ($socialNetworks as $social) {
             $socialNetworksToSave[] = (new ContactSocialNetworks())->setLink(strtolower($social));
         }
+
         $contact->contactSocialNetworks()->saveMany($socialNetworksToSave);
 
         return $contact;

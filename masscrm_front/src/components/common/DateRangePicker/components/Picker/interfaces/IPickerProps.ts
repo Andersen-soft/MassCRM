@@ -29,4 +29,5 @@ export interface IPickerProps {
   disabledYear?: boolean;
   placeholder: string;
   singular?: boolean;
+  onClean?: () => void;
 }

@@ -6,6 +6,7 @@ use App\Models\User\User;
 use App\Models\User\UsersNotification;
 use App\Repositories\User\UserRepository;
 use App\Services\User\UserService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use App\Mail\User\{
     MailRegistrationUserActiveDirectory,
@@ -57,8 +58,13 @@ class NotificationUserService
         Mail::to($user->getEmail())->send(new MailChangeLoginUser($user));
     }
 
-    public function sendNotificationUserToSocket(string $typeNotification, string $message, array $users): void
-    {
+    public function sendNotificationUserToSocket(
+        string $typeNotification,
+        string $message,
+        array $users,
+        ?string $filePath,
+        ?int $operationId
+    ): void {
         $token = $this->userService->loginUserSuperAdmin();
         $client = new Client(config('socket.host') . '?token=' . $token);
         if (empty($users)) {
@@ -68,11 +74,14 @@ class NotificationUserService
         /** @var User $user */
         foreach ($users as $user) {
             $data = [
-                'recipient' => $user->getId(),
+                'recipient' => $user->id,
                 'info' => [
                     'type' => $typeNotification,
                     'data' => [
-                        'message' => $message
+                        'created_at' => Carbon::now(),
+                        'message' => $message,
+                        'operation_id' => $operationId,
+                        'file_path' => $filePath
                     ]
                 ]
             ];
@@ -80,7 +89,7 @@ class NotificationUserService
                 $this->sendNotificationToSocket($data, $client);
             }
 
-            $this->sendNotificationToDB($data);
+            $this->sendNotificationToDB($user, $data);
         }
 
         $client->close();
@@ -95,12 +104,14 @@ class NotificationUserService
         }
     }
 
-    private function sendNotificationToDB(array $data): void
+    private function sendNotificationToDB(User $user, array $data): void
     {
-        UsersNotification::query()->create([
-            'type_notification' => $data['info']['type'],
-            'user_id' => $data['recipient'],
-            'message' => $data['info']['data']['message']
-        ]);
+        $notification = new UsersNotification();
+        $notification->type_notification = $data['info']['type'];
+        $notification->message = $data['info']['data']['message'];
+        $notification->operation_id = $data['info']['data']['operation_id'];
+        $notification->file_path = $data['info']['data']['file_path'];
+
+        $user->notifications()->save($notification);
     }
 }

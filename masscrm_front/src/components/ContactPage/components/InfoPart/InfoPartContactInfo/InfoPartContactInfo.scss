@@ -1,0 +1,84 @@
+.section {
+  background-color: #feda00;
+}
+
+.subHeader {
+  display: flex;
+  align-items: center;
+}
+.startLine {
+  border-radius: 1px;
+  width: 2px;
+  height: 20px;
+  margin: 16px 0 0 24px
+}
+
+.subTitle {
+  font-family: Roboto;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 20px;
+  color: #212121;
+  margin: 16px 0 0 24px;
+}
+
+.divide {
+  width: 1298px;
+  height: 0px;
+  margin-left: 16px;
+  border: 1px solid #E5E9F0;
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 21px 0 24px;
+  .column {
+    display: flex;
+  flex-direction: column;
+    .anotherTestField{
+      background-color: #939bb2;
+    }
+    width: 33%;
+    margin-right: 41px;
+    .wrapperForShowMoreButton {
+      margin-bottom: 6px ;
+      .spanRightForButton {
+        float: right;
+      }
+    }
+    .wrapperForDataPair {
+      margin-bottom: 16px;
+      .icon{
+        width: 16px;
+        height: 16px
+      }
+      .spanLeft {
+        font-family: 'Roboto', serif;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 18px;
+        color: #939BB2;
+      }
+      .spanRight {
+        float: right;
+        .logo {
+          width: 16px;
+          height: 16px
+        }
+      }
+      .commentField {
+        text-align: right;
+        float: right;
+        width: 275px;
+      }
+    }
+
+  }
+
+
+
+}
+

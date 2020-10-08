@@ -426,5 +426,33 @@ class IndustriesSeeder extends Seeder
             'block' => 4,
             'position' => 6,
         ];
+
+        yield [
+            'id' => 60,
+            'name' => 'Renewables & Environment',
+            'block' => 1,
+            'position' => 1
+        ];
+
+        yield [
+            'id' => 61,
+            'name' => 'Civil Engineering',
+            'block' => 1,
+            'position' => 1
+        ];
+
+        yield [
+            'id' => 62,
+            'name' => 'Machinery',
+            'block' => 1,
+            'position' => 1
+        ];
+
+        yield [
+            'id' => 63,
+            'name' => 'Pharmaceuticals',
+            'block' => 1,
+            'position' => 1
+        ];
     }
 }

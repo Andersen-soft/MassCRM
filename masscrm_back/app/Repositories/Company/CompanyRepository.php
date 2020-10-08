@@ -4,6 +4,7 @@ namespace App\Repositories\Company;
 
 use App\Models\BaseModel;
 use App\Models\Company\Company;
+use App\Models\Company\CompanySubsidiary;
 use App\Models\Contact\Contact;
 use App\Models\User\User;
 use App\Repositories\FilterRepository;
@@ -67,14 +68,17 @@ class CompanyRepository
         return $query;
     }
 
-    public function checkUniqueCompany(string $name, string $website = null, string $linkedin = null): ?Company
+    public function checkUniqueCompany(string $name = null, string $website = null, string $linkedIn = null): ?Company
     {
-        $query = Company::query()->where('name', 'ILIKE', $name);
+        $query = Company::query();
+        if ($name) {
+            $query->where('name', 'ILIKE', $name);
+        }
         if ($website) {
             $query->orWhere('website', 'ILIKE', $website);
         }
-        if ($linkedin) {
-            $query->orWhere('linkedin', 'ILIKE', $linkedin);
+        if ($linkedIn) {
+            $query->orWhere('linkedin', 'ILIKE', $linkedIn);
         }
 
         return $query->first();
@@ -88,8 +92,40 @@ class CompanyRepository
         }
     }
 
-    public function getCompanyId(int $company): ?Company
+    public function getCompanyById(int $company): ?Company
     {
         return Company::query()->find($company);
+    }
+
+    public function getCompanyFromTypeAndName(string $name, string $type): ?Company
+    {
+        return Company::query()->select('id')
+            ->where('type', 'ILIKE', $type)
+            ->where('name', 'ILIKE', $name)
+            ->first();
+    }
+
+    public function checkTypeCompany(int $id, string $type): ?Company
+    {
+        $company = Company::query()->select('*')->find($id);
+
+        if ($company && $company->type !== $type) {
+            return $company;
+        }
+
+        return null;
+    }
+
+    public function deleteCompanyFromSubsidiary(int $companyId): void
+    {
+        CompanySubsidiary::query()
+            ->where('parent_id', '=', $companyId)
+            ->orWhere('child_id', '=', $companyId)
+            ->delete();
+    }
+
+    public function getCompanyForTransfer(): ?Company
+    {
+        return Company::query()->select('*')->where('is_upload_collection', '=', false)->first();
     }
 }

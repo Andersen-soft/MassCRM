@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Lang;
 
 class CreateUserRequest extends AbstractRequest
 {
-    private string $regexEmail = '/^[a-zA-Z0-9_.+-A-Яa-я]+@[a-zA-Z0-9-A-Яa-я]+\.[a-zA-Z0-9-.A-Яa-я]+$/';
-
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -29,7 +27,7 @@ class CreateUserRequest extends AbstractRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|unique:users,email|regex:' . $this->regexEmail,
+            'email' => 'required|unique:users,email|regex:' . static::REGEX_EMAIL,
             'login' => 'required|string|unique:users,login',
             'name' => 'required|string|max:50',
             'surname' => 'required|string|max:50',

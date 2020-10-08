@@ -18,4 +18,5 @@ export interface ISearchInputProps {
   freeSolo?: boolean;
   onBlur?: () => void;
   onFocus?: () => void;
+  multi?: boolean;
 }

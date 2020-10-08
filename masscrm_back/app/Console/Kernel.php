@@ -4,7 +4,11 @@ namespace App\Console;
 
 use App\Console\Commands\{
     ParseFiles,
-    WebSocketServer
+    WebSocketServer,
+    LemlistBlacklistCommand,
+    ReplyBlacklistCommand,
+    TransferCollectionCompany,
+    TransferCollectionContact
 };
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -18,7 +22,12 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         ParseFiles::class,
-        WebSocketServer::class
+        WebSocketServer::class,
+        LemlistBlacklistCommand::class,
+        ReplyBlacklistCommand::class,
+        TransferCollectionCompany::class,
+        TransferCollectionContact::class
+
     ];
 
     /**

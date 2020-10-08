@@ -83,6 +83,7 @@ export const CommonButton: FC<ICommonButtonProps> = ({
 
   return (
     <DefaultButton
+      disableRipple
       className={`${classes[color || 'white']} ${
         classes[size || 'small']
       } ${className}`}

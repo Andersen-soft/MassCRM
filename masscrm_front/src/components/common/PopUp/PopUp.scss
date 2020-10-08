@@ -81,19 +81,13 @@
 
 .wrapperTwo,
 .wrapperThree {
-  width: 584px;
-  height: 204px;
-  background: #fff;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
+  text-align: center;
+  min-width: 500px;
+  padding: 30px;
 }
 
 .question,
 .occupied {
-  width: 472px;
-  height: 24px;
-  padding-top: 56px;
-  padding-left: 56px;
   font-family: Roboto, Arial, serif;
   font-style: normal;
   font-weight: normal;
@@ -103,7 +97,5 @@
 }
 
 .buttons {
-  width: 376px;
-  padding-left: 125px;
-  margin-top: 48px;
+  margin-top: 40px;
 }

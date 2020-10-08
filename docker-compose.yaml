@@ -1,8 +1,8 @@
 version: '3'
 services:
   db-pg:
-    container_name: db-pg108
-    image: postgres:10.8
+    container_name: db-pg
+    image: postgres
     restart: always
     ports:
       - 2345:5432
@@ -42,7 +42,8 @@ services:
       - 8090:8090
     volumes:
       - ./logs/server_logs_fpm:/var/log/docker
-      - ./logs/storage_logs_nginx:/var/www/storage/logs
+      - ./logs/storage_logs_fpm:/var/www/storage/logs
+     # - ./logs/files_fpm:/var/www/storage/files
     depends_on:
        - db-pg  
     networks:
@@ -58,7 +59,8 @@ services:
       - 8088:80
     volumes:
       - ./logs/server_logs_nginx:/var/log/nginx
-      - ./logs/storage_logs_fpm:/var/www/storage/logs
+      - ./logs/storage_logs_nginx:/var/www/storage/logs
+      - ./logs/files_nginx:/var/www/storage/files
     depends_on:
       - php-fpm
     networks:

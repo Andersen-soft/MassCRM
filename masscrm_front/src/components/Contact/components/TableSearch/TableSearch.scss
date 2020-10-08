@@ -72,3 +72,21 @@
     visibility: visible;
   }
 }
+
+.preExport {
+  &__question {
+    font-style: normal;
+    font-weight: normal;
+    font-size: 20px;
+    line-height: 24px;
+    color: #212121;
+  }
+  &__checkboxBlock {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    p {
+      margin-left: 20px;
+    }
+  }
+}

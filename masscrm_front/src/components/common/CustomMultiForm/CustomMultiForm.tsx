@@ -8,7 +8,7 @@ import {
   IMultiFormState
 } from 'src/interfaces/ICustomMultiInput';
 import { validate } from 'src/components/common/CustomMultiForm/helpers';
-import { jobInputStyle } from 'src/components/Contact/components/ContactForm/components/ContactJobInput/ContactJobInput.style';
+import { jobInputStyle } from 'src/components/common/ContactJobInput/ContactJobInput.style';
 
 const INITIAL_VALUES: IMultiFormState = {
   formMulti: ''

@@ -1,21 +1,34 @@
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import { styleNames } from 'src/services';
 import { ContactPopup } from '.';
-import style from './ContactCell.scss';
+import style from '../cell.scss';
+import { ShowAllTD } from '..';
 import { IContactCell } from './interfaces';
 
 const sn = styleNames(style);
 
 export const ContactTD: FC<IContactCell> = ({ value = [], type }) => {
-  const hrefLink = type === 'emails' ? `mailto:` : 'tel:';
+  const hrefLink = useMemo(() => {
+    switch (type) {
+      case 'emails':
+        return `mailto:`;
+      case 'phones':
+        return 'tel:';
+      default:
+        return null;
+    }
+  }, [type]);
 
-  const linkItem = (item: string) => (
-    <a href={`${hrefLink}${item}`} className={sn('list-td_link')} key={item}>
-      {item}
-    </a>
-  );
+  const linkItem = (item: string) =>
+    hrefLink && (
+      <a href={`${hrefLink}${item}`} className={sn('list-td_link')} key={item}>
+        {item}
+      </a>
+    );
 
-  return (
+  return type === 'note' ? (
+    <ShowAllTD value={value} />
+  ) : (
     <div className={sn('list-td')}>
       {value?.length > 0 ? linkItem(value[0]) : ''}
       {value?.length > 1 ? (

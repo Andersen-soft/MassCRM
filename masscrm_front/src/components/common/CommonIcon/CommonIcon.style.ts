@@ -23,7 +23,7 @@ export const iconStyle = makeStyles(() =>
     },
     box: {
       display: 'flex',
-      alignItems: 'flex-start'
+      alignItems: 'center'
     },
     iconBtn: {
       padding: 0

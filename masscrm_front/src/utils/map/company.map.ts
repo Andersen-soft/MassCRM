@@ -1,4 +1,4 @@
-import { ICompany } from 'src/interfaces';
+import { ICompany, ICompanyUpdate } from 'src/interfaces';
 
 export const getNamesOfCompanies = (companies: Array<ICompany>) => {
   return companies.map(({ name }) => name);
@@ -17,3 +17,15 @@ export const getCompanyNameByID = (
 ) => {
   return companies.find(({ id }) => idCompany === id)?.name;
 };
+
+export const getCompanyForUpdate = ({
+  industries,
+  holding,
+  subsidiary,
+  ...company
+}: ICompany): ICompanyUpdate => ({
+  industries: industries?.map(({ id: industryID }) => industryID),
+  holding: holding?.map(({ id: companyID }) => companyID),
+  subsidiaries: subsidiary?.map(({ id: companyID }) => companyID),
+  ...company
+});

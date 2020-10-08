@@ -6,8 +6,8 @@ RUN rm /etc/nginx/conf.d/default.conf
 ADD docker/nginx/nginx.conf /etc/nginx/nginx.conf
 ADD docker/nginx/server.conf /etc/nginx/conf.d/
 
-COPY . /var/www/
-RUN chown -R www-data:www-data /var/www
+COPY --chown=www-data:www-data . /var/www/
+#RUN chown -R www-data:www-data /var/www
 #COPY --from=php-fpm-7.4 /src /var/www/
 EXPOSE 80
 EXPOSE 443

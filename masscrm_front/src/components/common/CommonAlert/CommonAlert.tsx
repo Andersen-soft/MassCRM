@@ -6,7 +6,7 @@ import MuiAlert from '@material-ui/lab/Alert';
 interface ICommonAlert {
   open: boolean;
   onClose: (event: SyntheticEvent<Element, Event>) => void;
-  errorMessage: string;
+  errorMessage: string | JSX.Element;
   type?: 'success' | 'info' | 'warning' | 'error' | undefined;
   ClickAwayListenerProps?: Partial<MaterialClickAwayListenerProps>;
 }
@@ -36,7 +36,7 @@ export const CommonAlert: FC<ICommonAlert> = props => {
         onClose={onClose}
         severity={type}
       >
-        `{errorMessage}`
+        {errorMessage}
       </MuiAlert>
     </Snackbar>
   );

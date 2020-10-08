@@ -5,9 +5,13 @@ import {
   IContactFilter,
   IContactFiltersState,
   ISortingObject,
-  ISortingState
+  ISortingState,
+  IMultiFilterState
 } from 'src/interfaces';
-import { initialFiltersState } from '../reducers/tableFilters.reducer';
+import {
+  initialFiltersState,
+  initialMultiFilterState
+} from '../reducers/tableFilters.reducer';
 import { initialSortingState } from '../reducers/tableSorting.reducer';
 
 export const getCompanySizeFilter = createSelector(
@@ -38,6 +42,12 @@ export const getFilterValues = createSelector(
   data => data
 );
 
+export const getMultiFilterValues = createSelector(
+  ({ filter: { multiValues } }: IStoreState): IMultiFilterState =>
+    multiValues || initialMultiFilterState,
+  data => data
+);
+
 export const getFilterSorting = createSelector(
   ({ filter: { sort } }: IStoreState): ISortingState =>
     sort || initialSortingState,
@@ -50,5 +60,11 @@ export const getSortBy = createSelector(
       field_name: 'created_at',
       type_sort: 'DESC'
     },
+  data => data
+);
+
+export const getFilterExportData = createSelector(
+  ({ filter: { data } }: IStoreState): { [key: string]: string } =>
+    data?.export_status || {},
   data => data
 );

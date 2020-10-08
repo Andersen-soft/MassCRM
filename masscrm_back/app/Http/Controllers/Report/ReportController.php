@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Report;
 
-use App\Models\Contact\Contact;
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Services\Reports\ReportFileService;
-use Exception;
-use League\Csv\Writer as CsvWriter;
 use App\Http\Requests\Report\ReportRequest;
 use App\Exceptions\Report\ReportException;
+use Illuminate\Http\JsonResponse;
 
-class ReportController extends Controller
+class ReportController extends BaseController
 {
     public function __construct()
     {
@@ -123,7 +121,7 @@ class ReportController extends Controller
      *                     @OA\Property(property="bounces", type="integer"),
      *                     @OA\Property(property="mails", type="string"),
      *                     @OA\Property(property="my_notes", type="string"),
-     *                     @OA\Property(property="sale_сreated", type="object",
+     *                     @OA\Property(property="sale_created", type="object",
      *                         @OA\Property(property="min", type="date", format="Y-m-d"),
      *                         @OA\Property(property="max", type="date", format="Y-m-d"),
      *                     ),
@@ -176,7 +174,7 @@ class ReportController extends Controller
      *                      "social_networks", "phones", "skype", "emails", "origin", "requires_validation",
      *                      "colleagues", "colleagues_link", "mailing_tool", "id", "added_to_mailing", "confidence",
      *                      "last_touch", "sequence", "status", "opens", "views", "deliveries", "replies", "bounces",
-     *                      "mails", "my_notes", "sale_сreated", "source", "sale_link", "sale_status",
+     *                      "mails", "my_notes", "sale_created", "source", "sale_link", "sale_status",
      *                      "sale_project_c1","company", "company_website", "company_linkedin", "company_cto",
      *                      "company_industries", "company_size", "company_type","company_subsidiary",
      *                      "company_holding", "company_founded", "jobs", "jobs_skills", "comment"
@@ -222,7 +220,7 @@ class ReportController extends Controller
      *                        "bounces": 500,
      *                        "mails": "webers@handwick.com",
      *                        "my_notes": "myNotes test text",
-     *                        "sale_сreated": {"min": "2020-02-25","max": "2020-06-25"},
+     *                        "sale_created": {"min": "2020-02-25","max": "2020-06-25"},
      *                        "source": {"Testing", "Stoped"},
      *                        "sale_link": "http://www.oocllogistics.com",
      *                        "sale_status": {"Testing","Stoped"},
@@ -258,41 +256,21 @@ class ReportController extends Controller
      *                @OA\Property(property="errors", type="object"),
      *            )
      *        )
-     *    ),
-     *    @OA\Response(
-     *        response="500",
-     *        description="Internal Server Error",
-     *        @OA\JsonContent(
-     *            @OA\Property(property="success", type="boolean", example=false),
-     *            @OA\Property(property="payload", type="object",
-     *                @OA\Property(property="message", type="string", example="Postgresql not avalible"),
-     *            )
-     *        )
      *    )
      * )
      * @throws ReportException
      */
-    public function download(ReportRequest $request, ReportFileService $reportFileService)
+    public function download(ReportRequest $request, ReportFileService $reportFileService) : JsonResponse
     {
-        $input = $request->input();
-        $writer = CsvWriter::createFromString('');
-        try {
-            $listHeaders = $reportFileService->getListHeaders($input['listField']);
-            $writer->insertOne($listHeaders['headers']);
-            $data = $reportFileService->getCollectionsContacts($input);
+        $reportFileService->initExport(
+            $request->post('listField', []),
+            $request->post('search', []),
+            $request->post('sort', []),
+            $request->post('typeFile', 'csv'),
+            $request->user(),
+            $request->post('isInWork', false),
+        );
 
-            /** @var Contact $item */
-            foreach ($data as $item) {
-                $writer->insertOne(
-                    $reportFileService->fetchReport($item, $listHeaders['pathMethods'])
-                );
-            }
-
-            return response()->streamDownload(static function () use ($writer) {
-                echo $writer->getContent();
-            }, 'report.' . $input['typeFile']);
-        } catch (Exception $e) {
-            throw new ReportException($e->getMessage());
-        }
+        return $this->success([]);
     }
 }

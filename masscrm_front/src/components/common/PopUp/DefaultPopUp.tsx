@@ -5,7 +5,7 @@ import style from './PopUp.scss';
 import { CommonButton } from '../CommonButton';
 
 interface IPopUp {
-  questionMessage: string;
+  questionMessage: string | JSX.Element;
   onClose?: () => void;
   onConfirm?: () => void;
 }
@@ -19,7 +19,11 @@ export const DefaultPopUp = ({
 }: IPopUp) => {
   return (
     <div className={sn('wrapperTwo')}>
-      <p className={sn('question')}>{questionMessage}</p>
+      {typeof questionMessage === 'string' ? (
+        <p className={sn('question')}>{questionMessage}</p>
+      ) : (
+        questionMessage
+      )}
       <div className={sn('buttons')}>
         <CommonButton onClickHandler={onClose} text='Cancel' />
         <CommonButton

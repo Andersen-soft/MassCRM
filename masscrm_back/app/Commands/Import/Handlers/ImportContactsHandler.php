@@ -4,13 +4,14 @@ namespace App\Commands\Import\Handlers;
 
 use App\Commands\Import\ImportContactsCommand;
 use App\Exceptions\Import\ImportException;
-use FilesystemIterator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class ImportContactsHandler
 {
     protected const PREVIEW_LINES = 3;
-    private string $storagePath = '';
+    private string $storagePath;
 
     public function __construct()
     {
@@ -23,11 +24,12 @@ class ImportContactsHandler
 
         try {
             $fileName = $file->getClientOriginalName();
-            $fullPath = $this->storagePath . '/' . $command->getUser()->getId();
-            if (is_dir($fullPath)) {
-                $this->recursiveRemoveDir($fullPath);
-            }
-            $file->move($fullPath, $fileName);
+            $fullPath = $this->storagePath . '/' . $command->getUser()->id;
+            Storage::disk('importFiles')->deleteDirectory($command->getUser()->id);
+            Storage::disk('importFiles')->put(
+                $command->getUser()->id . '/' . $fileName,
+                file_get_contents($file)
+            );
 
             return [
                 'file_size' => $this->getFileSize($fullPath . '/' . $fileName),
@@ -38,7 +40,7 @@ class ImportContactsHandler
         }
     }
 
-    private function getFileSize(string $fullPath)
+    private function getFileSize(string $fullPath) : string
     {
         $bytes = filesize($fullPath);
         $base = log($bytes, 1024);
@@ -55,60 +57,31 @@ class ImportContactsHandler
         ];
         $spreadsheet = IOFactory::load($fullPath);
         $rowCount = 0;
-        $headerLength = 0;
         foreach ($spreadsheet->getActiveSheet()->getRowIterator() as $row) {
             $index = $row->getRowIndex();
             if ($rowCount === self::PREVIEW_LINES) {
                 break;
             }
 
-            $cellIndex = 0;
             foreach ($row->getCellIterator() as $cell) {
                 if ($index === 1) {
-                    if ($cell->getValue() === null) break;
+                    if ($cell->getValue() === null) {
+                        break;
+                    }
                     $data['headers'][] = $cell->getValue();
-                    $headerLength++;
                 } else {
-                    $data['rows'][$rowCount][] = $cell->getValue();
+                    if(Date::isDateTime($cell)){
+                        $data['rows'][$rowCount][] = \date('Y-m-d H:i', Date::excelToTimestamp($cell->getValue()));
+                    }else{
+                        $data['rows'][$rowCount][] = $cell->getValue();
+                    }
                 }
-                $cellIndex++;
             }
-            if ($index !== 1 && $this->checkRows($data, $rowCount)) {
+            if ($index !== 1) {
                 $rowCount++;
             }
         }
 
         return $data;
-    }
-
-    private function checkRows(array &$data, int $index): bool
-    {
-        $emptyCount = 0;
-        foreach ($data['rows'][$index] as $value) {
-            if (is_null($value)) {
-                $emptyCount++;
-            } else {
-                return true;
-            }
-            if ($emptyCount === 15) {
-                unset($data['rows'][$index]);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private function recursiveRemoveDir(string $dir): void
-    {
-        $includes = new FilesystemIterator($dir);
-        foreach ($includes as $include) {
-            if (is_dir($include) && !is_link($include)) {
-                $this->recursiveRemoveDir($include);
-            } else {
-                unlink($include);
-            }
-        }
-
-        rmdir($dir);
     }
 }

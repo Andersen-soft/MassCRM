@@ -34,7 +34,9 @@ export const EditPopup: FC<IEditPopup> = ({
             horizontal: 'center'
           }}
         >
-          <ContentEdit {...editProps} handleClose={handleClose} />
+          {!!anchorEl && (
+            <ContentEdit {...editProps} handleClose={handleClose} />
+          )}
         </Popover>
       )}
     </>

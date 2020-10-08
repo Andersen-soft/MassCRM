@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AttachmentFile;
 
+use App\Helpers\Pagination;
 use App\Commands\AttachmentFile\Company\{
     SaveAttachedFileCompanyCommand,
     DeleteAttachmentFileCompanyCommand,
@@ -15,12 +16,12 @@ use App\Http\Requests\AttachmentFile\{
     GetAttachedFilesListRequest
 };
 
-use App\Http\Controllers\Controller;
-use App\Http\Transformers\AttachmentFile\Company\FileCompanyTransform;
+use App\Http\Controllers\BaseController;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Http\Resources\AttachmentFile\AttachmentFile as AttachmentFileResources;
 
-class AttachmentFileCompanyController extends Controller
+class AttachmentFileCompanyController extends BaseController
 {
     /**
      * @OA\Post(
@@ -56,16 +57,15 @@ class AttachmentFileCompanyController extends Controller
      */
     public function store(AttachFileRequest $request): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new SaveAttachedFileCompanyCommand(
-                    Auth::user(),
-                    $request->file('file'),
-                    $request->post('id')
-                )
-            ),
-            new FileCompanyTransform()
+        $file = $this->dispatchNow(
+            new SaveAttachedFileCompanyCommand(
+                $request->user(),
+                $request->file('file'),
+                $request->post('id')
+            )
         );
+
+        return $this->success(new AttachmentFileResources($file));
     }
 
     /**
@@ -92,12 +92,12 @@ class AttachmentFileCompanyController extends Controller
      *  @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function destroy($id): JsonResponse
+    public function destroy($id, Request $request): JsonResponse
     {
-        return $this->response(
+        return $this->success(
             $this->dispatchNow(
                 new DeleteAttachmentFileCompanyCommand(
-                    Auth::user(),
+                    $request->user(),
                     (int) $id
                 )
             ) ?? []
@@ -166,18 +166,17 @@ class AttachmentFileCompanyController extends Controller
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function index(GetAttachedFilesListRequest $request): JsonResponse
+    public function index(GetAttachedFilesListRequest $request, Pagination $pagination): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new GetAttachedFileListCompanyCommand(
-                    $request->get('id'),
-                    $request->get('page', 1),
-                    $request->get('limit', 50)
-                )
-            ),
-            new FileCompanyTransform()
+        $files = $this->dispatchNow(
+            new GetAttachedFileListCompanyCommand(
+                $request->get('id'),
+                $request->get('page', 1),
+                $request->get('limit', 50)
+            )
         );
+
+        return $this->success(AttachmentFileResources::collection($files), $pagination->getMeta($files));
     }
 
     /**
@@ -213,14 +212,13 @@ class AttachmentFileCompanyController extends Controller
      */
     public function checkExistFile(CheckExistAttachmentFileRequest $request): JsonResponse
     {
-        return $this->responseTransform(
-            $this->dispatchNow(
-                new CheckExistAttachmentFileCompanyCommand(
-                    $request->get('id'),
-                    $request->get('name')
-                )
-            ),
-            new FileCompanyTransform()
+        $file = $this->dispatchNow(
+            new CheckExistAttachmentFileCompanyCommand(
+                $request->get('id'),
+                $request->get('name')
+            )
         );
+
+        return $this->success(new AttachmentFileResources($file));
     }
 }

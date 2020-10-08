@@ -27,6 +27,12 @@ export const genderStyle = makeStyles(() =>
       '& .MuiSvgIcon-root': {
         color: '#69738F'
       }
+    },
+    error: {
+      color: '#FD5757',
+      marginTop: '4px',
+      fontSize: '0.85em',
+      position: 'absolute'
     }
   })
 );

@@ -53,7 +53,7 @@ export interface ICompanyFilter {
       min: string;
       max: string;
     };
-    type?: string;
+    type?: Array<string>;
     jobs?: Array<string>;
     skills?: Array<string>;
   };
@@ -74,8 +74,8 @@ export interface ICompanyUpdate {
   sto_full_name?: string;
   type?: string;
   founded?: string;
-  min_employees?: number;
-  max_employees?: number;
+  min_employees?: number | null;
+  max_employees?: number | null;
   comment?: string;
   industries?: Array<number>;
   subsidiaries?: Array<number>;

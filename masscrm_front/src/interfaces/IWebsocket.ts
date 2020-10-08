@@ -9,6 +9,8 @@ export interface IWebsocketActions {
   saveAction: ActionFunctionAny<Action<any>>;
   sendAction: ActionFunctionAny<Action<any>>;
   disconnectAction: ActionFunctionAny<Action<any>>;
+  importFinished: ActionFunctionAny<Action<any>>;
+  exportBlacklistFinished: ActionFunctionAny<Action<any>>;
 }
 
 export interface IWebsocketpackage {
@@ -18,6 +20,15 @@ export interface IWebsocketpackage {
   };
 }
 
+export interface IWebsocketData {
+  created_at?: string | Date;
+  file_path?: string;
+  message?: string;
+  operation_id?: null | number | string;
+  type?: string;
+}
+
 export interface IWebsocketStore {
-  ws: WebSocket | null;
+  wsData: null | IWebsocketData;
+  ws: null | WebSocket;
 }

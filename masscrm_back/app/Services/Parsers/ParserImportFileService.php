@@ -6,11 +6,17 @@ use App\Commands\Import\ImportContactsDto;
 use App\Commands\Import\ImportStartParseCommand;
 use App\Models\Contact\Contact;
 use App\Models\User\User;
-use App\Services\Parsers\Import\ParserImportCompanyService;
-use App\Services\Parsers\Import\ParserImportContactService;
+use App\Services\Parsers\Import\Company\ImportCompanyService;
+use App\Services\Parsers\Import\Contact\ImportContactService;
+use App\Services\TransferCollection\TransferCollectionCompanyService;
+use App\Services\TransferCollection\TransferCollectionContactService;
 use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Company\Company;
+use App\Services\Parsers\Mapping\FieldMapping;
+use Illuminate\Support\Facades\DB;
+use Exception;
+use App\Exceptions\Import\ImportFileException;
 
 /**
  * Class ParserImportFileService
@@ -20,137 +26,158 @@ class ParserImportFileService extends ParserMain implements ParserServiceInterfa
 {
     protected array $fields = [];
     protected ?string $comment;
+    protected string $columnSeparator;
+    protected string $action;
+    protected int $responsible;
+    protected array $origin;
     protected User $user;
     protected ImportContactsDto $importContactsData;
-    protected ParserImportCompanyService $parserImportCompanyService;
-    protected ParserImportContactService $parserImportContactService;
+    protected ImportCompanyService $importCompanyService;
+    protected ImportContactService $importContactService;
     protected ImportResult $importResult;
+    protected FieldMapping $fieldMapping;
+    private TransferCollectionCompanyService $transferCollectionCompanyService;
+    private TransferCollectionContactService $transferCollectionContactService;
 
     public function __construct(
-        ParserImportCompanyService $parserImportCompanyService,
-        ParserImportContactService $parserImportContactService,
+        ImportCompanyService $importCompanyService,
+        ImportContactService $importContactService,
         ImportResult $importResult,
-        ImportContactsDto $importContactsData,
-        User $user
+        FieldMapping $fieldMapping,
+        TransferCollectionCompanyService $transferCollectionCompanyService,
+        TransferCollectionContactService $transferCollectionContactService
     ) {
-        $this->fields = $importContactsData->getCommand()->getFields();
-        $this->user = $user;
-        $this->comment = $importContactsData->getCommand()->getComment();
-        $this->importContactsData = $importContactsData;
-        $this->parserImportCompanyService = $parserImportCompanyService;
-        $this->parserImportContactService = $parserImportContactService;
+        $this->importCompanyService = $importCompanyService;
+        $this->importContactService = $importContactService;
         $this->importResult = $importResult;
+        $this->fieldMapping = $fieldMapping;
+        $this->transferCollectionCompanyService = $transferCollectionCompanyService;
+        $this->transferCollectionContactService = $transferCollectionContactService;
     }
 
-    public function getResult(): ImportResult
+    public function setParamsImport(ImportContactsDto $importContactsData): void
     {
-        return $this->importResult;
+        $this->fields = $importContactsData->getCommand()->getFields();
+        $this->comment = $importContactsData->getCommand()->getComment();
+        $this->columnSeparator = $importContactsData->getCommand()->getColumnSeparator();
+        $this->action = $importContactsData->getCommand()->getDuplicationAction();
+        $this->origin = $importContactsData->getCommand()->getOrigin();
+        $this->responsible = $importContactsData->getCommand()->getResponsible();
+        $this->user = $importContactsData->getCommand()->getUser();
+        $this->importContactsData = $importContactsData;
+
     }
 
     public function parse(string $pathToFile): void
     {
         $spreadsheet = IOFactory::load($pathToFile);
         $startIndex = $this->importContactsData->getCommand()->isHeader() ? 2 : 1;
-        $action = $this->importContactsData->getCommand()->getDuplicationAction();
+
+        if ($startIndex === 2) {
+            $this->importResult->setHeaderToFiles($pathToFile);
+        }
 
         foreach ($spreadsheet->getActiveSheet()->getRowIterator($startIndex) as $row) {
+            $arrayRow = $this->rowToArray($row);
+            if (empty(array_filter($arrayRow))) {
+                break;
+            }
+
             try {
-                $arrayRow = $this->rowToArray($row);
+                DB::beginTransaction();
+                $data = $this->fieldMapping->mappingFields($arrayRow, $this->fields, $this->columnSeparator);
 
-                $company = $this->parserImportCompanyService->getUnique($this->fields, $arrayRow);
-                $contact = $this->parserImportContactService->getUnique($this->fields, $arrayRow);
+                $company = $this->importCompanyService->getUnique($this->fields, $arrayRow);
+                $contact = $this->importContactService->getUnique($this->fields, $data);
 
-                if (
-                    $company instanceof Company
-                    && $contact instanceof Contact
-                    && $action === ImportStartParseCommand::DUPLICATION_ACTION_SKIP
-                ) {
-                    $this->importResult->incrementDuplicationContact();
-                    $this->importResult->addLineToDuplicationFile($arrayRow, 'Duplicate all');
+                if ($contact instanceof Contact && $this->action === ImportStartParseCommand::DUPLICATION_ACTION_SKIP) {
+                    $this->importResult->addLineToDuplicateFile($arrayRow);
+                    $this->importResult->incrementMissingDuplicate();
+                    $this->importResult->successSaveRow();
+                    DB::commit();
                     continue;
                 }
 
-                $company = $this->parseCompany($arrayRow, $action, $company);
-                $this->parseContact($arrayRow, $action, $contact, $company);
-            } catch (\Exception $exception) {
-                Log::error($exception->getMessage());
-                $this->importResult->addLineToErrorFile($arrayRow ?? []);
-            }
-        }
-    }
+                $company = $this->parseCompany($data, $company);
+                $contact = $this->parseContact($data, $contact, $company);
+                $this->transferCollectionContactService->updateCollectionContact($contact);
+                if ($company) {
+                    $this->transferCollectionCompanyService->updateCollectionCompany($company);
+                }
 
-    private function parseCompany(array $arrayRow, string $action, Company $company = null): ?Company
-    {
-        try {
-            if ($company) {
-                $company = $this->workWithCompanyAction(
-                    $action,
-                    $company,
-                    $arrayRow
-                );
-            } else {
-                $pos = array_search('company', $this->fields);
-                if ($pos === false || !isset($arrayRow[$pos])) {
-                    Log::error('Import file. Company name not found');
-                    $this->importResult->addLineToErrorFile($arrayRow);
+                $this->importResult->successSaveRow();
+                DB::commit();
+            } catch (Exception $exception) {
+                DB::rollBack();
+                $this->importResult->incrementCountErrors();
+                $this->importResult->failedSaveRow();
+
+                if ($exception instanceof ImportFileException) {
+                    Log::error(implode(PHP_EOL, [
+                            $exception->getErrors(),
+                            $exception->getLine(),
+                            $exception->getFile(),
+                            $exception->getPrevious()
+                        ]));
+                    $this->importResult->addLineToErrorFile($arrayRow, $exception->getErrors());
                 } else {
-                    $this->importResult->incrementSucImportCompany();
-                    $company = $this->parserImportCompanyService->createCompany($this->fields, $arrayRow);
+                    Log::error(implode(PHP_EOL, [
+                        $exception->getMessage(),
+                        $exception->getLine(),
+                        $exception->getFile(),
+                        $exception->getPrevious()
+                    ]));
+                    $this->importResult->addLineToErrorFile($arrayRow, $exception->getMessage());
+                    app('sentry')->captureException($exception);
                 }
             }
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            $this->importResult->addLineToErrorFile($arrayRow);
         }
+
+        $this->importResult->save($this->user);
+    }
+
+    private function parseCompany(array $data, ?Company $company): ?Company
+    {
+        if ($company) {
+            return $this->workWithCompanyAction($company, $data);
+        }
+
+        $company = $this->importCompanyService->create($data, $this->user);
+        $this->importResult->incrementSucImportCompany();
 
         return $company;
     }
 
-    private function parseContact(array $arrayRow, string $action, Contact $contact = null, Company $company = null): void
+    private function parseContact(array $arrayRow, ?Contact $contact, ?Company $company): Contact
     {
-        try {
-            if ($contact) {
-                $this->workWithContactAction(
-                    $action,
-                    $contact,
-                    $arrayRow,
-                    $company
-                );
-            } else {
-                $pos = array_search('email', $this->fields);
-                if ($pos === false || !isset($arrayRow[$pos])) {
-                    Log::error('Import file. Contact email not found');
-                    $this->importResult->addLineToErrorFile($arrayRow);
-                } else {
-                    $this->importResult->incrementSucImportContact();
-                    $this->parserImportContactService->create(
-                        $arrayRow,
-                        $this->user,
-                        $this->importContactsData,
-                        $company
-                    );
-                }
-            }
-        } catch (\Exception $exception) {
-            Log::error($exception->getMessage());
-            $this->importResult->addLineToErrorFile($arrayRow);
+        if ($contact) {
+            return $this->workWithContactAction($contact, $arrayRow, $company);
         }
+
+        $contact = $this->importContactService->create(
+            $arrayRow,
+            $this->user,
+            $this->responsible,
+            $company,
+            $this->origin,
+            $this->comment,
+        );
+
+        $this->importResult->incrementSucImportContact();
+
+        return $contact;
     }
 
-    private function workWithCompanyAction(string $action, Company $company, array $row): Company
+    private function workWithCompanyAction(Company $company, array $row): Company
     {
-        switch ($action) {
-            case ImportStartParseCommand::DUPLICATION_ACTION_SKIP:
-                $this->importResult->incrementDuplicationCompany();
-                $this->importResult->addLineToDuplicationFile($row, 'Duplicate company');
-                break;
+        switch ($this->action) {
             case ImportStartParseCommand::DUPLICATION_ACTION_MERGE:
-                $company = $this->parserImportCompanyService->merge($company, $row, $this->fields);
-                $this->importResult->incrementDuplicationCompany();
+                $company = $this->importCompanyService->merge($company, $row, $this->user);
+                $this->importResult->incrementSucImportDuplicateCompany();
                 break;
             case ImportStartParseCommand::DUPLICATION_ACTION_REPLACE:
-                $company = $this->parserImportCompanyService->replace($company, $row, $this->fields);
-                $this->importResult->incrementDuplicationCompany();
+                $company = $this->importCompanyService->replace($company, $row, $this->user);
+                $this->importResult->incrementSucImportDuplicateCompany();
                 break;
             default:
                 break;
@@ -159,30 +186,37 @@ class ParserImportFileService extends ParserMain implements ParserServiceInterfa
         return $company;
     }
 
-    private function workWithContactAction(string $action, Contact $contact, array $row, Company $company = null)
+    private function workWithContactAction(Contact $contact, array $row, ?Company $company): Contact
     {
-        switch ($action) {
-            case ImportStartParseCommand::DUPLICATION_ACTION_SKIP:
-                $this->importResult->incrementDuplicationContact();
-                $this->importResult->addLineToDuplicationFile($row, 'Duplicate contact');
-                break;
+        switch ($this->action) {
             case ImportStartParseCommand::DUPLICATION_ACTION_MERGE:
-                $this->parserImportContactService->merge($contact, $row, $this->fields, $company);
-                $this->importResult->incrementDuplicationContact();
-                break;
-            case ImportStartParseCommand::DUPLICATION_ACTION_REPLACE:
-                $this->parserImportContactService->replace(
+                $contact = $this->importContactService->merge(
                     $contact,
-                    $this->user,
-                    $this->importContactsData,
                     $row,
-                    $this->fields,
-                    $company
+                    $this->user,
+                    $this->responsible,
+                    $company,
+                    $this->origin,
+                    $this->comment
                 );
-                $this->importResult->incrementDuplicationContact();
+                $this->importResult->incrementSucImportDuplicateContact();
+                break;
+            case ImportStartParseCommand::DUPLICATION_ACTION_REPLACE:
+                $contact =  $this->importContactService->replace(
+                    $contact,
+                    $row,
+                    $this->user,
+                    $this->responsible,
+                    $company,
+                    $this->origin,
+                    $this->comment
+                );
+                $this->importResult->incrementSucImportDuplicateContact();
                 break;
             default:
                 break;
         }
+
+        return $contact;
     }
 }

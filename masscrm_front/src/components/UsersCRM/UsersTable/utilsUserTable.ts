@@ -99,7 +99,8 @@ export const userTableMap = ({
       data: active ? 'Active' : 'Inactive'
     },
     {
-      data: comment?.slice(0, 19)
+      data: comment,
+      isComment: true
     }
   ]
 });

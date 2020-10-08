@@ -74,10 +74,14 @@ interface ITableHeight {
   userTable: string;
   contactTable: string;
   myContactTable: string;
+  blacklistTable: string;
+  exportTable: string;
 }
 
 export const OTHER_HEIGHT: ITableHeight = {
   userTable: '201px',
   contactTable: '305px',
-  myContactTable: '305px'
+  myContactTable: '305px',
+  blacklistTable: '520px',
+  exportTable: '465px'
 };

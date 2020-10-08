@@ -24,6 +24,11 @@
     height: 100%;
   }
 
+  &__notification-snackbar {
+    display: flex;
+    align-items: center;
+  }
+
   &__item {
     display: inline-flex;
     align-items: center;
@@ -39,6 +44,7 @@
   }
 
   &__user {
+    margin-left: 40px;
     color: #939bb2;
     padding: 0 8px;
   }
@@ -46,5 +52,7 @@
   &__btns {
     display: flex;
     align-items: center;
+
+
   }
 }

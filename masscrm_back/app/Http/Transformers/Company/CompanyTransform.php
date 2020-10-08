@@ -73,7 +73,7 @@ class CompanyTransform extends TransformerAbstract
             'type' => $company->getType() ?: '',
             'founded' => $company->getFoundedDate() ?: '',
             'min_employees' => $company->getMinEmployees() ?: 0,
-            'max_employees' => $company->getMaxEmployees() ?: 0,
+            'max_employees' => $company->getMaxEmployees(),
             'comment' => $company->getComment() ?: '',
         ];
         $this->addIndustries($company, $companyToArr);
