@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Requests\User;
 
@@ -26,7 +26,7 @@ class UpdateUserRequest extends AbstractRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|unique:users,email,' . $this->user .'|regex:' . static::REGEX_EMAIL,
+            'email' => 'required|unique:users,email,' . $this->user .'|email:filter',
             'login' => 'required|string|unique:users,login,' . $this->user,
             'name' => 'required|string|max:50',
             'surname' => 'required|string|max:50',

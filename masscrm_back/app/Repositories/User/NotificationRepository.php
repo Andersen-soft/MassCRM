@@ -1,14 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Repositories\User;
 
 use App\Models\User\User;
 use App\Models\User\UsersNotification;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class NotificationRepository
 {
-    public function getNotificationList(User $user, int $limit, ?bool $new): LengthAwarePaginator
+    public function getNotificationList(User $user, ?bool $new): Builder
     {
         $query = UsersNotification::query()
             ->select(['users_notifications.*'])
@@ -18,7 +18,7 @@ class NotificationRepository
             $query->where('new', '=', $new);
         }
 
-        return $query->latest()->groupBy('users_notifications.id')->paginate($limit);
+        return $query->latest()->groupBy('users_notifications.id');
     }
 
     public function getNotificationById(int $id): ?UsersNotification

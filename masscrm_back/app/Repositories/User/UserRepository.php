@@ -1,25 +1,27 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\User;
 
 use App\Models\BaseModel;
 use App\Models\User\Fields\UserFields;
 use App\Models\User\User;
 use App\Services\Reports\SearchType;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 
 class UserRepository
 {
-    public function getUserList(array $search, array $sort, int $limit): LengthAwarePaginator
+    public function getUserList(array $search, array $sort): Builder
     {
         $query = User::query()->select(['users.*']);
         $query = $this->setParamsSearch($search, $query);
         $query = $this->setParamSort($sort, $query);
 
-        return $query->groupBy('users.id')->paginate($limit);
+        return $query->groupBy('users.id');
     }
 
     private function setParamsSearch(array $search, Builder $query): Builder
@@ -67,13 +69,34 @@ class UserRepository
         return $query->orderBy($sortField, $sort['typeSort']);
     }
 
-    public function fetchUserFromLogin($login): ?User
+    public function fetchUserFromLogin(?string $login): ?User
     {
         return User::where(['login' => $login, 'from_active_directory' => 0])->first();
     }
 
     public function getListActiveUser(): LazyCollection
     {
-       return User::query()->where('active', '=', 1)->cursor();
+        return User::query()->where('active', '=', 1)->cursor();
+    }
+
+    public function getUserById(int $id, bool $fromActiveDirectory = null): ?User
+    {
+        $query = User::query()->where('id', '=', $id);
+
+        if (isset($fromActiveDirectory)) {
+            $query->where('from_active_directory', '=', false);
+        }
+
+        return $query->first();
+    }
+
+    public function deleteUserById(int $id)
+    {
+        return User::query()->where('id', $id)->delete();
+    }
+
+    public function getUsersByIds(array $ids): Collection
+    {
+        return User::query()->orWhereIn('id', $ids)->get();
     }
 }

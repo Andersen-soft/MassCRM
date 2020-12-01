@@ -46,3 +46,15 @@ Start Redis queue
 ```text
 bash /var/www/storage/bash/startQueue.sh
 ```
+
+# php cs fixer command 
+
+ - php artisan fixer:fix  --allow-risky=yes
+ 
+# php stan command 
+
+  - ./vendor/bin/phpstan analyse
+
+# phpmd command 
+
+  - vendor/bin/phpmd app text cleancode,codesize,controversial,design,naming,unusedcode

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories;
 
 use App\Models\BaseModel;
@@ -9,7 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class FilterRepository
 {
-    public function baseFilter(Builder $query, array $filterConfig, $value): Builder
+    public function baseFilter(Builder $query, array $filterConfig, array $value): Builder
     {
         switch ($filterConfig[BaseModel::TYPE_FILTER]) {
             case SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT:
@@ -24,10 +26,12 @@ class FilterRepository
                 });
                 break;
             case SearchType::TYPE_SEARCH_FIELD_TEXT_LIKE:
+                /** @var string $value */
                 $query->where($filterConfig[BaseModel::FIELD], 'ILIKE', '%' . $value . '%');
                 break;
             case SearchType::TYPE_SEARCH_FIELD_DATA_RANGE:
-                $query->whereBetween($filterConfig[BaseModel::FIELD],
+                $query->whereBetween(
+                    $filterConfig[BaseModel::FIELD],
                     [Carbon::parse($value['min'])->startOfDay(), Carbon::parse($value['max'])->endOfDay()]
                 );
                 break;

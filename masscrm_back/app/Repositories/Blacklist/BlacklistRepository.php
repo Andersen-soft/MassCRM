@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Blacklist;
 
 use App\Exceptions\Custom\NotFoundException;
@@ -42,7 +44,8 @@ class BlacklistRepository
                     );
                     break;
                 case 'date':
-                    $query->whereBetween('blacklists.updated_at',
+                    $query->whereBetween(
+                        'blacklists.updated_at',
                         [Carbon::parse($value['min'])->startOfDay(), Carbon::parse($value['max'])->endOfDay()]
                     );
                     break;

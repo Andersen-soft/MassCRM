@@ -1,4 +1,4 @@
-import { INotification, INotificationPayload } from '../../../../interfaces';
+import { INotification, INotificationPayload } from 'src/interfaces';
 
 export interface IListProps {
   getResult?: (type: string, id: number, payload: INotificationPayload) => void;

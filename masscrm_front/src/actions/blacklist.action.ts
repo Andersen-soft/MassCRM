@@ -8,15 +8,14 @@ import { IBlacklistSearch } from '../interfaces';
 export const getBlacklistAction = createAction('GET_BLACKLIST');
 export const setBlacklistFilterAction = createAction('SET_BLACKLIST_FILTER');
 export const setFiltersUseAction = createAction('SET_FILTER_USE');
-export const setErrorsAction = createAction('SET_ERRORS');
 export const setShowCountAction = createAction('SET_SHOW_COUNT');
 
 export const addToBlacklist = async (list: string[]) => {
   const listArray = list.filter(item => !!item);
   try {
-    await HTTP.post('/blacklists', { domains: listArray });
+    return await HTTP.post('/blacklists', { domains: listArray });
   } catch (errors) {
-    throw JSON.stringify(errors);
+    return Promise.reject(errors);
   }
 };
 
@@ -73,10 +72,6 @@ export const startExport = async (filter: IBlacklistSearch) => {
   } catch (error) {
     setNotification(error);
   }
-};
-
-export const setErrors = (errors: string[]) => async (dispatch: Dispatch) => {
-  await dispatch(setErrorsAction({ errors }));
 };
 
 export const setShowCount = (showCount: number) => async (

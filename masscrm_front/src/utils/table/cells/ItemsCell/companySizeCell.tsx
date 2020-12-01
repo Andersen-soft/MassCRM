@@ -24,16 +24,21 @@ export const companySizeCell = ({
 
   const items = sizes?.map(createSizeType);
 
-  const selectedSizeCompanyByMin = (min_employ: number) =>
-    sizes?.find(({ min }: ICompanySize) => min_employ === min)?.name;
+  const selectedSizeCompanyBySize = (
+    min_employ: number | null,
+    max_employ: number | null
+  ) =>
+    sizes?.find(
+      ({ min, max }: ICompanySize) => min_employ === min && max_employ === max
+    )?.name;
 
   const selectedSizeCompanyByName = (nameSize: string) =>
     sizes?.find(({ name }: ICompanySize) => name === nameSize);
 
-  const currentValue =
-    min_employees && max_employees
-      ? selectedSizeCompanyByMin(min_employees)
-      : '';
+  const currentValue = selectedSizeCompanyBySize(
+    min_employees || null,
+    max_employees || null
+  );
 
   const ContentTD = () => <div>{currentValue}</div>;
 

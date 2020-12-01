@@ -6,8 +6,8 @@ import { CommonButton } from '../CommonButton';
 
 interface IPopUp {
   questionMessage: string | JSX.Element;
-  onClose?: () => void;
-  onConfirm?: () => void;
+  onClose: () => void;
+  onConfirm: () => void;
 }
 
 const sn = styleNames(style);
@@ -30,6 +30,7 @@ export const DefaultPopUp = ({
           onClickHandler={onConfirm}
           text='Confirm'
           color='yellow'
+          type='submit'
         />
       </div>
     </div>

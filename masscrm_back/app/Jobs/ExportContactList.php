@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Jobs;
 
@@ -21,12 +21,20 @@ class ExportContactList implements ShouldQueue
     private const EXPORT_BLACKLIST_QUEUE = 'export_contact_list';
 
     private array $listField;
+
     private array $search;
+
     private array $sort;
+
     private string $typeFile;
+
     private User $user;
+
     private Process $process;
+
     private bool $isInWork;
+
+    private array $ids;
 
     public function __construct(
         array $listField,
@@ -35,7 +43,8 @@ class ExportContactList implements ShouldQueue
         string $typeFile,
         User $user,
         Process $process,
-        bool $isInWork
+        bool $isInWork,
+        array $ids = []
     ) {
         $this->queue = self::EXPORT_BLACKLIST_QUEUE;
         $this->listField = $listField;
@@ -45,16 +54,16 @@ class ExportContactList implements ShouldQueue
         $this->user = $user;
         $this->process = $process;
         $this->isInWork = $isInWork;
+        $this->ids = $ids;
     }
 
     public function handle(): void
     {
         /** @var ReportFileService $reportContactFileService */
         $reportContactFileService = app()->make(ReportFileService::class);
-        /** @var $processService ProcessService */
+        /** @var ProcessService $processService */
         $processService = app()->make(ProcessService::class);
         $processService->updateStatusProcess($this->process, Process::TYPE_STATUS_PROCESS_IN_PROGRESS);
-
         try {
             $reportContactFileService->export(
                 $this->process,
@@ -63,7 +72,8 @@ class ExportContactList implements ShouldQueue
                 $this->sort,
                 $this->typeFile,
                 $this->user,
-                $this->isInWork
+                $this->isInWork,
+                $this->ids
             );
         } catch (Exception $e) {
             $processService->updateStatusProcess($this->process, Process::TYPE_STATUS_PROCESS_FAILED);

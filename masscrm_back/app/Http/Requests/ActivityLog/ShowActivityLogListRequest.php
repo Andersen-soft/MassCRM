@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Requests\ActivityLog;
 
@@ -27,6 +27,10 @@ class ShowActivityLogListRequest extends AbstractRequest
             'id' => 'required|min:1',
             'page' => 'integer|min:1',
             'limit' => 'integer|min:1|max:50',
+            'search' => 'array',
+            'search.query' => 'string|max:255',
+            'search.from' => 'required_with:search.to|date',
+            'search.to' => 'required_with:search.from|date',
         ];
     }
 }

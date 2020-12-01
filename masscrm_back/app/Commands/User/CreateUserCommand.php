@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Commands\User;
 
@@ -25,5 +25,16 @@ class CreateUserCommand extends MainUserCommand
     public function fromActiveDirectory(): bool
     {
         return $this->fromActiveDirectory;
+    }
+
+    public function toArray(): array
+    {
+        return array_merge(
+            parent::toArray(),
+            [
+                'from_active_directory' => $this->fromActiveDirectory,
+                'allow_setting_password' => !$this->fromActiveDirectory,
+            ]
+        );
     }
 }

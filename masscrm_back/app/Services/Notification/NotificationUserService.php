@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Notification;
 
@@ -8,12 +8,10 @@ use App\Repositories\User\UserRepository;
 use App\Services\User\UserService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use App\Mail\User\{
-    MailRegistrationUserActiveDirectory,
-    MailRegistrationUserEmail,
-    MailChangePasswordUser,
-    MailChangeLoginUser
-};
+use App\Mail\User\MailRegistrationUserActiveDirectory;
+use App\Mail\User\MailRegistrationUserEmail;
+use App\Mail\User\MailChangePasswordUser;
+use App\Mail\User\MailChangeLoginUser;
 
 use App\Services\Token\FirebaseTokenManager;
 use Illuminate\Support\Facades\Mail;

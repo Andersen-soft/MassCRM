@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models;
 
@@ -20,8 +20,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Blacklist extends Model
 {
     public const REGEX_GET_DOMAIN_NAME = '/(?<=@)[^.]+(?=\.).*/';
-    public const REGEX_EMAIL = "/^[a-zA-Z0-9-!#$%&\'*+=?^_`{|}~]+(\.[a-zA-Z0-9-!#$%&\'*+=?^_`{|}~]+)*@[a-zA-Z0-9-]+(\.[a-zA-Z]+)$/";
-    public const REGEX_DOMAIN = '/^[a-zA-Z0-9-A-Яa-я]+\.[a-zA-Z0-9A-Яa-я]+$/u';
 
     protected $fillable = [
         'id',

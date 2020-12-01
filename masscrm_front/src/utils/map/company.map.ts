@@ -29,3 +29,14 @@ export const getCompanyForUpdate = ({
   subsidiaries: subsidiary?.map(({ id: companyID }) => companyID),
   ...company
 });
+
+export const getCompanySize = (size: string) => {
+  let min = Number(size.split('-')[0]) || undefined;
+  let max = Number(size.split('-')[1]) || undefined;
+  if (size === 'Self-employed') {
+    min = 1;
+    max = 1;
+  }
+  if (size === '10001+') min = 10001;
+  return { min, max };
+};

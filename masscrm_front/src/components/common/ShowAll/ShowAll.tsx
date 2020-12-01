@@ -10,10 +10,11 @@ const sn = styleNames(style);
 export const ShowAll: FC<{
   onClick: (event: MouseEvent<HTMLElement>) => void;
   isOpen: boolean;
-}> = ({ onClick, isOpen }) => {
+  title?: string;
+}> = ({ onClick, isOpen, title }) => {
   return (
     <Box className={sn('show-all')} onClick={onClick}>
-      <div className={sn('show-all_btn')}>Show all</div>
+      <div className={sn('show-all_btn')}>{title || 'Show all'}</div>
       <CommonIcon IconComponent={isOpen ? ArrowDropUp : ArrowDropDown} />
     </Box>
   );

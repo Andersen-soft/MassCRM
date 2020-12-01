@@ -12,7 +12,7 @@ services:
       - /dockerlogs/server_logs_fpm:/var/log/docker
       - /dockerlogs/storage_logs_fpm:/var/www/storage/logs
       # - /dockerlogs/files_fpm:/var/www/storage/files
-      
+
 
   nginx:
     image: nexus-docker.andersenlab.dev/nginx-masscrm:prod
@@ -22,7 +22,7 @@ services:
       - 80:80
     volumes:
       - /dockerlogs/server_logs_nginx:/var/log/nginx
-      - /dockerlogs/storage_logs_nginx:/var/www/storage/logs      
+      - /dockerlogs/storage_logs_nginx:/var/www/storage/logs
       # - /dockerlogs/files_nginx:/var/www/storage/files
     depends_on:
       - php-fpm
@@ -39,7 +39,7 @@ services:
       - '6379:6379'
     volumes:
       - redis:/data
-      
+
   mailcatcher:
     image: schickling/mailcatcher
     container_name: mailcatcher
@@ -47,6 +47,29 @@ services:
     ports:
       - 1080:1080
       - 1025:1025
-      
+
+  elasticsearch:
+    image: elasticsearch:7.9.0
+    container_name: elasticsearch
+    restart: always
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+
+
 volumes:
   redis:
+  elasticsearch-data:

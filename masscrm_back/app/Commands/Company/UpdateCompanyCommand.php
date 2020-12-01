@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands\Company;
 
 use App\Models\User\User;
@@ -10,12 +12,17 @@ use App\Models\User\User;
  */
 class UpdateCompanyCommand
 {
-    protected int $companyId;
-    protected array $companyFields;
-    protected array $industries;
-    protected ?array $vacancies;
-    protected ?array $subsidiaries;
-    protected User $user;
+    public int $companyId;
+
+    public array $companyFields;
+
+    public array $industries;
+
+    public ?array $vacancies;
+
+    public ?array $subsidiaries;
+
+    public User $user;
 
     public function __construct(
         int $companyId,

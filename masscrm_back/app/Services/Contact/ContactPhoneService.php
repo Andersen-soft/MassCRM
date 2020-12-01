@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Contact;
 
 use App\Models\Contact\Contact;
@@ -39,5 +41,17 @@ class ContactPhoneService
 
         $contact->phone_collection = $this->transferCollectionContactService->getPhones($contact);
         $contact->save();
+    }
+
+    public function addPhones(Contact $contact, ?array $phones): void
+    {
+        $phonesToSave = [];
+        foreach ($phones as $key => $phone) {
+            $contactPhone = new ContactPhones();
+            $contactPhone->phone = $phone;
+            $phonesToSave[] = $contactPhone;
+        }
+
+        $contact->contactPhones()->saveMany($phonesToSave);
     }
 }

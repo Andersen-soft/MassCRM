@@ -24,6 +24,7 @@ export interface ICustomMultiInput {
   formik?: FormikProps<Array<string> | string | boolean | undefined>;
   clear?: boolean;
   resetClearInputState?: () => void;
+  validationSchema?: Function;
 }
 
 export interface ICustomMultiRows {
@@ -39,4 +40,5 @@ export interface ICustomMultiForm {
   onChange: (data: IMultiFormState, index: number) => void;
   onClose: () => void;
   placeholder?: string;
+  validationSchema?: Function;
 }

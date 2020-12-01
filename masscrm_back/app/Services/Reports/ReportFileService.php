@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Reports;
 
 use App\Events\User\CreateSocketUserNotificationEvent;
@@ -12,7 +14,6 @@ use App\Repositories\Report\ReportRepository;
 use App\Services\Process\ProcessService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Lang;
-use Illuminate\Support\LazyCollection;
 use League\Csv\Writer as CsvWriter;
 
 class ReportFileService extends AbstractReport
@@ -27,8 +28,7 @@ class ReportFileService extends AbstractReport
         ReportRepository $reportRepository,
         ProcessService $processService,
         Contact $contact
-    )
-    {
+    ) {
         $this->reportRepository = $reportRepository;
         $this->processService = $processService;
         $this->contact = $contact;
@@ -37,30 +37,20 @@ class ReportFileService extends AbstractReport
     private function fetchReport(Contact $contact, array $pathMethods): array
     {
         $data = $this->generateReport($contact, $pathMethods);
+
         $report = [];
         foreach ($pathMethods as $key => $pathMethod) {
             if (array_key_exists($key, $data)) {
                 if (is_array($data[$key])) {
                     $data[$key] = implode('; ', $data[$key]);
                 }
-                $report[] = $data[$key];
+                $report[] = str_replace("\n", "", $data[$key]);
             } else {
                 $report[] = '';
             }
         }
 
         return $report;
-    }
-
-    private function getCollectionsContacts(array $search, array $sort, bool $isInWork): LazyCollection
-    {
-        $contacts = $this->reportRepository->buildQueryReport($search, $sort);
-
-        if ($isInWork) {
-            $this->contact->updateIsInWorkAndDate($contacts);
-        }
-
-        return $contacts->cursor();
     }
 
     public function export(
@@ -70,21 +60,26 @@ class ReportFileService extends AbstractReport
         array $sort,
         string $typeFile,
         User $user,
-        bool $isInWork
+        bool $isInWork,
+        array $ids
     ): void
     {
         $filePath = storage_path('export/report_' . Carbon::now()->timestamp . '.'.$typeFile);
         $writer = CsvWriter::createFromPath($filePath, 'w+');
 
         $listHeaders = $this->getListHeaders($listField);
-        $writer->insertOne($listHeaders['headers']);
-        $data = $this->getCollectionsContacts($search, $sort, $isInWork);
+        $writer->insertOne($listHeaders[self::HEADERS]);
+        $data = $this->reportRepository->buildQueryReport($search, $sort, $ids);
 
         /** @var Contact $item */
-        foreach ($data as $item) {
+        foreach ($data->cursor() as $item) {
             $writer->insertOne(
-                $this->fetchReport($item, $listHeaders['pathMethods'])
+                $this->fetchReport($item, $listHeaders[self::PATH_METHODS])
             );
+        }
+
+        if ($isInWork) {
+            $this->contact->updateIsInWorkAndDate($data);
         }
 
         CreateSocketUserNotificationEvent::dispatch(
@@ -103,7 +98,8 @@ class ReportFileService extends AbstractReport
         array $sort,
         string $typeFile,
         User $user,
-        bool $isInWork
+        bool $isInWork,
+        array $ids
     ): void
     {
         $process = $this->processService->createProcess(
@@ -112,7 +108,7 @@ class ReportFileService extends AbstractReport
             $this->setProcessName($search)
         );
 
-        ExportContactList::dispatch($listField, $search, $sort, $typeFile, $user, $process, $isInWork);
+        ExportContactList::dispatch($listField, $search, $sort, $typeFile, $user, $process, $isInWork, $ids);
     }
 
     private function setProcessName(array $search): string
@@ -127,6 +123,11 @@ class ReportFileService extends AbstractReport
         return Lang::get('export.contacts.export_contacts', ['params' => $params]);
     }
 
+    /**
+     * @param string $key
+     * @param mixed $values
+     * @return string
+     */
     private function generateName(string $key, $values): string
     {
         if (is_array($values)) {

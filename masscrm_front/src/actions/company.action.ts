@@ -30,8 +30,10 @@ export const getCompanyList = (filter: ICompanyFilter) => async (
 };
 
 export const createCompany = async (company: ICompanyUpdate) => {
-  const { data } = await HTTP.post(`companies`, company);
-  return data.id;
+  const {
+    data: [{ id }]
+  } = await HTTP.post(`companies`, company);
+  return id;
 };
 
 export const updateCompany = async (
@@ -43,5 +45,8 @@ export const updateCompany = async (
     store.getState()?.contacts?.data?.find(({ id }) => id === contactID)
       ?.company || ({} as ICompany)
   );
-  await HTTP.put(`companies/${idCompany}`, { ...currentCompany, ...company });
+  await HTTP.put(`companies/${idCompany}`, {
+    ...currentCompany,
+    ...company
+  });
 };

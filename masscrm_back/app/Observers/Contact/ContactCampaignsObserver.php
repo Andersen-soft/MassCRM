@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Observers\Contact;
 
@@ -27,12 +27,12 @@ class ContactCampaignsObserver
             return;
         }
 
-        foreach(self::NAME_FIELDS as $key => $item) {
-            if ($key === ContactCampaigns::STATUS_ID_FIELD) {
+        foreach (self::NAME_FIELDS as $key => $item) {
+            if ($item === ContactCampaigns::STATUS_ID_FIELD) {
                 (new ActivityLogContact())
+                    ->setContactId($contact->getId())
                     ->setUserId($contact->getUserId())
                     ->setActivityType(ActivityLogContact::ADDED_NEW_VALUE_FIELD_EVENT)
-                    ->setContactId($contact->getId())
                     ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
                     ->setModelField(ContactCampaigns::SEQUENCE_FIELD)
                     ->setDataNew($contactCampaigns->status->getName())
@@ -42,11 +42,11 @@ class ContactCampaignsObserver
             }
 
             (new ActivityLogContact())
+                ->setContactId($contact->getId())
                 ->setUserId($contact->getUserId())
                 ->setActivityType(ActivityLogContact::ADDED_NEW_VALUE_FIELD_EVENT)
-                ->setContactId($contact->getId())
                 ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
-                ->setModelField($key)
+                ->setModelField($item)
                 ->setDataNew($contactCampaigns->{$key})
                 ->setLogInfo($contactCampaigns->getRawOriginal())
                 ->save();
@@ -68,21 +68,21 @@ class ContactCampaignsObserver
                 );
 
                 (new ActivityLogContact())
+                    ->setContactId($contact->getId())
                     ->setUserId($contact->getUserId())
                     ->setActivityType(ActivityLogContact::UPDATE_VALUE_FIELD_EVENT)
-                    ->setContactId($contact->getId())
                     ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
                     ->setModelField(ContactCampaigns::STATUS_ID_FIELD)
                     ->setDataNew($contactCampaigns->status->getName())
-                    ->setDataOld($campaignStatus ? $campaignStatus->getName () : null)
+                    ->setDataOld($campaignStatus ? $campaignStatus->getName() : null)
                     ->setLogInfo($contactCampaigns->getRawOriginal())
                     ->setAdditionalInfoForData($contactCampaigns->getSequence())
                     ->save();
             } else {
                 (new ActivityLogContact())
+                    ->setContactId($contact->getId())
                     ->setUserId($contact->getUserId())
                     ->setActivityType(ActivityLogContact::UPDATE_VALUE_FIELD_EVENT)
-                    ->setContactId($contact->getId())
                     ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
                     ->setModelField($key)
                     ->setDataNew($contactCampaigns->{$key})
@@ -100,9 +100,9 @@ class ContactCampaignsObserver
         $contact = $contactCampaigns->contact;
 
         (new ActivityLogContact())
+            ->setContactId($contact->getId())
             ->setUserId($contact->getUserId())
             ->setActivityType(ActivityLogContact::DELETE_VALUE_FIELD_EVENT)
-            ->setContactId($contact->getId())
             ->setModelName((new ReflectionClass($contactCampaigns))->getShortName())
             ->setModelField(ContactCampaigns::SEQUENCE_FIELD)
             ->setDataOld($contactCampaigns->getOriginal(ContactCampaigns::SEQUENCE_FIELD))

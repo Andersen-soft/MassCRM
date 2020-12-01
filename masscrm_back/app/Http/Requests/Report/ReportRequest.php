@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Requests\Report;
 
@@ -32,10 +32,20 @@ class ReportRequest extends AbstractRequest
             'listField.*' => 'string|in:' . $listParams,
             'search' => 'array',
             'search.*' => 'in:'. $listParams,
-            'search.responsible' => 'array',
+            'search.global' => 'array',
+            'search.global.query' => 'string|max:255',
+            'search.global.from' => 'required_with:search.global.to|date',
+            'search.global.to' => 'required_with:search.global.from|date',
+            'search.responsible_id' => 'array|min:1',
+            'search.responsible_id.*' => 'integer|exists:users,id',
             'search.created' => 'array|size:2',
             'search.created.min' => 'required_with:search.created|date',
             'search.created.max' => 'required_with:search.created|date|after_or_equal:search.created.min',
+            'search.is_in_work' => 'array|min:1',
+            'search.is_in_work.*' => 'boolean',
+            'search.date_of_use' => 'array|size:2',
+            'search.date_of_use.min' => 'required_with:search.date_of_use|date',
+            'search.date_of_use.max' => 'required_with:search.date_of_use|date|after_or_equal:search.date_of_use.min',
             'search.updated' => 'array|size:2',
             'search.updated.min' => 'required_with:search.updated|date',
             'search.updated.max' => 'required_with:search.updated|date|after_or_equal:search.updated.min',
@@ -70,7 +80,7 @@ class ReportRequest extends AbstractRequest
             'search.colleagues' => 'string',
             'search.colleagues_link' => 'string',
             'search.mailing_tool' => 'array|between:1,2',
-            'search.service_id' => 'integer|min:1',
+            'search.service_id' => 'string',
             'search.added_to_mailing' => 'array|size:2',
             'search.added_to_mailing.min' => 'required_with:search.added_to_mailing|date',
             'search.added_to_mailing.max'=>
@@ -96,7 +106,8 @@ class ReportRequest extends AbstractRequest
             'search.replies' => 'array|size:2',
             'search.replies.max' => 'integer',
             'search.replies.min' => 'integer|lte:search.replies.max',
-            'search.bounces' => 'integer|min:0',
+            'search.bounces' => 'array|min:1',
+            'search.bounces.*' => 'required_with:search.bounces|boolean',
             'search.mails' => 'string',
             'search.my_notes' => 'string',
             'search.sale_created' => 'array|size:2',
@@ -142,7 +153,6 @@ class ReportRequest extends AbstractRequest
             'sort.fieldName' => 'required_with:sort|string|in:'. $listParams,
             'sort.typeSort' => 'required_with:sort|string', Rule::in(['ASC', 'DESC']),
             'typeFile' => 'required|string|in:csv,xls',
-            'limit' => 'integer|min:1'
         ];
     }
 

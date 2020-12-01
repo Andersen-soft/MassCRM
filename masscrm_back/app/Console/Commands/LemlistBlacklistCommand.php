@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Console\Commands;
 
 use App\Services\Blacklist\LemlistService;
@@ -39,7 +41,7 @@ class LemlistBlacklistCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return void
      */
     public function handle(): void
     {
@@ -48,6 +50,5 @@ class LemlistBlacklistCommand extends Command
         } catch (Exception $exception) {
             app('sentry')->captureException($exception);
         }
-
     }
 }

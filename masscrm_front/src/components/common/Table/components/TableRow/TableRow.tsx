@@ -6,11 +6,12 @@ import {
   CommonIcon,
   MoreInformation,
   SocialIcon,
-  DefaultPopUp
+  DefaultPopUp,
+  Control
 } from 'src/components/common';
 import { ShowAllTD } from 'src/utils/table/cells';
-import { ITableCell, ITableRowProps } from '../../interfaces';
-import { Control } from '../../../Control';
+import copy from 'assets/svg/copy.svg';
+import { ITableCell, ITableRowProps, TOpen } from '../../interfaces';
 
 export const TableRowItem: FC<ITableRowProps> = ({
   row,
@@ -33,8 +34,8 @@ export const TableRowItem: FC<ITableRowProps> = ({
     config.onDeleteSelected && config.onDeleteSelected(id);
   };
 
-  const onEditHandler = (id: number) => () => {
-    config.onEdit && config.onEdit(id);
+  const onEditHandler = (id: number, type?: TOpen) => () => {
+    config.onEdit && config.onEdit(id, type);
   };
 
   const canSelected = useMemo(
@@ -76,6 +77,19 @@ export const TableRowItem: FC<ITableRowProps> = ({
       config.hasEdit && (
         <TableCell component='th' scope='row' key='edit' className='smallTD'>
           <CommonIcon IconComponent={Edit} onClick={onEditHandler(row.id)} />
+        </TableCell>
+      ),
+    [onEditHandler]
+  );
+
+  const canCopy = useMemo(
+    () =>
+      config.hasCopy && (
+        <TableCell component='th' scope='row' key='copy' className='smallTD'>
+          <CommonIcon
+            IconComponent={copy}
+            onClick={onEditHandler(row.id, 'copy')}
+          />
         </TableCell>
       ),
     [onEditHandler]
@@ -166,6 +180,7 @@ export const TableRowItem: FC<ITableRowProps> = ({
       {canSelected}
       {canDeleted}
       {canEdit}
+      {canCopy}
       {row.cells.map(cellMapCallback)}
       {hasInfo}
       {canControl}

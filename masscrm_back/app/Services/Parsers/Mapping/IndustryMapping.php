@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Parsers\Mapping;
 
@@ -31,7 +31,7 @@ class IndustryMapping
                 break;
             }
         }
-        if (in_array($name, $this->industries)){
+        if (in_array($name, $this->industries)) {
             return $this->industries[$name];
         }
 
@@ -53,7 +53,7 @@ class IndustryMapping
         }
         $file = fopen($filePath, 'r+');
         fgetcsv($file, 0, ',');
-        while (($line = fgetcsv($file, 0, ',')) !== FALSE) {
+        while (($line = fgetcsv($file, 0, ',')) !== false) {
             //$line[1] industry name in parse file
             //$line[2] industry name in our system
             if (!isset($line[1]) || !isset($line[2]) || $line[1] === '' || $line[2] === '') {

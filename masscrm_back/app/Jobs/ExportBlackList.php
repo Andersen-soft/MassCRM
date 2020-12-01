@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Jobs;
 
@@ -38,7 +38,7 @@ class ExportBlackList implements ShouldQueue
     {
         /** @var BlacklistExportService $blacklistExportService */
         $blacklistExportService = app()->make(BlacklistExportService::class);
-        /** @var $processService ProcessService */
+        /** @var ProcessService $processService */
         $processService = app()->make(ProcessService::class);
         $processService->updateStatusProcess($this->process, Process::TYPE_STATUS_PROCESS_IN_PROGRESS);
 

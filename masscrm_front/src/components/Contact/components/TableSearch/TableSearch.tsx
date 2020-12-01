@@ -1,83 +1,127 @@
-import React, { FC, useCallback, useState } from 'react';
-import { GetApp } from '@material-ui/icons';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { FC, useCallback } from 'react';
 import { styleNames } from 'src/services';
-import { SearchInput, DateRange, CommonIcon } from 'src/components/common';
-import { openImportModalAction } from 'src/actions/import.action';
-import importAnimation from 'src/lotties/importAnimation.json';
-import Lottie from 'react-lottie';
-import { getImportStatus } from 'src/selectors';
-import { ColumnsFilter, KebabMenu } from './components';
+import { DateRange, CommonButton, CommonInput } from 'src/components/common';
+import { useFormik } from 'formik';
+import { useDispatch, useSelector } from 'react-redux';
+import { getAddContactList, setFilterValues, setPage } from 'src/actions';
+import { getFilterSettings, getFilterValues } from 'src/selectors';
+import { IContactSearch, IGlobalContactSearch } from 'src/interfaces';
+import { format, parse } from 'date-fns';
 import style from './TableSearch.scss';
-import { DownloadReport } from './components/DownloadReport';
 
 const sn = styleNames(style);
 
-const defaultOptions = {
-  autoplay: true,
-  renderer: 'svg',
-  animationData: importAnimation,
-  rendererSettings: {
-    preserveAspectRatio: 'xMidYMid slice'
-  }
-};
+interface ITableSearchInputs {
+  search?: string;
+  date?: Date[];
+}
 
-export const TableSearch: FC<{ isFullTable: boolean }> = ({ isFullTable }) => {
+export const TableSearch: FC<{ isToday?: boolean }> = ({ isToday }) => {
   const dispatch = useDispatch();
-  const [searchValue, setSearchValue] = useState<string>();
-  const [dateValue, setDateValue] = useState<Array<Date>>([]);
-  const importStatus = useSelector(getImportStatus);
+  const filters = useSelector(getFilterSettings);
+  const values = useSelector(getFilterValues);
+  const currentDay = new Date();
+  const getData = () => {
+    if (isToday) {
+      return [currentDay, currentDay];
+    }
+    const {
+      global: { from, to }
+    } = values;
+    const dateFrom = from && parse(from, 'dd-MM-yyyy', new Date());
+    const dateTo = to && parse(to, 'dd-MM-yyyy', new Date());
+    return dateFrom && dateTo ? [dateFrom, dateTo] : [];
+  };
 
-  const handleOpenImportModal = useCallback(() => {
-    dispatch(openImportModalAction(true));
-  }, [dispatch]);
+  const initialValues: ITableSearchInputs = {
+    search: values.global.query || '',
+    date: getData()
+  };
+
+  const onSubmit = useCallback(
+    ({ date: [from, to], search: query }) => {
+      const global: IGlobalContactSearch = {
+        from: from && format(new Date(from), 'dd-LL-y'),
+        to: to && format(new Date(to), 'dd-LL-y'),
+        query: query || undefined
+      };
+      dispatch(setPage(1));
+      dispatch(
+        getAddContactList({
+          ...filters,
+          search: {
+            ...filters.search,
+            global
+          } as IContactSearch,
+          page: 1
+        })
+      );
+      dispatch(setFilterValues({ ...values, global }));
+    },
+    [filters, values]
+  );
+
+  const resetGlobalDateFilter = () => {
+    dispatch(
+      setFilterValues({
+        ...values,
+        global: { ...values.global, from: undefined, to: undefined }
+      })
+    );
+    dispatch(setPage(1));
+    dispatch(
+      getAddContactList({
+        ...filters,
+        search: {
+          ...filters.search,
+          global
+        } as IContactSearch,
+        page: 1
+      })
+    );
+  };
+
+  const {
+    values: { search, date },
+    handleSubmit,
+    handleChange,
+    setFieldValue
+  } = useFormik({ initialValues, onSubmit });
 
   return (
     <div className={sn('table-search')}>
-      <div className={sn('table-search__item')}>
+      <form className={sn('table-search__item')} onSubmit={handleSubmit}>
         <div className={sn('table-search__input')}>
-          <SearchInput
-            value={searchValue}
+          <CommonInput
+            onChangeValue={handleChange}
+            name='search'
+            value={search}
             placeholder='Search'
-            items={[]}
-            onChange={setSearchValue}
           />
         </div>
-        <div className={sn('table-search__input')}>
-          <DateRange
-            name='choose'
-            hasDataRangeFilter
-            date={dateValue}
-            placeholder='Choose'
-            singular={false}
-            onChange={setDateValue}
-          />
-        </div>
-      </div>
-      <div className={sn('table-search__item')}>
-        <ColumnsFilter isFullTable />
-        {importStatus === 'processing' ? (
-          <Lottie
-            options={defaultOptions}
-            height={24}
-            width={24}
-            isClickToPauseDisabled
-          />
-        ) : (
-          <div className={sn('tooltip')}>
-            <CommonIcon
-              IconComponent={GetApp}
-              className={sn('table-search__icon')}
-              onClick={handleOpenImportModal}
-            />
-            <span className={sn('tooltipText')}>
-              Import contacts from the file
-            </span>
-          </div>
+        {!isToday && (
+          <>
+            <div className={sn('table-search__input')}>
+              <DateRange
+                name='date'
+                hasDataRangeFilter
+                date={date}
+                placeholder='Choose'
+                singular={false}
+                onChange={setFieldValue}
+                resetDateFilter={resetGlobalDateFilter}
+              />
+            </div>
+            <div className={sn('table-search__input')}>
+              <CommonButton
+                text='Search'
+                type='submit'
+                onClickHandler={handleSubmit}
+              />
+            </div>
+          </>
         )}
-        {isFullTable && <DownloadReport />}
-        {isFullTable && <KebabMenu />}
-      </div>
+      </form>
     </div>
   );
 };

@@ -30,6 +30,7 @@ module.exports = {
     'import/named': 0,
     'import/prefer-default-export': 0,
     'react/jsx-filename-extension': [1, { extensions: ['.tsx', '.jsx'] }],
+    "react/require-default-props": [0],
     'import/no-extraneous-dependencies': 'off',
     '@typescript-eslint/explicit-function-return-type': 0,
     '@typescript-eslint/no-object-literal-type-assertion': 0,

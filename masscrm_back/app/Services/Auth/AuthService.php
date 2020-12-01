@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Auth;
 
@@ -10,7 +10,6 @@ class AuthService
 {
     public function login(string $login, string $password): string
     {
-        /** @var User $user */
         if (!$user = User::where(['login' => $login, 'active' => 1])->first()) {
             throw new AuthException('Invalid login or password.');
         }

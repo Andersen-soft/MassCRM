@@ -3,4 +3,5 @@ export interface IJob {
   id?: number;
   job?: string;
   skills?: string;
+  link?: string;
 }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Observers\Company;
 
@@ -22,9 +22,9 @@ class CompanyIndustryObserver
         }
 
         (new ActivityLogCompany())
+            ->setCompanyId($company->getId())
             ->setUserId($company->getUserId())
             ->setActivityType(ActivityLogCompany::ADDED_NEW_VALUE_FIELD_EVENT)
-            ->setCompanyId($company->getId())
             ->setModelName((new ReflectionClass($companyIndustry))->getShortName())
             ->setModelField(CompanyIndustry::INDUSTRY_FIELD)
             ->setDataNew($industry->getName())
@@ -45,9 +45,9 @@ class CompanyIndustryObserver
         }
 
         (new ActivityLogCompany())
+            ->setCompanyId($company->getId())
             ->setUserId($company->getUserId())
             ->setActivityType(ActivityLogCompany::DELETE_VALUE_FIELD_EVENT)
-            ->setCompanyId($company->getId())
             ->setModelName((new ReflectionClass($companyIndustry))->getShortName())
             ->setModelField(CompanyIndustry::INDUSTRY_FIELD)
             ->setDataOld($industry->getName())

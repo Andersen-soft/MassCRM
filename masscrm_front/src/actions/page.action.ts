@@ -1,13 +1,15 @@
 import { createAction } from 'redux-actions';
 import { Dispatch } from 'redux';
+import history from '../store/history';
 
 export const setPageAction = createAction('SET_PAGE');
 
 export const setPage = (page?: number) => (dispatch: Dispatch) => {
-  const currentPage =
-    page ||
-    Number(page || new URLSearchParams(window.location.search).get('page')) ||
-    1;
-
+  const search = new URLSearchParams(history.location.search);
+  const currentPage = page || Number(page || search.get('page')) || 1;
+  search.set('page', currentPage.toString());
+  history.push({
+    search: search.toString()
+  });
   dispatch(setPageAction({ currentPage }));
 };

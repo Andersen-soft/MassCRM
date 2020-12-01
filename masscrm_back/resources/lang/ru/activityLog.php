@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 return [
     'Contact_addNewValueField_first_name' => 'Добавлена фамилия :dataNew',

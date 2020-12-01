@@ -1,30 +1,49 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Contact;
 
+use App\Commands\Contact\ChangeResponseContactsCommand;
 use App\Exceptions\Custom\NotFoundException;
 use App\Models\ActivityLog\ActivityLogContact;
 use App\Commands\Contact\DestroyContactsCommand;
 use App\Commands\Contact\GetContactListCommand;
 use App\Models\Company\Company;
 use App\Models\Contact\Contact;
-use App\Repositories\Company\CompanyRepository;
 use App\Models\Contact\ContactSale;
-use App\Repositories\Contact\ContactRepository;
 use App\Models\User\User;
 use Carbon\Carbon;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use App\Commands\Contact\UpdateContactCommand;
+use App\Commands\Contact\CreateContactCommand;
+use Illuminate\Database\Eloquent\Builder;
 
 class ContactService
 {
     private const AMOUNT_EXPECTED_DAILY_PLAN = 30;
 
+    private const PREVIOUS_COMPANY_WITH_POSITION = [
+        [
+            'model_field' => self::COMPANY_ID,
+            'model_name' =>'Contact'
+        ],
+        [
+            'model_field' => 'position',
+            'model_name' =>'Contact'
+        ]
+    ];
+
     private BaseContactService $baseContactService;
 
-    public function __construct(BaseContactService $baseContactService)
+    private const COMPANY_ID = 'company_id';
+
+    private Contact $contact;
+
+    public function __construct(BaseContactService $baseContactService, User $user, Contact $contact)
     {
         $this->baseContactService = $baseContactService;
+        $this->user = $user;
+        $this->contact = $contact;
     }
 
     public function getCounterDailyPlanUser(User $user): array
@@ -41,8 +60,7 @@ class ContactService
 
         $items = $this->baseContactService->activityLogContactService->fetchLogsContact(
             $id,
-            'company_id',
-            'Contact'
+            self::PREVIOUS_COMPANY_WITH_POSITION
         );
 
         /** @var ActivityLogContact $item */
@@ -50,48 +68,65 @@ class ContactService
             if (empty($item->log_info)) {
                 continue;
             }
-            $company = $this->baseContactService->companyRepository->getCompanyById($item->log_info['company_id']);
-            if ($company) {
-                $companies[] = [
-                    'company_name' => $company->name,
-                    'company_id' => $item->log_info['company_id'],
-                    'position' => $item->log_info['position'],
-                    'updated_at' => Carbon::parse($item->log_info['updated_at'])->format(Contact::DATE_FORMAT)
-                ];
+
+            if (isset($item->log_info[self::COMPANY_ID])) {
+                $company = $this->baseContactService->companyRepository->getCompanyById($item->log_info[self::COMPANY_ID]);
+                if ($company) {
+                    $companies[] = [
+                        'company_name' => $company->name,
+                        self::COMPANY_ID => $item->log_info[self::COMPANY_ID],
+                        'position' => $item->log_info['position'],
+                        'updated_at' => Carbon::parse($item->log_info['updated_at'])->format(Contact::DATE_FORMAT)
+                    ];
+                }
             }
         }
 
         return $companies;
     }
 
-    public function deleteContacts(DestroyContactsCommand $command): void
+    public function deleteContacts(DestroyContactsCommand $command): bool
     {
         if (!$command->getUser()->hasRole(User::USER_ROLE_MANAGER)) {
-            $this->deleteContact($command->getContactsId(), $command->getUser()->id);
 
-            return;
+            if(empty($command->getSearch())){
+               $destroyResult = Contact::destroy($command->getContactsId());
+            }else {
+                $formSearchParams = $this->formSearchParams($command->getSearch());
+                $destroyResult = $this->deleteContactListBySearchParams(
+                    $formSearchParams,
+                    $command->getUser(),
+                    $command->getExceptIds()
+                );
+            }
+
+            return (bool) $destroyResult;
         }
 
         if(empty($command->getSearch())){
-            Contact::destroy($command->getContactsId());
+            $destroyResult = Contact::destroy($command->getContactsId());
         }else {
             $formSearchParams = $this->formSearchParams($command->getSearch());
-            $this->deleteContactListBySearchParams($formSearchParams, $command->getLimit(), $command->getUser());
+            $destroyResult = $this->deleteContactListBySearchParams(
+                $formSearchParams,
+                $command->getUser(),
+                $command->getExceptIds()
+            );
         }
 
-        return;
+        return (bool) $destroyResult;
     }
 
-    public function getContactListBySearchParams(GetContactListCommand $command): LengthAwarePaginator
+    public function getContactListBySearchParams(GetContactListCommand $command): Builder
     {
         $formedSearchParams = $this->formSearchParams($command->getSearch());
 
         return $this->baseContactService->contactRepository->getContactList(
-            $formedSearchParams,
-            $command->getSort(),
-            $command->getLimit(),
-            !$command->getUser()->hasRole(User::USER_ROLE_MANAGER) ? $command->getUser() : null
-        );
+                $formedSearchParams,
+                $command->getUser(),
+                [],
+                $command->getSort(),
+            );
     }
 
     private function formSearchParams(array $searchParams): array
@@ -117,26 +152,57 @@ class ContactService
         return $search;
     }
 
-    private function deleteContactListBySearchParams(array $search, int $limit, User $user): void
+    private function deleteContactListBySearchParams(array $search, User $user = null, $exceptIds = []): bool
     {
-        if(!empty($search)){
+        if (!empty($search)) {
             $listOfContacts = $this->baseContactService->contactRepository->getContactList(
                 $search,
-                [],
-                $limit,
+                $user,
+                $exceptIds
+            );
+
+            $this->baseContactService->contactRepository->deleteContact($listOfContacts);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function updateResponsibleBySearchParams(array $search, int $responsibleId, User $user): void
+    {
+        if (!empty($search) && !empty($responsibleId)) {
+            $listOfContacts = $this->baseContactService->contactRepository->getContactList(
+                $search,
                 $user
             );
 
-            $this->deleteContact(array_column($listOfContacts->items(),'id'), $user->id);
+            $this->baseContactService->contactRepository
+                ->changeResponsibleByBuilder(
+                    $listOfContacts,
+                    $responsibleId
+                );
         }
     }
 
-    private function deleteContact(array $contactsIds, $userId): void
+    public function changeResponsible(ChangeResponseContactsCommand $command): void
     {
-        Contact::query()
-            ->whereIntegerInRaw('id', $contactsIds)
-            ->where('user_id' , '=', $userId)
-            ->delete();
+        if (empty($command->getSearch())) {
+            $this->baseContactService->contactRepository->changeResponsibleById(
+                $command->getContactsId(),
+                $command->getResponsibleId()
+            );
+
+        } else {
+            $formSearchParams = $this->formSearchParams($command->getSearch());
+            $this->updateResponsibleBySearchParams(
+                $formSearchParams,
+                $command->getResponsibleId(),
+                $command->getUser()
+            );
+        }
+
+        return;
     }
 
     public function updateContact(UpdateContactCommand $command): Contact
@@ -146,14 +212,15 @@ class ContactService
             throw new NotFoundException('Contact value(' . $command->getContactId() . ') not found');
         }
 
-        $contact->user()->associate($command->getUser());
+        $this->contact->updateContact(
+            $contact,
+            $command->getContactFields(),
+            $command->getUser(),
+            $command->getOrigin()
+        );
 
         if ($command->getCompanyId()) {
             $company = $this->baseContactService->companyRepository->getCompanyById($command->getCompanyId());
-            if (!$company) {
-                throw new NotFoundException('Company value(' . $command->getCompanyId() . ') not found');
-            }
-
             $contact->company()->associate($company);
         }
 
@@ -170,14 +237,46 @@ class ContactService
             $command->getSocialNetworks()
         );
 
-        if ($command->getOrigin() !== null) {
-            $contact->origin = implode(';', $command->getOrigin());
+        return $contact;
+    }
+
+    public function addContact(CreateContactCommand $command): Contact
+    {
+        $contact = $this->contact->createContact(
+            $command->getContactFields(),
+            $command->getUser(),
+            $command->getOrigin()
+        );
+
+        if ($command->getCompanyId()) {
+            $company = $this->baseContactService->companyRepository->getCompanyById($command->getCompanyId());
+            $contact->company()->associate($company);
         }
 
-        $contact->update($command->getContactFields());
-        $contact->setUpdatedAt(Carbon::now());
-        $contact->save();
+        $this->baseContactService->contactSocialNetworkService->addSocialNetworks(
+            $contact,
+            $command->getSocialNetworks()
+        );
+
+        $this->baseContactService->contactEmailService->addEmails(
+            $contact,
+            $command->getEmails(),
+            $command->isRequiresValidation()
+        );
+
+        $this->baseContactService->contactPhoneService->addPhones($contact, $command->getPhones());
+        $this->baseContactService->transferCollectionContactService->updateCollectionContact($contact);
 
         return $contact;
+    }
+
+    public function getContact(int $contactId): Contact
+    {
+        $contact = Contact::query()->find($contactId);
+        if ($contact instanceof Contact) {
+            return $contact;
+        }
+
+        throw new NotFoundException('Contact value(' . $contactId . ') not found');
     }
 }

@@ -61,7 +61,7 @@ export const TableCellText: FC<ITableCellText> = ({
       default:
         return <div>{value}</div>;
     }
-  }, [link, value, type]);
+  }, [link, value, type, href]);
 
   return (
     <>

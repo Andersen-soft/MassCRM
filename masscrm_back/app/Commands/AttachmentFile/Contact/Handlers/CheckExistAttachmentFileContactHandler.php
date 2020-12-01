@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands\AttachmentFile\Contact\Handlers;
 
 use App\Exceptions\Custom\NotFoundException;
@@ -19,7 +21,7 @@ class CheckExistAttachmentFileContactHandler
 
     public function handle(CheckExistAttachmentFileContactCommand $command): ?ContactAttachment
     {
-        $contact = Contact::find($command->getContactId());
+        $contact = Contact::query()->find($command->getContactId());
         if (!$contact instanceof Contact) {
             throw new NotFoundException('Contact value(' . $command->getContactId() . ') not found');
         }

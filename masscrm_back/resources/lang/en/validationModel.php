@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 return [
     'company' => [
@@ -31,7 +31,7 @@ return [
     ],
     'contact' => [
         'contact_linkedIn_already_exist' => 'The contact LinkedIn  is already exist.',
-        'contact_linkedIn_regex' => 'The company LinkedIn ":value" format is invalid.',
+        'contact_linkedIn_regex' => 'The contact LinkedIn ":input" format is invalid.',
         'service_id_integer' => 'The ID must be an number',
         'last_touch_date_invalid' => 'The Last touch is not a valid date',
         'added_to_mailing_date_invalid' => 'The Added to mailing is not a valid date',

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Observers\AttachmentFile;
 
@@ -13,9 +13,9 @@ class CompanyAttachmentObserver
     public function created(CompanyAttachment $companyAttachment): void
     {
         (new ActivityLogCompany())
+            ->setCompanyId($companyAttachment->getCompanyId())
             ->setUserId($companyAttachment->getUserId())
             ->setActivityType(ActivityLogCompany::STORE_ATTACHMENT_FILE_EVENT)
-            ->setCompanyId($companyAttachment->getCompanyId())
             ->setModelName((new ReflectionClass($companyAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataNew($companyAttachment->getFileName())
@@ -26,9 +26,9 @@ class CompanyAttachmentObserver
     public function updated(CompanyAttachment $companyAttachment): void
     {
         (new ActivityLogCompany())
+            ->setCompanyId($companyAttachment->getCompanyId())
             ->setUserId($companyAttachment->getUserId())
             ->setActivityType(ActivityLogCompany::UPDATE_ATTACHMENT_FILE_EVENT)
-            ->setCompanyId($companyAttachment->getCompanyId())
             ->setModelName((new ReflectionClass($companyAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataOld($companyAttachment->getOriginal(self::FIELD_FILE_NAME))
@@ -40,12 +40,12 @@ class CompanyAttachmentObserver
     public function deleted(CompanyAttachment $companyAttachment): void
     {
         (new ActivityLogCompany())
+            ->setCompanyId($companyAttachment->getCompanyId())
             ->setUserId($companyAttachment->getUserId())
             ->setActivityType(ActivityLogCompany::DELETE_ATTACHMENT_FILE_EVENT)
-            ->setCompanyId($companyAttachment->getCompanyId())
             ->setModelName((new ReflectionClass($companyAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
-            ->setDataOld( $companyAttachment->getOriginal(self::FIELD_FILE_NAME))
+            ->setDataOld($companyAttachment->getOriginal(self::FIELD_FILE_NAME))
             ->setLogInfo($companyAttachment->getRawOriginal())
             ->save();
     }

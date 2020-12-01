@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Observers\Contact;
 
 use App\Models\Company\Company;
@@ -7,7 +9,6 @@ use App\Models\Contact\Contact;
 use App\Models\ActivityLog\ActivityLogContact;
 use App\Repositories\Company\CompanyRepository;
 use Carbon\Carbon;
-use Carbon\Exceptions\InvalidFormatException;
 use ReflectionClass;
 
 class ContactObserver
@@ -60,13 +61,13 @@ class ContactObserver
             }
 
             (new ActivityLogContact())
+                ->setContactId($contact->getId())
                 ->setUserId($contact->getUserId())
                 ->setActivityType($activityType)
-                ->setContactId($contact->getId())
                 ->setModelName((new ReflectionClass($contact))->getShortName())
                 ->setModelField($key)
-                ->setDataNew($value)
-                ->setDataOld($dataOld)
+                ->setDataNew((string) $value)
+                ->setDataOld((string) $dataOld)
                 ->setLogInfo($contact->getRawOriginal())
                 ->save();
         }

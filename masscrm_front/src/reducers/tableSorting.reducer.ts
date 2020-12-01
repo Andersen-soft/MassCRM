@@ -20,5 +20,9 @@ export const initialSortingState: ISortingState = {
   'Last touch': {
     field_name: 'last_touch',
     type_sort: 'DESC'
+  },
+  'Date of use': {
+    field_name: 'date_of_use',
+    type_sort: 'DESC'
   }
 };

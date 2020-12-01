@@ -1,15 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventsSubscriber;
 
 use App\Services\Notification\NotificationUserService;
-use App\Events\User\{
-    RegistrationUserToEmailEvent,
-    RegistrationUserToActiveDirectoryEvent,
-    ChangePasswordEvent,
-    ChangeLoginEvent,
-    CreateSocketUserNotificationEvent
-};
+use App\Events\User\RegistrationUserToEmailEvent;
+use App\Events\User\RegistrationUserToActiveDirectoryEvent;
+use App\Events\User\ChangePasswordEvent;
+use App\Events\User\ChangeLoginEvent;
+use App\Events\User\CreateSocketUserNotificationEvent;
+use Illuminate\Events\Dispatcher;
 
 class NotificationUserEventSubscriber
 {
@@ -20,7 +21,7 @@ class NotificationUserEventSubscriber
         $this->notificationUserService = $notificationUserService;
     }
 
-    public function subscribe($events): void
+    public function subscribe(Dispatcher  $events): void
     {
         $events->listen(
             RegistrationUserToActiveDirectoryEvent::class,

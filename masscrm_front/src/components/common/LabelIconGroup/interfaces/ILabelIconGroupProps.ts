@@ -6,4 +6,5 @@ export interface ILabelIconGroupProps {
   count: string | number;
   icon: FC<SvgIconProps>;
   isActive?: boolean;
+  className?: string;
 }

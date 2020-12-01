@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 return [
 
@@ -137,6 +137,18 @@ return [
     'subsidiaries' => [
         'company_have_other_type' => 'The company :input have type another type',
         'wrong_count_relation_companies' => 'Wrong quantity relation Holding companies.'
+    ],
+    'company' => [
+        'name_unique' => 'The company name :input is already exist',
+        'website_unique' => 'This website is already used for :companyName',
+        'linkedIn_unique' => 'This company LinkedIn is already used for :companyName',
+    ],
+    'contact' => [
+        'linkedIn_unique' => 'This LinkedIn is already used for another contact.',
+    ],
+    'industry' => [
+        'industry_invalid_regex' => 'The only latin letters and symbols & \ / , - are available',
+        'industry_unique' => 'The industry is already exist',
     ],
 
     /*

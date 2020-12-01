@@ -3,7 +3,6 @@ import {
   getBlacklistAction,
   setBlacklistFilterAction,
   setFiltersUseAction,
-  setErrorsAction,
   setShowCountAction
 } from '../actions/blacklist.action';
 import { IBlacklistStore } from '../interfaces';
@@ -16,8 +15,7 @@ const initialState: IBlacklistStore = {
     user: '',
     date: []
   },
-  showCount: 5,
-  errors: []
+  showCount: 5
 };
 
 export const blacklistReducer = handleActions(
@@ -31,10 +29,6 @@ export const blacklistReducer = handleActions(
       ...payload
     }),
     [`${setFiltersUseAction}`]: (state, { payload }) => ({
-      ...state,
-      ...payload
-    }),
-    [`${setErrorsAction}`]: (state, { payload }) => ({
       ...state,
       ...payload
     }),

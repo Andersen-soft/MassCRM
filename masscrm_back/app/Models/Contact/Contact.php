@@ -1,16 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Contact;
 
 use App\Models\AttachmentFile\ContactAttachment;
 use App\Models\Company\Company;
 use App\Models\Contact\Fields\ContactFields;
 use App\Models\User\User;
+use App\Search\Contact\ContactIndexConfigurator;
+use App\Search\Contact\Rules\ContactSearchRule;
+use App\Search\Contact\Transformers\ContactTransformer;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use ScoutElastic\Searchable;
 
 /**
  * Class Contact
@@ -24,11 +29,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $replies
  * @property int|null $bounces
  * @property int|null $confidence
- * @property int|null $service_id
+ * @property string|null $service_id
+ * @property int|null $responsible_id
+ * @property string|null $colleague_first
+ * @property string|null $colleague_second
  * @property string|null $mailing_tool
  * @property string|null $origin
  * @property string|null $comment
- * @property string|null $responsible
  * @property string|null $first_name
  * @property string|null $last_name
  * @property string|null $full_name
@@ -47,7 +54,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property bool $is_upload_collection
- * @property bool $is_in_work
+ * @property bool|null $is_in_work
+ * @property bool|null $no_email
  * @property bool $in_blacklist
  * @property array $email_collection
  * @property array $phone_collection
@@ -60,13 +68,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Contact extends ContactFields
 {
+    use Searchable;
+
     public const CONTACT = 'contact';
     public const EXCEPT_EMAIL_TEMPLATE = 'noemail@noemail.com';
 
     protected $fillable = [
         self::ID_FIELD,
         self::COMPANY_ID_FIELD,
-        self::RESPONSIBLE_FIELD,
+        self::RESPONSIBLE_ID_FIELD,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::FIRST_NAME_FIELD,
@@ -108,9 +118,9 @@ class Contact extends ContactFields
 
     protected $casts = [
         self::COMPANY_ID_FIELD => 'integer',
-        self::RESPONSIBLE_FIELD => 'string',
         self::CREATED_AT => 'datetime',
         self::UPDATED_AT => 'datetime',
+        self::DATE_OF_USE_FIELD => 'datetime',
         self::FIRST_NAME_FIELD => 'string',
         self::LAST_NAME_FIELD => 'string',
         self::FULL_NAME_FIELD => 'string',
@@ -133,7 +143,7 @@ class Contact extends ContactFields
         self::REPLIES_FIELD => 'integer',
         self::BOUNCES_FIELD => 'integer',
         self::CONFIDENCE_FIELD => 'integer',
-        self::SERVICE_ID_FIELD => 'integer',
+        self::SERVICE_ID_FIELD => 'string',
         self::COMMENT_FIELD => 'string',
         self::EMAIL_COLLECTION_FIELD => 'array',
         self::PHONE_COLLECTION_FIELD => 'array',
@@ -145,7 +155,14 @@ class Contact extends ContactFields
         self::SALE_COLLECTION_FIELD => 'array',
         self::IS_UPLOAD_COLLECTION_FIELD => 'boolean',
         self::USER_ID_FIELD => 'integer',
+        self::RESPONSIBLE_ID_FIELD => 'integer',
         self::IN_BLACKLIST_FIELD => 'boolean',
+    ];
+
+    protected string $indexConfigurator = ContactIndexConfigurator::class;
+
+    protected array $searchRules = [
+        ContactSearchRule::class
     ];
 
     public function getId(): int
@@ -158,14 +175,19 @@ class Contact extends ContactFields
         return $this->company_id;
     }
 
-    public function getResponsible(): ?string
+    public function getResponsible(): ?int
     {
-        return $this->responsible;
+        return $this->responsible_id;
     }
 
-    public function setResponsible(?string $responsible): Contact
+    public function getResponsibleUser(): ?string
     {
-        $this->responsible = $responsible;
+        return $this->responsible_id ? $this->responsibleUser->name . ' ' . $this->responsibleUser->surname : null;
+    }
+
+    public function setResponsible(?int $responsibleId): Contact
+    {
+        $this->responsible_id = $responsibleId;
 
         return $this;
     }
@@ -173,6 +195,11 @@ class Contact extends ContactFields
     public function getCreatedAt(): Carbon
     {
         return $this->created_at;
+    }
+
+    public function getDateOfUse(): ?Carbon
+    {
+        return $this->date_of_use;
     }
 
     public function getUpdatedAt(): Carbon
@@ -415,6 +442,7 @@ class Contact extends ContactFields
     public function setAddedToMailing(?Carbon $addedToMailing): Contact
     {
         $this->added_to_mailing = $addedToMailing;
+
         return $this;
     }
 
@@ -514,12 +542,12 @@ class Contact extends ContactFields
         return $this;
     }
 
-    public function getServiceId(): ?int
+    public function getServiceId(): ?string
     {
         return $this->service_id;
     }
 
-    public function setServiceId(?int $serviceId): Contact
+    public function setServiceId(?string $serviceId): Contact
     {
         $this->service_id = $serviceId;
 
@@ -531,6 +559,8 @@ class Contact extends ContactFields
         return $this->hasMany(ContactCampaigns::class, 'contact_id');
     }
 
+    //TODO: investigate how to pass here strict param
+    /** @phpstan-ignore-next-line */
     public function setValue(string $field, $value = null, bool $merge = false): Contact
     {
         switch ($field) {
@@ -577,10 +607,7 @@ class Contact extends ContactFields
                 $this->setPosition($value);
                 break;
             case self::SERVICE_ID_FIELD:
-                if ($this->notMerge($merge, self::SERVICE_ID_FIELD)) {
-                    break;
-                }
-                $this->setServiceId((int)$value);
+                $this->setServiceId($value);
                 break;
             case self::ADDED_TO_MAILING_FIELD:
                 if ($this->notMerge($merge, self::ADDED_TO_MAILING_FIELD)) {
@@ -652,8 +679,8 @@ class Contact extends ContactFields
                 }
                 $this->setMailingTool($value);
                 break;
-            case self::RESPONSIBLE_FIELD:
-                if ($this->notMerge($merge, self::RESPONSIBLE_FIELD)) {
+            case self::RESPONSIBLE_ID_FIELD:
+                if ($this->notMerge($merge, self::RESPONSIBLE_ID_FIELD)) {
                     break;
                 }
                 $this->setResponsible($value);
@@ -663,12 +690,6 @@ class Contact extends ContactFields
                     break;
                 }
                 $this->setBirthday(Carbon::parse($value));
-                break;
-            case self::ORIGIN_FIELD:
-                if ($this->notMerge($merge, self::ORIGIN_FIELD)) {
-                    break;
-                }
-                $this->setOrigin(implode(';', $value));
                 break;
             case self::CONTACT_PREFIX . self::COMMENT_FIELD:
             case self::COMMENT_FIELD:
@@ -764,5 +785,43 @@ class Contact extends ContactFields
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function responsibleUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsible_id');
+    }
+
+    public function createContact(array $fields, User $user, array $origin = null): self
+    {
+        $contact = new self();
+        foreach ($fields as $key => $value) {
+            $contact->setValue($key, $value);
+        }
+
+        $contact->origin = !empty($origin) ? implode(';', $origin) : null;
+        $contact->user()->associate($user);
+        $contact->responsibleUser()->associate($user);
+        $contact->save();
+
+        return $contact;
+    }
+
+    public function updateContact(self $contact, array $fields, User $user, array $origin = null): self
+    {
+        $contact->update($fields);
+        $contact->setUpdatedAt(Carbon::now());
+        $contact->user()->associate($user);
+        $contact->save();
+        if ($origin !== null) {
+            $contact->origin = implode(';', $origin);
+        }
+
+        return $contact;
+    }
+
+    public function toSearchableArray(): array
+    {
+        return (new ContactTransformer())->transform($this);
     }
 }

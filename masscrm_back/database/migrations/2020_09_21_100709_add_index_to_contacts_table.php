@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -37,32 +37,32 @@ class AddIndexToContactsTable extends Migration
         });
 
         Schema::table('contact_phones', static function (Blueprint $table) {
-            $table->index('contact_id','contact_phones_contact_id_index');
+            $table->index('contact_id', 'contact_phones_contact_id_index');
         });
 
         Schema::table('company_subsidiaries', static function (Blueprint $table) {
-            $table->index('child_id','company_subsidiaries_child_id_index');
-            $table->index('parent_id','company_subsidiaries_parent_id_index');
+            $table->index('child_id', 'company_subsidiaries_child_id_index');
+            $table->index('parent_id', 'company_subsidiaries_parent_id_index');
         });
 
         Schema::table('contact_social_networks', static function (Blueprint $table) {
-            $table->index('contact_id','contact_social_networks_contact_id_index');
+            $table->index('contact_id', 'contact_social_networks_contact_id_index');
         });
 
         Schema::table('contact_colleagues', static function (Blueprint $table) {
-            $table->index('contact_id','contact_colleagues_contact_id_index');
+            $table->index('contact_id', 'contact_colleagues_contact_id_index');
         });
 
         Schema::table('contact_sales', static function (Blueprint $table) {
-            $table->index('contact_id','contact_sales_contact_id_index');
+            $table->index('contact_id', 'contact_sales_contact_id_index');
         });
 
         Schema::table('contact_mails', static function (Blueprint $table) {
-            $table->index('contact_id','contact_mails_contact_id_index');
+            $table->index('contact_id', 'contact_mails_contact_id_index');
         });
 
         Schema::table('contact_notes', static function (Blueprint $table) {
-            $table->index('contact_id','contact_notes_contact_id_index');
+            $table->index('contact_id', 'contact_notes_contact_id_index');
         });
     }
 

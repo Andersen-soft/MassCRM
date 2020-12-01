@@ -17,6 +17,7 @@ class ShowActivityLogContactHandler
 
     public function handle(ShowActivityLogContactCommand $command): LengthAwarePaginator
     {
-        return $this->activityLogContactRepository->getActivityLog($command->getContactId(), $command->getLimit());
+        return $this->activityLogContactRepository->getActivityLog($command->getContactId(), $command->getSearch())
+            ->paginate($command->getLimit());
     }
 }

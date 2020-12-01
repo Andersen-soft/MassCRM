@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useMemo } from 'react';
+import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Tooltip, TableHead, TableRow, Box } from '@material-ui/core';
 import {
   Close,
@@ -9,7 +9,6 @@ import {
 } from '@material-ui/icons';
 import {
   CommonIcon,
-  CustomCheckBox,
   DateRange,
   MoreInformation,
   CheckboxFilter,
@@ -20,68 +19,71 @@ import {
 import ArrowDropDownRoundedIcon from '@material-ui/icons/ArrowDropDownRounded';
 import ArrowDropUpRoundedIcon from '@material-ui/icons/ArrowDropUpRounded';
 import { TooltipMessage } from 'src/data/moc.filter';
-import { initialSortingState } from 'src/reducers/tableSorting.reducer';
-import { SORTING_FIELD_ID, VISIBLE_RESET_FILTER } from 'src/utils/table';
-import { getFilterSorting, getSortBy } from 'src/selectors';
+import {
+  SORTING_FIELD_ID,
+  VISIBLE_RESET_FILTER,
+  getFilteringFields
+} from 'src/utils/table';
+import {
+  getFilterSorting,
+  getSearchUser,
+  getUserFullName
+} from 'src/selectors';
 import { useDispatch, useSelector } from 'react-redux';
 import { setSortValues, setSort } from 'src/actions';
+import { ISortingObject } from 'src/interfaces';
+import { tooltipStyle } from 'src/styles/ToolTip.style';
 import { ITableHeaderProps, ITableHeaderItem } from '../../interfaces';
-import { tableStyle, tooltipStyle, StyledTableCell } from '../../Table.style';
-import { ISortingObject } from '../../../../../interfaces';
+import { headerStyle, StyledTableCell } from './TableHeader.style';
+import { ChangeResponsible } from './ChangeResponsible';
+import { SelectData } from './SelectData';
 
 export const TableHeader: FC<ITableHeaderProps> = ({
-  sorting,
   changeInput,
   resetFilter,
   autocompleteValues,
   config,
   changeFilter,
   filtersValues,
-  clearAutocompleteList
+  clearAutocompleteList,
+  isFullTable,
+  data
 }) => {
   const dispatch = useDispatch();
   const sortingState = useSelector(getFilterSorting);
-  const sortBy = useSelector(getSortBy);
-
-  const style = tableStyle();
+  const searchUserList = useSelector(getSearchUser) || [];
+  const changeResponsibleAutocomplete = useSelector(getUserFullName) || [];
+  const style = headerStyle();
+  const [visibleReset, setVisibleReset] = useState<{ [key: string]: boolean }>(
+    VISIBLE_RESET_FILTER
+  );
 
   const styleTooltip = tooltipStyle();
 
-  const isCheckedAll =
-    config.body.selectedRows && config.body.selectedRows?.length > 0;
+  const {
+    column: {
+      hasCopy,
+      hasControl,
+      hasDelete,
+      hasEdit,
+      hasInfo,
+      hasSelectAll,
+      onSelectAll
+    },
+    body: { selectedRows },
+    rows
+  } = config;
+
+  const isCheckedAll = selectedRows && selectedRows?.length > 0;
 
   const onDeleteHandler = () =>
     config.column.onDeleteSelected && config.column.onDeleteSelected();
-
-  const canBeDeleted = useMemo(() => config.column.hasDelete, []);
-
-  const canBeSelected = useMemo(() => config.column.hasSelectAll, []);
-
-  const hasInfo = useMemo(() => config.column.hasInfo, []);
-
-  const hasControl = useMemo(() => config.column.hasControl, []);
-
-  const canEdit = useMemo(
-    () =>
-      config.column.hasEdit && (
-        <StyledTableCell
-          component='th'
-          scope='row'
-          key='edit'
-          className='smallTD'
-        />
-      ),
-    []
-  );
 
   const onClickFilter = useCallback(
     name => () =>
       config.column?.onFilteredBy && config.column?.onFilteredBy(name),
     []
   );
-
-  const onSelectHandler = (value: boolean): void =>
-    config.column.onSelectAll && config.column.onSelectAll(value);
 
   const handleClickSorting = (name: string) => () => {
     const value: ISortingObject = {
@@ -98,47 +100,74 @@ export const TableHeader: FC<ITableHeaderProps> = ({
 
   const mockDate = useCallback(() => new Date().toISOString(), []);
 
-  useEffect(() => {
-    if (sortBy && sorting) {
-      sorting(sortBy);
-    }
-  }, [sortingState]);
-
-  useEffect(() => {
-    dispatch(setSortValues(initialSortingState));
-  }, []);
-
   const onChangeFilter = (filterParams: {
     name: string;
     item: number[] | string | string[] | (string | string[])[] | Date[] | null;
     isCheckbox?: boolean;
   }) => {
     const { isCheckbox, ...restProps } = filterParams;
-    VISIBLE_RESET_FILTER[filterParams.name] = true;
+    setVisibleReset(state => ({
+      ...state,
+      [filterParams.name]: true
+    }));
     return changeFilter
       ? changeFilter(isCheckbox ? filterParams : restProps)
       : [];
   };
 
   const onResetFilter = (name: string) => () => {
-    VISIBLE_RESET_FILTER[name] = false;
+    setVisibleReset(state => ({
+      ...state,
+      [name]: false
+    }));
     resetFilter && resetFilter(name);
   };
+
+  useEffect(() => {
+    setVisibleReset(state => ({
+      ...state,
+      ...getFilteringFields(filtersValues)
+    }));
+  }, []);
+
+  const canEdit = useMemo(
+    () =>
+      hasEdit && (
+        <StyledTableCell
+          component='th'
+          scope='row'
+          key='edit'
+          className='smallTD'
+        >
+          <ChangeResponsible
+            config={config}
+            searchUserList={searchUserList}
+            autocomplete={changeResponsibleAutocomplete}
+            isFullTable={isFullTable}
+          />
+        </StyledTableCell>
+      ),
+    [changeResponsibleAutocomplete, config]
+  );
 
   return (
     <TableHead>
       <TableRow>
-        {canBeSelected && (
+        {hasSelectAll && onSelectAll && (
           <StyledTableCell
             component='th'
             scope='row'
             key='select'
             className='smallTD'
           >
-            <CustomCheckBox value={isCheckedAll} onChange={onSelectHandler} />
+            <SelectData
+              data={data}
+              isCheckedAll={isCheckedAll || false}
+              onSelectAll={onSelectAll}
+            />
           </StyledTableCell>
         )}
-        {canBeDeleted && (
+        {hasDelete && (
           <StyledTableCell
             component='th'
             scope='row'
@@ -149,7 +178,15 @@ export const TableHeader: FC<ITableHeaderProps> = ({
           </StyledTableCell>
         )}
         {canEdit}
-        {config.rows.map(
+        {hasCopy && (
+          <StyledTableCell
+            component='th'
+            scope='row'
+            key='copy'
+            className='smallTD'
+          />
+        )}
+        {rows.map(
           ({
             name,
             hasFilter,
@@ -262,7 +299,7 @@ export const TableHeader: FC<ITableHeaderProps> = ({
                   <button
                     type='button'
                     className={
-                      VISIBLE_RESET_FILTER[name]
+                      visibleReset[name]
                         ? style.resetButton
                         : style.resetButtonNone
                     }

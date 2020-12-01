@@ -15,11 +15,13 @@ export const searchStyle = makeStyles(() =>
     },
     searchWrap: {
       display: 'flex',
+      flexDirection: 'column',
       position: 'relative'
     },
     search: {
       width: '100%',
       '& .MuiAutocomplete-inputRoot .MuiAutocomplete-input': {
+        position: 'relative',
         padding: 0
       },
       '& .Mui-focused .search-icon': {
@@ -50,6 +52,30 @@ export const searchStyle = makeStyles(() =>
       '& .MuiInputLabel-outlined::before': {
         content: '"*"'
       }
+    },
+    paper: {
+      position: 'absolute',
+      top: '42px',
+      width: '230px'
+    },
+    addButtonBlock: {
+      position: 'absolute',
+      bottom: '-42px',
+      width: '230px',
+      background: '#fff',
+      zIndex: 2,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '42px',
+      padding: '5px',
+      boxShadow: '0 5px 15px rgba(5, 31, 43, 0.17)',
+      borderRadius: '4px',
+      boxSizing: 'border-box'
+    },
+    sendButtonBlock: {
+      textAlign: 'center',
+      marginTop: '30px'
     }
   })
 );

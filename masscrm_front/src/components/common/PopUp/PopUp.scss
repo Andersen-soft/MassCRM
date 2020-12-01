@@ -1,82 +1,83 @@
 .wrapper {
-  width: 628px;
-  height: 198px;
+  width: 552px;
   background: #fff;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
-}
 
-.description {
-  width: 500px;
-  height: 24px;
-  padding-left: 24px;
-  padding-top: 24px;
-  font-family: Roboto, Arial, serif;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 20px;
-  line-height: 24px;
-  color: #212121;
-}
+  .close {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+  }
 
-.name {
-  width: 94px;
-  height: 18px;
-  padding-left: 24px;
-  font-family: Roboto, Arial, serif;
-  font-style: normal;
-  font-weight: 300;
-  font-size: 14px;
-  line-height: 18px;
-  display: flex;
-  align-items: center;
-  color: #13639d;
-}
+  .item {
+    padding: 24px;
+    &__title {
+      margin: 0;
+      font-family: Roboto, Arial, serif;
+      font-style: normal;
+      font-weight: normal;
+      font-size: 20px;
+      line-height: 24px;
+      color: #212121;
+    }
 
-.created {
-  width: 53px;
-  height: 18px;
-  padding-left: 24px;
-  font-family: Roboto, Arial, serif;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 18px;
-  color: #78829d;
-}
+    &__info {
+      margin-top: 40px;
 
-.date {
-  width: 71px;
-  height: 18px;
-  font-family: Roboto, Arial, serif;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 18px;
-  color: #212121;
-}
+      div {
+        padding-bottom: 8px;
+      }
 
-.responsible {
-  width: 53px;
-  height: 18px;
-  padding-left: 24px;
-  font-family: Roboto, Arial, serif;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 18px;
-  color: #78829d;
-}
+      .name {
+        font-family: Roboto, Arial, serif;
+        font-style: normal;
+        font-weight: 300;
+        font-size: 14px;
+        line-height: 18px;
+        display: flex;
+        align-items: center;
+        color: #13639d;
+      }
 
-.responsiblePerson {
-  width: 71px;
-  height: 18px;
-  font-family: Roboto, Arial, serif;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 18px;
-  color: #212121;
+      .created {
+        font-family: Roboto, Arial, serif;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 18px;
+        color: #78829d;
+      }
+
+      .date {
+        font-family: Roboto, Arial, serif;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 18px;
+        color: #212121;
+      }
+
+      .responsible {
+        font-family: Roboto, Arial, serif;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 18px;
+        color: #78829d;
+      }
+
+      .responsiblePerson {
+        width: 71px;
+        height: 18px;
+        font-family: Roboto, Arial, serif;
+        font-style: normal;
+        font-weight: normal;
+        font-size: 14px;
+        line-height: 18px;
+        color: #212121;
+      }
+    }
+  }
 }
 
 .wrapperTwo,

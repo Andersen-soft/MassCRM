@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Observers\Company;
 
@@ -22,9 +22,9 @@ class CompanySubsidiaryObserver
         }
 
         (new ActivityLogCompany())
+            ->setCompanyId($company->getId())
             ->setUserId($company->getUserId())
             ->setActivityType(ActivityLogCompany::ADDED_NEW_VALUE_FIELD_EVENT)
-            ->setCompanyId($company->getId())
             ->setModelName((new ReflectionClass($companySubsidiary))->getShortName())
             ->setModelField(CompanySubsidiary::SUBSIDIARIES_FIELD)
             ->setDataNew($companyChild->getName())
@@ -41,9 +41,9 @@ class CompanySubsidiaryObserver
         $companyChild = $companySubsidiary->companyChild;
 
         (new ActivityLogCompany())
+            ->setCompanyId($company->getId())
             ->setUserId($company->getUserId())
             ->setActivityType(ActivityLogCompany::DELETE_VALUE_FIELD_EVENT)
-            ->setCompanyId($company->getId())
             ->setModelName((new ReflectionClass($companySubsidiary))->getShortName())
             ->setModelField(CompanySubsidiary::SUBSIDIARIES_FIELD)
             ->setDataOld($companyChild->getName())

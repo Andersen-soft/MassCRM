@@ -6,7 +6,8 @@ import {
   getUsersRolesAction,
   getRolesAction,
   getLdapUserAction,
-  onClearFilter
+  onClearFilter,
+  getSearchUsers
 } from 'src/actions/user.action';
 import { IUsersStore } from 'src/interfaces/store';
 
@@ -17,7 +18,9 @@ const initialState: IUsersStore = {
     roles: {}
   },
   roles: {},
-  total: 0
+  total: 0,
+  searchUsers: [],
+  fullName: []
 };
 
 export const usersReducer = handleActions(
@@ -42,6 +45,9 @@ export const usersReducer = handleActions(
       return { ...state, ...payload };
     },
     [`${getLdapUserAction}`]: (state, { payload }) => {
+      return { ...state, ...payload };
+    },
+    [`${getSearchUsers}`]: (state, { payload }) => {
       return { ...state, ...payload };
     },
     [`${onClearFilter}`]: state => {

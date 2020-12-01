@@ -1,6 +1,6 @@
 export * from './location.action';
 export * from './user.action';
-export * from './сontact.action';
+export * from './contact.action';
 export * from './notification.action';
 export * from './company.action';
 export * from './industries.action';

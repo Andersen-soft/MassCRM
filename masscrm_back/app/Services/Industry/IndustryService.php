@@ -1,21 +1,19 @@
 <?php
 
-namespace App\Services\Location;
+declare(strict_types=1);
 
-use App\Repositories\Location\LocationRepository;
+namespace App\Services\Industry;
+
+use App\Models\Industry;
 
 class IndustryService
 {
-    private LocationRepository $locationRepository;
-    private array $industry = [];
-
-    public function __construct(LocationRepository $locationRepository)
+    public function saveIndustry(string $name): Industry
     {
-        $this->locationRepository = $locationRepository;
-    }
+        $industry = new Industry();
+        $industry->name = $name;
+        $industry->save();
 
-    public function isLocation(string $location): ?string
-    {
-        return null;
+        return $industry;
     }
 }

@@ -1,0 +1,22 @@
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - app
+
+    # The level 8 is the highest level
+    level: 6
+
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Auth\\AuthManager::factory\(\).#'
+        - '#Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::orWhereBetween\(\) expects string, Illuminate\\Database\\Query\\Expression given.#'
+        - '#Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::whereBetween\(\) expects string, Illuminate\\Database\\Query\\Expression given.#'
+        - '#Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder<Illuminate\\Database\\Eloquent\\Model>::where\(\) expects array<int\|string, mixed>\|Closure\|string, Illuminate\\Database\\Query\\Expression given.#'
+        - '#Parameter \#1 \$time of static method Carbon\\Carbon::parse\(\) expects DateTimeInterface\|string\|null, int given.#'
+
+    excludes_analyse:
+        - /*/*/Socket/WebSocket.php
+
+    checkMissingIterableValueType: false

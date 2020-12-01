@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\TransferCollection;
 
@@ -27,10 +27,9 @@ class TransferCollectionContactService
         do {
             /** @var Contact $contact */
             $contact = $this->contactRepository->getContactForTransfer();
-            if ($contact) {
+            if (null !== $contact) {
                 $this->updateCollectionContact($contact);
             }
-
         } while ($contact);
     }
 
@@ -38,13 +37,12 @@ class TransferCollectionContactService
     {
         $emails = [];
 
-        if (!$contact->contactEmails) {
+        if (empty($contact->contactEmails)) {
             return $emails;
         }
 
         /** @var ContactEmails $contactEmail */
-        foreach ($contact->contactEmails as $contactEmail)
-        {
+        foreach ($contact->contactEmails as $contactEmail) {
             $emails[] = [
                 'id' => $contactEmail->id,
                 'email' => $contactEmail->email,
@@ -59,13 +57,12 @@ class TransferCollectionContactService
     {
         $phones = [];
 
-        if (!$contact->contactPhones) {
+        if (empty($contact->contactPhones)) {
             return $phones;
         }
 
         /** @var ContactPhones $contactPhone */
-        foreach ($contact->contactPhones as $contactPhone)
-        {
+        foreach ($contact->contactPhones as $contactPhone) {
             $phones[] = [
                 'id' => $contactPhone->id,
                 'phone' => $contactPhone->phone,
@@ -79,13 +76,12 @@ class TransferCollectionContactService
     {
         $socialNetworks = [];
 
-        if (!$contact->contactSocialNetworks) {
+        if (empty($contact->contactSocialNetworks)) {
             return $socialNetworks;
         }
 
         /** @var ContactSocialNetworks $contactSocialNetwork */
-        foreach ($contact->contactSocialNetworks as $contactSocialNetwork)
-        {
+        foreach ($contact->contactSocialNetworks as $contactSocialNetwork) {
             $socialNetworks[] = [
                 'id' => $contactSocialNetwork->id,
                 'link' => $contactSocialNetwork->link,
@@ -99,13 +95,12 @@ class TransferCollectionContactService
     {
         $colleague = [];
 
-        if (!$contact->contactColleagues) {
+        if (empty($contact->contactColleagues)) {
             return $colleague;
         }
 
         /** @var ContactColleagues $contactColleague */
-        foreach ($contact->contactColleagues as $contactColleague)
-        {
+        foreach ($contact->contactColleagues as $contactColleague) {
             $colleague[] = [
                 'id' => $contactColleague->id,
                 'link' => $contactColleague->link,
@@ -121,13 +116,12 @@ class TransferCollectionContactService
     {
         $sequence = [];
 
-        if (!$contact->sequences) {
+        if (empty($contact->sequences)) {
             return $sequence;
         }
 
-        /** @var ContactCampaigns $sequence */
-        foreach ($contact->sequences as $contactSequence)
-        {
+        /** @var ContactCampaigns $contactSequence */
+        foreach ($contact->sequences as $contactSequence) {
             $sequence[] = [
                 'id' => $contactSequence->id,
                 'sequence' => $contactSequence->sequence,
@@ -142,13 +136,12 @@ class TransferCollectionContactService
     {
         $mail = [];
 
-        if (!$contact->mails) {
+        if (empty($contact->mails)) {
             return $mail;
         }
 
         /** @var ContactMails $contactMail */
-        foreach ($contact->mails as $contactMail)
-        {
+        foreach ($contact->mails as $contactMail) {
             $mail[] = [
                 'id' => $contactMail->id,
                 'message' => $contactMail->message,
@@ -162,13 +155,12 @@ class TransferCollectionContactService
     {
         $note = [];
 
-        if (!$contact->notes) {
+        if (empty($contact->notes)) {
             return $note;
         }
 
         /** @var ContactNotes $contactNote  */
-        foreach ($contact->notes as $contactNote)
-        {
+        foreach ($contact->notes as $contactNote) {
             $note[] = [
                 'id' => $contactNote->id,
                 'message' => $contactNote->message,
@@ -182,13 +174,12 @@ class TransferCollectionContactService
     {
         $sale = [];
 
-        if (!$contact->sales) {
+        if (empty($contact->sales)) {
             return $sale;
         }
 
         /** @var ContactSale $contactSale */
-        foreach ($contact->sales as $contactSale)
-        {
+        foreach ($contact->sales as $contactSale) {
             $sale[] = [
                 'id' => $contactSale->id,
                 'link' => $contactSale->link,

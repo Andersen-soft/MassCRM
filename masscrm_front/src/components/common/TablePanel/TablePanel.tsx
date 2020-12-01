@@ -10,29 +10,28 @@ const Panel: FC<{
   title?: string;
   total?: number;
   show?: number;
-}> = ({ title, total, show }) => {
+  Search?: FC;
+}> = ({ title, total, show, Search }) => {
   return (
     <div className={sn('panel')}>
       <div className={sn('panel_item')}>
         <div className={sn('panel_title')}>{title}</div>
+        {Search && <Search />}
       </div>
       <div className={sn('panel_item')}>
-        {total ? (
-          <LabelIconGroup
-            label='Total'
-            count={total}
-            icon={PermIdentity}
-            isActive
-          />
-        ) : null}
-        {show ? (
-          <LabelIconGroup
-            label='Show'
-            count={show}
-            icon={PermIdentity}
-            isActive
-          />
-        ) : null}
+        <LabelIconGroup
+          label='Total'
+          count={total || 0}
+          icon={PermIdentity}
+          isActive
+        />
+        <LabelIconGroup
+          label='Show'
+          count={show || 0}
+          icon={PermIdentity}
+          isActive
+          className={sn('panel_label')}
+        />
       </div>
     </div>
   );

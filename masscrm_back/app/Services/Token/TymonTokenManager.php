@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Token;
 
@@ -15,12 +15,14 @@ class TymonTokenManager
         $this->lcobucci = $lcobucci;
     }
 
-    public function decode($token)
+    public function decode(string $token): array
     {
         try {
             return $this->lcobucci->decode($token);
         } catch (JWTException $exception) {
             Log::error('An error has occurred: ' . $exception->getMessage());
         }
+
+        return [];
     }
 }

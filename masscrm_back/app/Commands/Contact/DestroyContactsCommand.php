@@ -1,23 +1,32 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands\Contact;
 
 use App\Models\User\User;
 
 class DestroyContactsCommand
 {
-    protected ?array $contactsId;
-    protected User $user;
-    protected array $search;
-    protected int $limit;
-    protected int $page;
+    private ?array $contactsId;
+
+    private User $user;
+
+    private array $search;
+
+    private int $limit;
+
+    private int $page;
+
+    private ?array $exceptIds;
 
     public function __construct(
         ?array $contactsId,
         User $user,
         array $search = [],
         int $page = 1,
-        int $limit = 10
+        int $limit = 10,
+        array $exceptIds = []
     )
     {
         $this->contactsId = $contactsId;
@@ -25,6 +34,7 @@ class DestroyContactsCommand
         $this->search = $search;
         $this->page = $page;
         $this->limit = $limit;
+        $this->exceptIds = $exceptIds;
     }
 
     public function getContactsId(): ?array
@@ -50,5 +60,10 @@ class DestroyContactsCommand
     public function getSearch(): array
     {
         return $this->search;
+    }
+
+    public function getExceptIds(): array
+    {
+        return $this->exceptIds;
     }
 }

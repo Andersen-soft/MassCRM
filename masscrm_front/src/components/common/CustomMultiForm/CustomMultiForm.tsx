@@ -27,7 +27,8 @@ export const CustomMultiForm: FC<ICustomMultiForm> = ({
   data,
   onChange,
   onClose,
-  placeholder
+  placeholder,
+  validationSchema
 }) => {
   const style = jobInputStyle();
 
@@ -41,13 +42,16 @@ export const CustomMultiForm: FC<ICustomMultiForm> = ({
     },
     [anchorForm]
   );
+
   const form = useFormik({
     initialValues: data || INITIAL_VALUES,
     validate,
     validateOnBlur: false,
     validateOnChange: false,
-    onSubmit: handleSubmit
+    onSubmit: handleSubmit,
+    validationSchema
   });
+
   const handleClose = useCallback(() => {
     form.resetForm();
     onClose();

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 return [
     'successful_send_link_on_change_password' => 'Ссылка для сброса пароля успешно отправлена',

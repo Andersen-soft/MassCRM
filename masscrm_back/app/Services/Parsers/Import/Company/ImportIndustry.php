@@ -1,8 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Parsers\Import\Company;
 
 use App\Exceptions\Import\ImportFileException;
+use App\Models\Industry;
 use App\Repositories\Industry\IndustryRepository;
 use App\Models\Company\Company;
 use Illuminate\Support\Facades\Lang;
@@ -29,9 +30,7 @@ class ImportIndustry
             $industry = $this->industryRepository->getIndustryFromName($item);
 
             if (!$industry) {
-                throw new ImportFileException([
-                    Lang::get('validationModel.industry.name_not_exist', ['value' => $item])
-                ]);
+                $industry = $this->industryRepository->createIndustry($item);
             }
 
             $idsIndustries[] = $industry->id;
@@ -55,9 +54,7 @@ class ImportIndustry
             $industry =  $this->industryRepository->getIndustryFromName($item);
 
             if (!$industry) {
-                throw new ImportFileException([
-                    Lang::get('validationModel.industry.name_not_exist', ['value' => $item])
-                ]);
+                $industry = $this->industryRepository->createIndustry($item);
             }
 
             $idsIndustries[] = $industry->id;

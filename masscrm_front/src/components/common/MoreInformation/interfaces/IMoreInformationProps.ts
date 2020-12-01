@@ -7,4 +7,5 @@ export interface IMoreInformationProps {
   popperInfo?: JSX.Element | Element;
   tooltip?: string;
   notification?: boolean;
+  autoClose?: boolean;
 }

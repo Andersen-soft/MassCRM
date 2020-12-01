@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands\Company\Handlers;
 
 use App\Commands\Company\GetCompanyListCommand;
@@ -21,8 +23,6 @@ class GetCompanyListHandler
         return $this->repository->getCompanyList(
             $command->getSearch(),
             $command->getSort(),
-            $command->getLimit(),
-            $command->getMode() !== BaseModel::MODE_ALL ? $command->getUser() : null
-        );
+        )->paginate($command->getLimit());
     }
 }

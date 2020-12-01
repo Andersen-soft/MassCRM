@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands\AttachmentFile\Company\Handlers;
 
 use App\Commands\AttachmentFile\Company\CheckExistAttachmentFileCompanyCommand;
@@ -19,7 +21,7 @@ class CheckExistAttachmentFileCompanyHandler
 
     public function handle(CheckExistAttachmentFileCompanyCommand $command): ?CompanyAttachment
     {
-        $company = Company::find($command->getCompanyId());
+        $company = Company::query()->find($command->getCompanyId());
         if (!$company instanceof Company) {
             throw new NotFoundException('Company value(' . $command->getCompanyId() . ') not found');
         }

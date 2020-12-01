@@ -45,7 +45,7 @@ export const inputStyle = makeStyles(() =>
     },
     multiInputForm: {
       '& .MuiOutlinedInput-root': {
-        maxHeight: '180px',
+        maxHeight: '90px',
         overflow: 'auto'
       }
     },
@@ -60,6 +60,11 @@ export const inputStyle = makeStyles(() =>
         borderColor: '#FD5757'
       }
     },
+    minWidthResponsible: {
+      '& .MuiOutlinedInput-root': {
+        minWidth: '230px'
+      }
+    },
     inputRequire: {
       '& .MuiInputLabel-outlined::before': {
         content: '"*"'
@@ -70,6 +75,17 @@ export const inputStyle = makeStyles(() =>
       marginTop: '4px',
       fontSize: '0.85em',
       position: 'absolute'
+    },
+    dialogError: {
+      color: '#FD5757',
+      marginTop: '4px',
+      fontSize: '0.85em',
+      position: 'absolute',
+      bottom: 0
+    },
+    buttonGroup: {
+      textAlign: 'center',
+      marginTop: '30px'
     }
   })
 );

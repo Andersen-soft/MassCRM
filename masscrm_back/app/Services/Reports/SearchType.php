@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Reports;
 
@@ -25,17 +25,28 @@ interface SearchType
     public const TYPE_SEARCH_STATUS_STRICT = 'Status Strict';
 
     public const LIST_FIELDS = [
-        'responsible' => [
-            'path' => 'contacts.getResponsible',
+        'responsible_id' => [
+            'path' => 'contacts.getResponsibleUser',
             'name' => 'Responsible',
-            'field' => 'contacts.responsible',
-            'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT
+            'field' => 'contacts.responsible_id',
+            'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
         ],
         'created' => [
             'path' => 'contacts.getCreatedAtDateTime',
             'name' => 'Created',
             'field' => 'contacts.created_at',
             'typeSearch' => self::TYPE_SEARCH_FIELD_DATA_RANGE
+        ],
+        'date_of_use' => [
+            'field' => 'contacts.date_of_use',
+            'typeSearch' => self::TYPE_SEARCH_FIELD_DATA_RANGE
+        ],
+        'is_in_work' => [
+            'field' => 'contacts.is_in_work',
+            'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
+        ],
+        'no_email' => [
+            'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
         ],
         'updated' => [
             'path' => 'contacts.getUpdatedAtDateTime',
@@ -99,7 +110,7 @@ interface SearchType
         ],
         'position' => [
             'path' => 'contacts.getPosition',
-            'name' => 'Position',
+            'name' => 'Title',
             'field' => 'contacts.position',
             'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT
         ],
@@ -243,7 +254,7 @@ interface SearchType
             'path' => 'contacts.getBounces',
             'name' => 'Bounces',
             'field' => 'contacts.bounces',
-            'typeSearch' => self::TYPE_SEARCH_FIELD_BOUNCES
+            'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
         ],
         'status' => [
             'path' => 'getContactSequences',
@@ -437,6 +448,14 @@ interface SearchType
             'name' => 'In blacklist',
             'field' => 'contacts.in_blacklist',
             'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
-        ]
+        ],
+        'colleague_first' => [
+            'path' => 'getColleagueFirst',
+            'name' => 'colleague name',
+        ],
+        'global' => [
+            'path' => 'getGlobal',
+            'typeSearch' => ''
+        ],
     ];
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Contact\Fields;
 
 use App\Models\BaseModel;
@@ -82,7 +84,8 @@ class ContactFields extends BaseModel implements FieldsInterface
     public const GENDER_FIELD = 'gender';
     public const LINKEDIN_FIELD = 'linkedin';
     public const SKYPE_FIELD = 'skype';
-    public const RESPONSIBLE_FIELD = 'responsible';
+    public const RESPONSIBLE_ID_FIELD = 'responsible_id';
+    public const RESPONSIBLE = 'responsible';
     public const BIRTHDAY_FIELD = 'birthday';
 
     public const LOCATION_FIELD = 'location';
@@ -102,6 +105,8 @@ class ContactFields extends BaseModel implements FieldsInterface
     public const ORIGIN_FIELD = 'origin';
     public const COMMENT_FIELD = 'comment';
     public const IN_BLACKLIST_FIELD = 'in_blacklist';
+    public const IS_IN_WORK_FIELD = 'is_in_work';
+    public const NO_EMAIL = 'no_email';
 
     public const EMAIL_COLLECTION_FIELD = 'email_collection';
     public const PHONE_COLLECTION_FIELD = 'phone_collection';
@@ -122,11 +127,11 @@ class ContactFields extends BaseModel implements FieldsInterface
             self::SORT => false,
             self::SEARCH => false,
         ],
-        self::RESPONSIBLE_FIELD => [
+        self::RESPONSIBLE_ID_FIELD => [
             self::SORT => true,
             self::SEARCH => true,
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT,
-            self::FIELD => 'contacts.responsible'
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT,
+            self::FIELD => 'contacts.responsible_id'
         ],
         self::CREATED_AT_FIELD => [
             self::SORT => true,
@@ -134,6 +139,13 @@ class ContactFields extends BaseModel implements FieldsInterface
             self::FORMAT => self::DATE_TIME_FORMAT,
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_DATA_RANGE,
             self::FIELD => 'contacts.created_at'
+        ],
+        self::DATE_OF_USE_FIELD => [
+            self::SORT => true,
+            self::SEARCH => true,
+            self::FORMAT => self::DATE_TIME_FORMAT,
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_DATA_RANGE,
+            self::FIELD => 'contacts.date_of_use'
         ],
         self::UPDATED_AT_FIELD => [
             self::SORT => true,
@@ -292,6 +304,19 @@ class ContactFields extends BaseModel implements FieldsInterface
             self::SEARCH => true,
             self::FIELD => 'contacts.in_blacklist',
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
+        ],
+        self::IS_IN_WORK_FIELD => [
+            self::SORT => true,
+            self::SEARCH => true,
+            self::FIELD => 'contacts.is_in_work',
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT,
+        ],
+        self::NO_EMAIL => [
+            self::SORT => true,
+            self::SEARCH => true,
+            self::FIELD => 'contact_emails.email',
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT,
+            self::JOIN => [self::JOIN_CONTACT_EMAIL_TABLE]
         ],
         Company::COMPANY_FIELD => [
             self::SORT => false,

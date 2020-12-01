@@ -1,7 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http;
 
+use App\Http\Middleware\AdministratorPermission;
+use App\Http\Middleware\ManagerPermission;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use App\Http\Middleware\AuthenticateJwt;
 use App\Http\Middleware\Permission;
@@ -67,5 +69,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'auth.jwt' => AuthenticateJwt::class,
         'permission' => Permission::class,
+        'managerPermission' => ManagerPermission::class,
+        'administratorPermission' => AdministratorPermission::class,
     ];
 }

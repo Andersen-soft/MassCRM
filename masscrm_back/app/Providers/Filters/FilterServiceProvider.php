@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Providers\Filters;
 
@@ -11,7 +11,7 @@ use Illuminate\Support\ServiceProvider;
 
 class FilterServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         $this->registerCommandHandlers();
     }
@@ -20,7 +20,7 @@ class FilterServiceProvider extends ServiceProvider
     {
     }
 
-    private function registerCommandHandlers()
+    private function registerCommandHandlers(): void
     {
         Bus::map([
             GetFiltersCommand::class => GetFiltersHandler::class,

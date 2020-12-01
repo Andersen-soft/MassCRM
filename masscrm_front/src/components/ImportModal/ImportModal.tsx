@@ -1,13 +1,14 @@
 import * as React from 'react';
+import * as yup from 'yup';
 import { Dialog, DialogActions, DialogContent } from '@material-ui/core';
-import { ClickAwayListenerProps as MaterialClickAwayListenerProps } from '@material-ui/core/ClickAwayListener';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   importActions,
   changeImportFormStateAction,
   setFileInfoAction,
-  setShowStartImportMessageAction
+  setShowStartImportMessageAction,
+  clearFormState
 } from 'src/actions/import.action';
 import { IMPORT_FORM_INITIAL_VALUES } from 'src/reducers/import.reducer';
 import {
@@ -16,8 +17,9 @@ import {
   IImportedData
 } from 'src/interfaces';
 import { useTabsState } from 'src/hooks/tabs.hook';
+import { ErrorEmitterContext } from 'src/context';
+import { useContext } from 'react';
 import { Tabs, TabsConfig, TabConfig } from '../common/Tabs';
-import { CommonAlert } from '../common/CommonAlert';
 import { MessageModal } from '../common/MessageModal';
 import { UploadingSettings } from './ImportModalTabs/UploadingSettings';
 import { FieldMatching } from './ImportModalTabs/FieldMatching';
@@ -26,6 +28,7 @@ import { Import } from './ImportModalTabs/Import';
 import { useStyles } from './ImportModal.styles';
 import { getDisabledInfo, getServerSideFields } from './helpers';
 import { ImportModalActions } from './ImportModalActions';
+import { SnackErrorBarData } from '../../utils/errors';
 
 interface Props {
   open: boolean;
@@ -52,17 +55,21 @@ const TABS_CONFIG: TabsConfig = [
   }
 ];
 
-const ALERT_DELAY = 5000;
+const ALERT_DELAY = 6000;
 let ALERT_TIMEOUT: NodeJS.Timeout;
-const CLICK_AWAY_LISTENER_PROPS: Partial<MaterialClickAwayListenerProps> = {
-  mouseEvent: false
-};
 
 export const ImportModal: React.FC<Props> = props => {
   const importStore = useSelector((state: IStoreState) => state.import);
+  const fieldsList = importStore.formState.fields;
+  const fieldsSchema = yup.mixed().oneOf(fieldsList);
   const classes = useStyles();
   const dispatch = useDispatch();
   const { open, onClose, importTabs } = props;
+  const {
+    errorsEventEmitter,
+    errorsData: { snackBarErrors },
+    handleClearErrors
+  } = useContext(ErrorEmitterContext);
 
   const TABS_LIST = TABS_CONFIG.map((tabConfig: TabConfig) => tabConfig.key);
   const DEFAULT_SELECTED_TAB = importTabs || TABS_CONFIG[0].key;
@@ -84,7 +91,6 @@ export const ImportModal: React.FC<Props> = props => {
       ? { ...TABS_STATE_PARAMS, defaultSelected: importStore.selectedTab }
       : TABS_STATE_PARAMS
   );
-  const [errorMessage, changeErrorMessage] = React.useState('');
 
   const handleSubmit = (formValues: IImportModalFormState) => {
     const data: IImportedData = {
@@ -106,6 +112,57 @@ export const ImportModal: React.FC<Props> = props => {
     dispatch(importActions.startImportingAction(data));
   };
 
+  const checkEmailOrCompany = () => {
+    const missingMail = !fieldsSchema.isValidSync('Email') ? 'Email' : '';
+    const missingCompany = !fieldsSchema.isValidSync('Company')
+      ? 'Company'
+      : '';
+    const and = missingMail && missingCompany ? ' and ' : '';
+
+    return missingMail || missingCompany
+      ? `Please select required columns: ${missingMail}${and}${missingCompany}`
+      : '';
+  };
+
+  const checkSequenceOrStatus = () => {
+    if (
+      fieldsSchema.isValidSync('Sequence') &&
+      !fieldsSchema.isValidSync('Status')
+    ) {
+      return 'Please select "Status" or skip "Sequence"';
+    }
+    if (
+      fieldsSchema.isValidSync('Status') &&
+      !fieldsSchema.isValidSync('Sequence')
+    ) {
+      return 'Please select "Sequence" or skip "Status"';
+    }
+    return '';
+  };
+
+  const checkJob = () => {
+    if (
+      !fieldsSchema.isValidSync('Job') &&
+      fieldsSchema.isValidSync('Job skills') &&
+      fieldsSchema.isValidSync('Job url')
+    ) {
+      return 'Please select "Job" or skip "Job skills" and "Job url"';
+    }
+    if (
+      !fieldsSchema.isValidSync('Job') &&
+      fieldsSchema.isValidSync('Job skills')
+    ) {
+      return 'Please select "Job" or skip "Job skills"';
+    }
+    if (
+      !fieldsSchema.isValidSync('Job') &&
+      fieldsSchema.isValidSync('Job url')
+    ) {
+      return 'Please select "Job" or skip "Job url"';
+    }
+    return '';
+  };
+
   const form = useFormik({
     initialValues: importStore.formState,
     validateOnBlur: false,
@@ -113,15 +170,14 @@ export const ImportModal: React.FC<Props> = props => {
 
     onSubmit: handleSubmit
   });
-
   const { disabledTabs, isContinueDisabled } = React.useMemo(
     () =>
       getDisabledInfo({
-        errorMessage,
+        errors: Boolean(snackBarErrors.length),
         fileInfo: importStore.fileInfo,
         importStatus: importStore.importStatus
       }),
-    [errorMessage, importStore.fileInfo, importStore.importStatus]
+    [snackBarErrors, importStore.fileInfo, importStore.importStatus]
   );
 
   const handleReasetForm = React.useCallback(() => {
@@ -137,6 +193,7 @@ export const ImportModal: React.FC<Props> = props => {
   const handleClose = React.useCallback(() => {
     if (onClose) {
       onClose();
+      dispatch(clearFormState());
       tabsState.onChangeTab(DEFAULT_SELECTED_TAB);
 
       if (importStore.importStatus === 'none') {
@@ -146,34 +203,39 @@ export const ImportModal: React.FC<Props> = props => {
   }, [handleReasetForm, importStore.importStatus, onClose, tabsState]);
 
   const handleCloseAlert = React.useCallback(() => {
-    changeErrorMessage('');
+    handleClearErrors();
   }, []);
 
   const handleCheckRequiredFieldsErr = React.useCallback(
     (selectedTab: string | number) => {
-      const isSelectedReqField = importStore.formState.fields.find(
-        field => field === 'Email' || field === 'E-mail'
+      const onlyIfErrors = [
+        checkEmailOrCompany(),
+        checkSequenceOrStatus(),
+        checkJob()
+      ].filter(Boolean);
+      const errorsArray: JSX.Element[] = snackBarErrors.concat(
+        SnackErrorBarData(onlyIfErrors)
       );
-      const isError = !isSelectedReqField && selectedTab === 'Duplicates';
+      const isError = errorsArray.length && selectedTab === 'Duplicates';
+      errorsEventEmitter.emit('snackBarErrors', { errorsArray });
 
-      if (importStore.fieldsSelectList.length > 1 && isError && !errorMessage) {
-        changeErrorMessage('');
+      if (
+        importStore.fieldsSelectList.length > 1 &&
+        isError &&
+        !snackBarErrors.length
+      ) {
         clearTimeout(ALERT_TIMEOUT);
-        changeErrorMessage('Please select required column:  "E-mail"');
-
         ALERT_TIMEOUT = setTimeout(() => handleCloseAlert(), ALERT_DELAY);
       }
-
       return isError;
     },
     [
-      errorMessage,
+      snackBarErrors,
       handleCloseAlert,
       importStore.fieldsSelectList.length,
       importStore.formState.fields
     ]
   );
-
   const handleChangeTab = React.useCallback(
     (selectedTab: string | number) => {
       if (!handleCheckRequiredFieldsErr(selectedTab)) {
@@ -307,13 +369,6 @@ export const ImportModal: React.FC<Props> = props => {
           />
         </DialogActions>
       </Dialog>
-      <CommonAlert
-        open={Boolean(errorMessage)}
-        ClickAwayListenerProps={CLICK_AWAY_LISTENER_PROPS}
-        errorMessage={errorMessage}
-        type='error'
-        onClose={handleCloseAlert}
-      />
       {importStore.showStartImportMessage ? (
         <MessageModal
           message='Data import will take time. You will be notified by popup once this action is complete.'

@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Process;
 
 use App\Models\Process;
 use App\Repositories\Process\ProcessRepository;
 use App\Models\User\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProcessService
 {
@@ -44,8 +44,7 @@ class ProcessService
         User $user,
         ?string $name = null,
         string $status = Process::TYPE_STATUS_PROCESS_WAIT
-    ): Process
-    {
+    ): Process {
         return $user->processes()->create([
             'name' => $name,
             'status' => $status,
@@ -53,11 +52,29 @@ class ProcessService
         ]);
     }
 
-    public function getListProcessExport(int $limit, array $search): LengthAwarePaginator
+    public function getListProcessExport(array $search): Builder
     {
-        return $this->processRepository->getListProcessExport(
+        return $this->processRepository->getListProcess(
             [Process::TYPE_PROCESS_EXPORT_CONTACT, Process::TYPE_PROCESS_EXPORT_BLACKLIST],
             $search
-        )->paginate($limit);
+        );
+    }
+
+    public function getListProcessImport(array $search, User $user): Builder
+    {
+        if (!$user->hasRole(User::USER_ROLE_MANAGER)) {
+            $query = $this->processRepository->getListProcess(
+                [Process::TYPE_PROCESS_IMPORT_CONTACT],
+                $search,
+                $user
+            );
+        } else {
+            $query = $this->processRepository->getListProcess(
+                [Process::TYPE_PROCESS_IMPORT_CONTACT],
+                $search,
+            );
+        }
+
+        return $query;
     }
 }

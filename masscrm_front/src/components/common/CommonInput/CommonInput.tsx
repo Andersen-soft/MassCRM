@@ -23,7 +23,9 @@ export const CommonInput: FC<InputProps & ICommonInputProps> = ({
   disabled,
   onChangeValue,
   id,
-  name
+  name,
+  autoFocus,
+  endAdornment
 }) => {
   const style = inputStyle();
   const [isVisible, setIsVisible] = useState<boolean>(false);
@@ -66,31 +68,34 @@ export const CommonInput: FC<InputProps & ICommonInputProps> = ({
           disabled={disabled}
           aria-describedby='component-error-text'
           endAdornment={
-            <InputAdornment position='end'>
-              {isValid === false && (
-                <IconButton
-                  aria-label={errorMessage}
-                  onClick={showMessage}
-                  onMouseDown={() => false}
-                  edge='end'
-                >
-                  <ErrorOutline color='error' />
-                </IconButton>
-              )}
-              {isPassword && (
-                <IconButton
-                  aria-label={errorMessage}
-                  onClick={onChangeVisible}
-                  onMouseDown={() => false}
-                  edge='end'
-                >
-                  {!isVisible && <Visibility />}
-                  {isVisible && <VisibilityOff />}
-                </IconButton>
-              )}
-            </InputAdornment>
+            endAdornment || (
+              <InputAdornment position='end'>
+                {isValid === false && (
+                  <IconButton
+                    aria-label={errorMessage}
+                    onClick={showMessage}
+                    onMouseDown={() => false}
+                    edge='end'
+                  >
+                    <ErrorOutline color='error' />
+                  </IconButton>
+                )}
+                {isPassword && (
+                  <IconButton
+                    aria-label={errorMessage}
+                    onClick={onChangeVisible}
+                    onMouseDown={() => false}
+                    edge='end'
+                  >
+                    {!isVisible && <Visibility />}
+                    {isVisible && <VisibilityOff />}
+                  </IconButton>
+                )}
+              </InputAdornment>
+            )
           }
           labelWidth={70}
+          autoFocus={Boolean(autoFocus && autoFocus === name)}
         />
       </FormControl>
       {errorMessage && <Box className={style.error}>{errorMessage}</Box>}

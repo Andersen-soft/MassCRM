@@ -16,7 +16,7 @@ import style from './SingleInputForm.scss';
 const sn = styleNames(style);
 
 export const SingleInputForm: FC<ISingleInputFormProps> = ({
-  inputProps: { value, placeholder, required, ...inputProps },
+  inputProps: { value, placeholder, required },
   switchValue,
   onSubmit,
   onCancel,
@@ -30,7 +30,10 @@ export const SingleInputForm: FC<ISingleInputFormProps> = ({
   const validate = (values: ISingleInputForm) => {
     const error: { editInput?: string } = {};
     if (!values.editInput) error.editInput = 'required field';
-    const validMess = validation && validation(values.editInput || '');
+    const validMess =
+      validation && !validation(values.editInput || '')
+        ? 'Invalid link'
+        : undefined;
     if (validMess) error.editInput = validMess;
     return error;
   };
@@ -97,7 +100,6 @@ export const SingleInputForm: FC<ISingleInputFormProps> = ({
       default:
         return (
           <CommonInput
-            {...inputProps}
             required={required}
             value={editInput}
             name='editInput'

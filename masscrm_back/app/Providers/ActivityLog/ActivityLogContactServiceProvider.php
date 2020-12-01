@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers\ActivityLog;
 
 use App\Commands\ActivityLog\Contact\Handlers\ShowActivityLogContactHandler;
@@ -11,10 +13,9 @@ use Illuminate\Support\ServiceProvider;
 
 class ActivityLogContactServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         ContactAttachment::observe(ContactAttachmentObserver::class);
-        $this->registerCommandHandlers();
     }
 
     public function register()

@@ -7,7 +7,7 @@ export * from './ItemsCell';
 export * from './ContactCell';
 export * from './OriginCell';
 export * from './ConfidenceCell';
-export * from './SubsidiaryHoldingCell';
+export * from './CompanyCell';
 export * from './TypeCompanyCell';
 export * from './NetworkCell';
 export * from './JobCell';

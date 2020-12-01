@@ -1,15 +1,15 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import Cookies from 'js-cookie';
 import { backendUrl } from 'src/constants';
 
-const redirectOnTokenExpiration = (error: AxiosError) => {
+const redirectOnTokenExpiration = (error: string[]) => {
   const token = Cookies.get('token');
   const tokenError = [
     'Token has expired',
     'Invalid token.',
     'Wrong number of segments'
   ];
-  if (token && tokenError.includes(error.response?.data.errors.join(''))) {
+  if (token && tokenError.includes(error.join(''))) {
     Cookies.remove('token');
     window.location.href = '/';
   }
@@ -56,6 +56,7 @@ const onFullfiled = (response: any) => {
 };
 
 const onRejected = (reject: any) => {
+  redirectOnTokenExpiration(reject.response.data.errors);
   return Promise.reject(reject.response.data.errors);
 };
 

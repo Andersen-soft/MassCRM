@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Contact;
 
 use App\Models\Contact\ContactColleagues;
@@ -10,7 +12,7 @@ class ContactColleaguesRepository
     {
         $query = ContactColleagues::query()->where('link', '=', $colleague['link']);
         if (!empty($colleague['id'])) {
-           $query->whereKeyNot($colleague['id']);
+            $query->whereKeyNot($colleague['id']);
         }
 
         return $query->exists();

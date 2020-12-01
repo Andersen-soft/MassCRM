@@ -1,9 +1,20 @@
 import { createSelector } from 'reselect';
-import { IStoreState } from 'src/interfaces/store';
-import { IContactResult } from '../interfaces';
+import {
+  IStoreState,
+  IActivityLog,
+  IAttachment,
+  IContactResult,
+  IPreviousCompany
+} from 'src/interfaces';
 
 export const getContacts = createSelector(
   (state: IStoreState): Array<IContactResult> => state.contacts.data || [],
+  contacts => contacts
+);
+
+export const getContact = createSelector(
+  (state: IStoreState): IContactResult =>
+    state.contacts.data[0] || ({} as IContactResult),
   contacts => contacts
 );
 
@@ -29,5 +40,23 @@ export const getContactsPlan = createSelector(
     count: string;
     expected: string;
   } => state.contacts?.plan,
+  plan => plan
+);
+
+export const getPreviousCompaniesSelector = createSelector(
+  ({ contacts }: IStoreState): Array<IPreviousCompany> =>
+    contacts?.previous_companies || [],
+  plan => plan
+);
+
+export const getAttachmentsSelector = createSelector(
+  ({ contacts }: IStoreState): Array<IAttachment> =>
+    contacts?.attachments || [],
+  plan => plan
+);
+
+export const getActivityLogSelector = createSelector(
+  ({ contacts }: IStoreState): IActivityLog =>
+    contacts?.activity_log || ({} as IActivityLog),
   plan => plan
 );

@@ -259,7 +259,7 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
             name='email'
             value={formik.values.email}
             items={emailLdap || []}
-            placeholder='E-mail *'
+            placeholder='Email *'
             disabled={!!id && formik.values.fromActiveDirectory}
             width='270px'
             onChange={onChangeEmail}
@@ -292,7 +292,7 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
           <CommonInput
             name='position'
             value={formik.values.position}
-            placeholder='Position'
+            placeholder='Title'
             width='270px'
             onChangeValue={formik.handleChange}
           />

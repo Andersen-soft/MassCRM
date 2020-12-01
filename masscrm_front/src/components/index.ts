@@ -8,4 +8,5 @@ export * from './SetPassword';
 export * from './AuthPage';
 export * from './Demo';
 export * from './Blacklist';
-export * from './ExportPage';
+export * from './StatusPage';
+export * from './DisplayErrors';

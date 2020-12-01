@@ -33,11 +33,6 @@ export const getFiltersUse = createSelector(
   (useFilters: boolean) => useFilters
 );
 
-export const getBlacklistErrors = createSelector(
-  (state: IStoreState): any => state.blacklist.errors,
-  (errors: any) => errors
-);
-
 export const getShowCount = createSelector(
   (state: IStoreState): number => state.blacklist.showCount,
   (showCount: number) => showCount

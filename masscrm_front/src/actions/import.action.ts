@@ -6,12 +6,16 @@ import {
   IFilter,
   IImportedData,
   IImportModalFormState,
+  IImportSearch,
   IUser
 } from 'src/interfaces';
+import parseJSON from 'date-fns/parseJSON';
+import { format } from 'date-fns';
 import HTTP, { HTTPFile } from '../utils/http';
 import { download } from '../utils/download';
 import { setNotification } from './notification.action';
 import { formatSearchList } from '../utils/importModal/formatSearchList';
+import { setErrorHTTPRequestAction } from './error.action';
 
 export const importActionTypes = {
   OPEN_IMPORT_MODAL: 'OPEN_IMPORT_MODAL',
@@ -29,7 +33,10 @@ export const importActionTypes = {
   FINISH_IMPORTING: 'FINISH_IMPORTING',
   SET_SHOW_START_IMPORT_MESSAGE: 'SET_SHOW_START_IMPORT_MESSAGE',
   SET_SELECTED_TAB: 'SET_SELECTED_TAB',
-  SET_INFO: 'SET_INFO'
+  SET_INFO: 'SET_INFO',
+  GET_IMPORT_LIST: 'GET_IMPORT_LIST',
+  SET_IMPORT_FILTER: 'SET_IMPORT_FILTER',
+  CLEAR_IMPORT_FORM_STATE: 'CLEAR_IMPORT_FORM_STATE'
 };
 
 const openImportModal = createAction(importActionTypes.OPEN_IMPORT_MODAL);
@@ -58,6 +65,12 @@ const setInfo = createAction(importActionTypes.SET_INFO);
 const setSelectedTab = createAction(importActionTypes.SET_SELECTED_TAB);
 const setFileInfo = createAction(importActionTypes.SET_FILE_INFO);
 const finishImport = createAction(importActionTypes.FINISH_IMPORTING);
+const clearImportFormState = createAction(
+  importActionTypes.CLEAR_IMPORT_FORM_STATE
+);
+
+export const getImportListAction = createAction('GET_IMPORT_LIST');
+export const setImportFilterAction = createAction('SET_IMPORT_FILTER');
 
 export const openImportModalAction = (value: boolean) => (
   dispatch: Dispatch
@@ -139,7 +152,7 @@ const loadFieldsListAction = () => async (dispatch: Dispatch) => {
     });
     const fieldsList = data?.fields || {};
     const fieldsSelectList = fieldsList
-      ? ['Skip', ...(Object.values(fieldsList) as string[])]
+      ? [...(Object.values(fieldsList) as string[])]
       : ['Skip'];
 
     dispatch(loadFieldsList({ fieldsList, fieldsSelectList }));
@@ -196,15 +209,6 @@ export const setFileInfoAction = (fileInfo: { name: string; size: string }) => (
   dispatch(setFileInfo({ fileInfo }));
 };
 
-export const importActions = {
-  loadResponsibleSearchListAction,
-  loadColumnSeparatorListAction,
-  loadOriginListAction,
-  loadFieldsListAction,
-  uploadFileAction,
-  startImportingAction
-};
-
 export const downLoadReport = async (filter: IContactDownload) => {
   try {
     await HTTP.post('contact/reports/download', { ...filter });
@@ -213,7 +217,7 @@ export const downLoadReport = async (filter: IContactDownload) => {
   }
 };
 
-export const getContactExportFile = async (name: string) => {
+export const getContactExportFile = async (name: string, date: Date) => {
   try {
     const { request } = await HTTPFile.get('file/get', {
       params: { name },
@@ -221,7 +225,12 @@ export const getContactExportFile = async (name: string) => {
         return qs.stringify(params, { arrayFormat: 'indices' });
       }
     });
-    download(request.response, 'Contacts.csv', 'text/csv');
+
+    download(
+      request.response,
+      `Contacts_${format(parseJSON(date), 'ddMMyy_HHmm')}.csv`,
+      'text/csv'
+    );
   } catch (error) {
     setNotification(error);
   }
@@ -256,16 +265,18 @@ export const getMissedDuplicates = async (name: string) => {
 export const getImportResult = (id: number) => async (dispatch: Dispatch) => {
   try {
     const {
-      data: {
-        countNewContacts,
-        countNewCompanies,
-        countProcessedDuplicateContacts,
-        countProcessedDuplicateCompanies,
-        countMissedDuplicates,
-        fileNameMissedDuplicates,
-        countUnsuccessfully,
-        fileNameUnsuccessfullyDuplicates
-      }
+      data: [
+        {
+          countNewContacts,
+          countNewCompanies,
+          countProcessedDuplicateContacts,
+          countProcessedDuplicateCompanies,
+          countMissedDuplicates,
+          fileNameMissedDuplicates,
+          countUnsuccessfully,
+          fileNameUnsuccessfullyDuplicates
+        }
+      ]
     } = await HTTP.get(`import/statistic/`, {
       params: { id }
     });
@@ -296,4 +307,51 @@ export const setSelectedTabAction = (tab: string | number) => (
 
 export const finishImportAction = () => (dispatch: Dispatch) => {
   dispatch(finishImport({ importStatus: 'none' }));
+};
+
+export const getImportListRequest = (filter: IImportSearch) => {
+  return HTTP.get(`processes/import`, {
+    params: { ...filter },
+    paramsSerializer(params: IImportSearch) {
+      return qs.stringify(params, { arrayFormat: 'indices' });
+    }
+  });
+};
+
+export const getImportList = (filter: IImportSearch) => async (
+  dispatch: Dispatch
+) => {
+  try {
+    const data = await getImportListRequest(filter);
+    dispatch(getImportListAction(data));
+  } catch (error) {
+    dispatch(setErrorHTTPRequestAction(error.toString()));
+  }
+};
+
+export const setImportFilter = (filter: {
+  [x: number]: string | (string | Date)[];
+}) => (dispatch: Dispatch) => {
+  dispatch(setImportFilterAction({ filter }));
+};
+
+export const getAutocompleteImport = async (filter: IImportSearch) => {
+  try {
+    return await getImportListRequest(filter);
+  } catch (error) {
+    throw new Error(JSON.stringify(error.data));
+  }
+};
+
+export const clearFormState = () => (dispatch: Dispatch) => {
+  dispatch(clearImportFormState());
+};
+
+export const importActions = {
+  loadResponsibleSearchListAction,
+  loadColumnSeparatorListAction,
+  loadOriginListAction,
+  loadFieldsListAction,
+  uploadFileAction,
+  startImportingAction
 };

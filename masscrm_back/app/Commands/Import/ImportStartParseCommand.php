@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Commands\Import;
 
@@ -30,17 +30,16 @@ class ImportStartParseCommand
         User $user,
         array $fields,
         array $origin,
-        string $responsible,
-        string $isHeader,
+        int $responsible,
+        bool $isHeader,
         string $duplicationAction,
         string $columnSeparator,
         string $comment = null
-    )
-    {
+    ) {
         $this->user = $user;
         $this->fields = $fields;
         $this->origin = $origin;
-        $this->responsible = (int)$responsible;
+        $this->responsible = $responsible;
         $this->isHeader = in_array($isHeader, ['1', 'true']);
         $this->duplicationAction = $duplicationAction;
         $this->columnSeparator = $columnSeparator;
@@ -85,20 +84,5 @@ class ImportStartParseCommand
     public function isHeader(): bool
     {
         return $this->isHeader;
-    }
-
-    public function isReplaceAction(): bool
-    {
-        return $this->isReplaceAction() === self::DUPLICATION_ACTION_REPLACE;
-    }
-
-    public function isMergeAction(): bool
-    {
-        return $this->isReplaceAction() === self::DUPLICATION_ACTION_MERGE;
-    }
-
-    public function isSkipAction(): bool
-    {
-        return $this->isReplaceAction() === self::DUPLICATION_ACTION_SKIP;
     }
 }

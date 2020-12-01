@@ -1,9 +1,12 @@
 import * as React from 'react';
 import { IconButton } from '@material-ui/core';
 import { Close } from '@material-ui/icons';
-import uniqueId from 'lodash.uniqueid';
+import { useDropzone } from 'react-dropzone';
+import GetAppIcon from '@material-ui/icons/GetApp';
+import cn from 'classnames';
 import { useStyles } from './Upload.styles';
-import { CommonButton } from '../CommonButton';
+
+const MAX_FILE_SIZE = 1;
 
 interface Props {
   fetching?: boolean;
@@ -16,68 +19,62 @@ interface Props {
   onClear?: () => void;
 }
 
-const id = uniqueId('file_');
-
 export const Upload: React.FC<Props> = props => {
-  const classes = useStyles(props);
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const classes = useStyles();
+
   const {
     fetching,
     fileInfoClassName = '',
     fileExtensions,
     fileName,
     fileSize,
-    disabled,
     onUpload,
     onClear
   } = props;
 
-  const handleUpload = React.useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const { files } = event.target;
-
-      if (files?.[0]) {
-        onUpload(files[0]);
-      }
-    },
-    [onUpload]
-  );
-
   const handleClear = React.useCallback(() => {
     if (onClear) {
       onClear();
-
-      if (fileInputRef?.current) {
-        fileInputRef.current.value = '';
-      }
     }
   }, [onClear]);
 
+  const onDrop = React.useCallback(acceptedFiles => {
+    const [file] = acceptedFiles;
+
+    if (file) {
+      onUpload(file);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps } = useDropzone({
+    onDrop,
+    disabled: Boolean(fileName),
+    maxFiles: MAX_FILE_SIZE,
+    accept:
+      fileExtensions || '.csv, .xls, .xlsx, text/csv, application/vnd.ms-excel'
+  });
+
   return (
     <div className={classes.root}>
-      <input
-        ref={fileInputRef}
-        type='file'
-        accept={
-          fileExtensions ||
-          '.csv, .xls, .xlsx, text/csv, application/vnd.ms-excel'
-        }
-        id={id}
-        onChange={handleUpload}
-        className={classes.customInputFile}
-      />
-
-      <CommonButton
-        className={classes.uploadBtn}
-        text=''
-        color='white'
-        disabled={disabled}
-      >
-        <label htmlFor={id} className={classes.label}>
-          {fetching ? 'Uploading...' : 'Upload'}
-        </label>
-      </CommonButton>
-      {!fetching && fileName ? (
+      <div {...getRootProps()} className={classes.dropZone}>
+        <input {...getInputProps()} />
+        <div className={classes.dropZoneField}>
+          <GetAppIcon className={classes.uploadIcon} />
+          <p className={classes.dropZoneFieldText}>Drag and drop files here</p>
+        </div>
+        <div className={classes.dropZoneField}>
+          <p className={classes.dropZoneFieldText}>or</p>
+          <div
+            className={cn({
+              [classes.uploadArea]: true,
+              [classes.uploadAreaBlocked]: !fileName
+            })}
+          >
+            Upload
+          </div>
+        </div>
+      </div>
+      {!fetching && fileName && (
         <div className={`${classes.fileInfoContainer} ${fileInfoClassName}`}>
           <div className={classes.fileInfo}>
             <span className={classes.fileName}>{fileName}</span>
@@ -91,7 +88,7 @@ export const Upload: React.FC<Props> = props => {
             <Close className={classes.closeIcon} />
           </IconButton>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };

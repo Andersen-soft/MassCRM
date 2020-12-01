@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Company;
 
 use App\Http\Requests\AbstractRequest;
 use App\Rules\Company\CheckCountSubsidiariesCompany;
 use App\Rules\Company\CheckTypeSubsidiariesCompany;
+use App\Rules\Company\UniqueCompanyLinkedIn;
+use App\Rules\Company\UniqueCompanyNameRule;
+use App\Rules\Company\UniqueCompanyWebsite;
 use Illuminate\Support\Facades\Lang;
 
 class UpdateCompanyRequest extends AbstractRequest
@@ -29,10 +34,9 @@ class UpdateCompanyRequest extends AbstractRequest
         $type = implode(',', Lang::get('filters.company_type'));
 
         return [
-            'name' => 'string|max:150|unique:companies,name,' . $this->company,
-            'website' => 'nullable|string|url|unique:companies,website,'. $this->company,
-            'linkedin' =>
-                'nullable|string|regex:' . static::REGEX_LINK_LINKEDIN . '|unique:companies,linkedin,'. $this->company,
+            'name' => ['string', 'max:150', new UniqueCompanyNameRule((int) $this->company)],
+            'website' => 'nullable|string|url',
+            'linkedin' => 'nullable|string|regex:' . static::REGEX_LINK_LINKEDIN,
             'sto_full_name' => 'nullable|string|max:150',
             'type' => 'required_with:subsidiaries|nullable|string|max:50|in:'. $type,
             'founded' => 'nullable|date',

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Observers\Company;
 
@@ -23,11 +23,11 @@ class CompanyVacancyObserver
             return;
         }
 
-        foreach(self::NAME_FIELDS as $item) {
+        foreach (self::NAME_FIELDS as $item) {
             (new ActivityLogCompany())
+                ->setCompanyId($company->getId())
                 ->setUserId($company->getUserId())
                 ->setActivityType(ActivityLogCompany::ADDED_NEW_VALUE_FIELD_EVENT)
-                ->setCompanyId($company->getId())
                 ->setModelName((new ReflectionClass($companyVacancy))->getShortName())
                 ->setModelField($item)
                 ->setDataNew($companyVacancy->{$item})
@@ -45,9 +45,9 @@ class CompanyVacancyObserver
         foreach ($companyVacancy->getChanges() as $key => $value) {
             if (in_array($key, self::NAME_FIELDS, true)) {
                 (new ActivityLogCompany())
+                    ->setCompanyId($companyVacancy->getCompanyId())
                     ->setUserId($company->getUserId())
                     ->setActivityType(ActivityLogCompany::UPDATE_VALUE_FIELD_EVENT)
-                    ->setCompanyId($companyVacancy->getCompanyId())
                     ->setModelName((new ReflectionClass($companyVacancy))->getShortName())
                     ->setModelField($key)
                     ->setDataOld($companyVacancy->getOriginal($key))
@@ -65,12 +65,12 @@ class CompanyVacancyObserver
         $company = $companyVacancy->company;
 
         (new ActivityLogCompany())
+            ->setCompanyId($companyVacancy->getCompanyId())
             ->setUserId($company->getUserId())
             ->setActivityType(ActivityLogCompany::DELETE_VALUE_FIELD_EVENT)
-            ->setCompanyId($companyVacancy->getCompanyId())
             ->setModelName((new ReflectionClass($companyVacancy))->getShortName())
             ->setModelField(CompanyVacancy::VACANCY)
-            ->setDataOld(  $companyVacancy->getOriginal(CompanyVacancy::VACANCY))
+            ->setDataOld($companyVacancy->getOriginal(CompanyVacancy::VACANCY))
             ->setLogInfo($companyVacancy->getRawOriginal())
             ->save();
     }

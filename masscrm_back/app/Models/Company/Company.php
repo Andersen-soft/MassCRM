@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models\Company;
 
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @package App
  * @property int $id
  * @property string $name
- * @property Carbon $created_at
+ * @property Carbon|null $created_at
  * @property Carbon $updated_at
  * @property string|null $website
  * @property string|null $linkedin
@@ -256,7 +256,13 @@ class Company extends CompanyFields
         return in_array($field, $this->fillable);
     }
 
-    public function setValue(string $field, string $value = null, bool $merge = false): Company
+    /**
+     * @param string $field
+     * @param mixed $value
+     * @param bool $merge
+     * @return $this
+     */
+    public function setValue(string $field, $value = null, bool $merge = false): Company
     {
         switch ($field) {
             case self::COMPANY_FIELD:
@@ -301,13 +307,13 @@ class Company extends CompanyFields
                 if ($this->notMerge($merge, self::MIN_EMPLOYEES_FIELD)) {
                     break;
                 }
-                $this->setMinEmployees((int)$value);
+                $this->setMinEmployees((int) $value);
                 break;
             case self::MAX_EMPLOYEES_FIELD:
                 if ($this->notMerge($merge, self::MAX_EMPLOYEES_FIELD)) {
                     break;
                 }
-                $this->setMaxEmployees($value);
+                $this->setMaxEmployees((int) $value);
                 break;
             case self::COMPANY_SALE_PREFIX . self::COMMENT_FIELD:
             case self::COMMENT_FIELD:

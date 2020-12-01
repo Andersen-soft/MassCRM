@@ -5,7 +5,7 @@ import {
 import { DisabledTabs } from '../common/Tabs';
 
 export const getDisabledInfo = (params: IGetDisabledTabsProps) => {
-  const { errorMessage, importStatus, fileInfo } = params;
+  const { errors, importStatus, fileInfo } = params;
   const disabledTabs: DisabledTabs = {};
   let isContinueDisabled = false;
 
@@ -16,7 +16,7 @@ export const getDisabledInfo = (params: IGetDisabledTabsProps) => {
     isContinueDisabled = true;
   }
 
-  if (errorMessage) {
+  if (errors) {
     disabledTabs.Duplicates = true;
     disabledTabs.Import = true;
     isContinueDisabled = true;

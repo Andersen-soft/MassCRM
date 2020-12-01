@@ -1,10 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Jobs;
 
 use App\Commands\Import\ImportContactsDto;
 use App\Models\Process;
-use App\Models\User\User;
 use App\Services\Process\ProcessService;
 use Exception;
 use App\Services\Parsers\ParserImportFileService;
@@ -36,7 +35,7 @@ class ImportContactsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        /** @var $processService ProcessService */
+        /** @var ProcessService $processService */
         $processService = app()->make(ProcessService::class);
         /** @var ParserImportFileService $parserImportFileService */
         $parserImportFileService = app()->make(ParserImportFileService::class);
@@ -48,8 +47,8 @@ class ImportContactsJob implements ShouldQueue
             );
 
             $parserImportFileService->setParamsImport($this->importContacts);
-            $parserImportFileService->parse($this->importContacts->getFullPath());
-
+            $infoImport = $parserImportFileService->parse($this->importContacts->getFullPath());
+            $this->importContacts->getProcess()->informationImport()->associate($infoImport);
         } catch (Exception $exception) {
             $processService->updateStatusProcess(
                 $this->importContacts->getProcess(),

@@ -1,10 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Rules\Blacklist;
 
-use App\Models\Blacklist;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\Lang;
+use App\Services\Blacklist\BlacklistService;
 
 class RegexDomain implements Rule
 {
@@ -12,20 +12,21 @@ class RegexDomain implements Rule
 
     public function passes($attribute, $value): bool
     {
+        /** @var BlacklistService $blacklistService */
+        $blacklistService = app()->make(BlacklistService::class);
         $value = strtolower(trim($value));
-        preg_match(Blacklist::REGEX_EMAIL, $value, $email);
-        preg_match(Blacklist::REGEX_DOMAIN, $value, $domain);
 
-        if (!$email && !$domain) {
-            $pos = strpos($value, '@');
-            if ($pos) {
-                $this->messageError = 'email_invalid_format';
-            }
-
-            return false;
+        if ($blacklistService->isValidateDomain($value)) {
+            return true;
         }
 
-        return true;
+        $pos = strpos($value, '@');
+
+        if ($pos) {
+            $this->messageError = 'email_invalid_format';
+        }
+
+        return false;
     }
 
     public function message(): string

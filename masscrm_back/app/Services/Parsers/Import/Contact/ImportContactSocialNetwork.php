@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Parsers\Import\Contact;
 
@@ -6,14 +6,17 @@ use App\Exceptions\Import\ImportFileException;
 use App\Models\Contact\Contact;
 use App\Repositories\Contact\ContactSocialNetworksRepository;
 use Illuminate\Support\Facades\Lang;
+use App\Helpers\Url;
 
 class ImportContactSocialNetwork
 {
     private ContactSocialNetworksRepository $socialNetworksRepository;
+    private Url $urlHelper;
 
-    public function __construct(ContactSocialNetworksRepository $socialNetworksRepository)
+    public function __construct(ContactSocialNetworksRepository $socialNetworksRepository, Url $urlHelper)
     {
         $this->socialNetworksRepository = $socialNetworksRepository;
+        $this->urlHelper = $urlHelper;
     }
 
     public function merge(Contact $contact, array $row): void
@@ -32,7 +35,9 @@ class ImportContactSocialNetwork
                     ]);
                 }
 
-                $contact->contactSocialNetworks()->create(['link' => $item]);
+                $contact->contactSocialNetworks()->create([
+                    'link' => $this->urlHelper->getUrlWithSchema(trim($item))
+                ]);
             }
         }
     }
@@ -51,7 +56,9 @@ class ImportContactSocialNetwork
                 ]);
             }
 
-            $contact->contactSocialNetworks()->create(['link' => trim($item)]);
+            $contact->contactSocialNetworks()->create([
+                'link' => $this->urlHelper->getUrlWithSchema(trim($item))
+            ]);
         }
     }
 

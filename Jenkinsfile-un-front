@@ -25,8 +25,8 @@ pipeline {
             }
             steps {
               withSonarQubeEnv('SonarQube_6.0'){
-              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=MassCRM-front:1 -Dsonar.projectName=MassCRM-front -Dsonar.projectVersion=1.0 -Dsonar.sources=masscrm_front"
-              sh "/var/lib/jenkins/workspace/waitForSonarQube.sh"
+              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=MassCRM-front-New:1 -Dsonar.projectName=MassCRM-front-New -Dsonar.projectVersion=1.1 -Dsonar.sources=masscrm_front"
+              //sh "/var/lib/jenkins/workspace/waitForSonarQube.sh"
               }
             }
         }

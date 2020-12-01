@@ -1,117 +1,94 @@
-import React, { useEffect, useMemo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import React, { FC, useCallback, useEffect, useMemo } from 'react';
 import { Edit } from '@material-ui/icons';
-import style from './InfoPartCareer.scss';
-import { styleNames } from '../../../../../services';
-import { IStoreState } from '../../../../../interfaces';
-import { getOneContactRequest } from '../../../../../actions';
-import { CommonIcon } from '../../../../common/CommonIcon';
+import { useDispatch, useSelector } from 'react-redux';
+import { styleNames } from 'src/services';
+import { ICompany, IPreviousCompany } from 'src/interfaces';
+import { CommonIcon } from 'src/components/common/CommonIcon';
+import { getPreviousCompanies } from 'src/actions';
+import { getPreviousCompaniesSelector } from 'src/selectors';
+import style from '../InfoPart.scss';
 
-export const InfoPartCareer = () => {
-  const sn = styleNames(style);
+const sn = styleNames(style);
+
+export const InfoPartCareer: FC<{
+  id: number;
+  company: ICompany;
+  position?: string;
+  handleChange: (focus?: string) => void;
+}> = ({ id, company, position: currentPosition, handleChange }) => {
   const dispatch = useDispatch();
-  const { company, position } = useSelector(
-    (state: IStoreState) => state.oneContact.data
+  const previousCompanies = useSelector(getPreviousCompaniesSelector);
+
+  const columnItem = useCallback(
+    (title, value, isEdit?) => (
+      <div className={sn('column_item')}>
+        <span className={sn('spanLeft')}>{title}:</span>
+        <span className={sn('spanRight')}>
+          <div className={sn('column_value')}>{value}</div>
+          {isEdit && (
+            <CommonIcon
+              IconComponent={Edit}
+              onClick={() => handleChange(isEdit)}
+            />
+          )}
+        </span>
+      </div>
+    ),
+    [handleChange]
   );
 
-  const buildInfoItem = (item: any, label: string) => {
-    return {
-      ...item,
-      label,
-      icon: Edit
-    };
-  };
-
-  const info = useMemo(
-    () => [
-      buildInfoItem(company, 'Company'),
-      buildInfoItem(position, 'Position')
-    ],
-    [company, position]
+  const currentCompany = useMemo(
+    () => (
+      <div className={sn('section')}>
+        <div className={`${sn('title')} ${sn('title_current')}`}>
+          Current company
+        </div>
+        <div className={sn('wrapper')}>
+          <div className={sn('column')}>
+            {columnItem('Date of change', company.updated_at)}
+            {columnItem('Company', company.name, 'company')}
+            {columnItem('Position', currentPosition, 'position')}
+          </div>
+        </div>
+      </div>
+    ),
+    [company, currentPosition]
   );
-
-  const location = useLocation();
-  const contactId = Number(new URLSearchParams(location.search).get('id'));
 
   useEffect(() => {
-    dispatch(getOneContactRequest(contactId));
-  }, []);
+    dispatch(getPreviousCompanies(id));
+  }, [id]);
+
+  const previousCompanyList = useMemo(
+    () =>
+      previousCompanies && (
+        <div className={sn('section')}>
+          <div className={sn('title')}>Previous company</div>
+          <div className={sn('wrapper')}>
+            {previousCompanies.map(
+              ({
+                company_name,
+                company_id,
+                position,
+                updated_at
+              }: IPreviousCompany) => (
+                <div className={sn('column')} key={company_id}>
+                  {columnItem('Date of change', updated_at)}
+                  {columnItem('Company', company_name)}
+                  {columnItem('Position', position)}
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      ),
+    [previousCompanies]
+  );
 
   return (
     <>
-      <div className={sn('section')}>
-        <div className={sn('subHeader')}>
-          <div className={sn('startLine')} />
-          <span className={sn('subTitle')}> Current company</span>
-        </div>
-
-        <div className={sn('wrapper')}>
-          <div className={sn('column')}>
-            <div>
-              <span className={sn('spanLeft')}>Date of change:</span>
-              <span className={sn('spanRight')}>01.01.2020</span>
-            </div>
-            {info.map(({ name, label, icon }) => (
-              <div className={sn('rowWithIcon')} key={name}>
-                <span className={sn('rowWithIonLeftPart')}>{label}:</span>
-                <span className={sn('rowWithIconRightPart')}>
-                  <span className={sn('rowWithIconRightPartText')}>{name}</span>
-                  <CommonIcon IconComponent={icon} />
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className={sn('column')}>
-            <div>
-              <span className={sn('spanLeft')} />
-              <span className={sn('spanRight')} />
-            </div>
-          </div>
-          <div className={sn('column')}>
-            <div>
-              <span className={sn('spanLeft')} />
-              <span className={sn('spanRight')} />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className={sn('divide')} />
-
-      <div className={sn('section')}>
-        <div className={sn('subHeader')}>
-          <span className={sn('subTitle')}> previous company</span>
-        </div>
-        <div className={sn('wrapper')}>
-          <div className={sn('column')}>
-            <div>
-              <span className={sn('spanLeft')}>Date of change:</span>
-              <span className={sn('spanRight')}>01.01.2020</span>
-            </div>
-            <div>
-              <span className={sn('spanLeft')}>Company:</span>
-              <span className={sn('spanRight')}>01.01.2020</span>
-            </div>
-            <div>
-              <span className={sn('spanLeft')}>Position:</span>
-              <span className={sn('spanRight')}>01.01.2020</span>
-            </div>
-          </div>
-          <div className={sn('column')}>
-            <div>
-              <span className={sn('spanLeft')} />
-              <span className={sn('spanRight')} />
-            </div>
-          </div>
-          <div className={sn('column')}>
-            <div>
-              <span className={sn('spanLeft')} />
-              <span className={sn('spanRight')} />
-            </div>
-          </div>
-        </div>
-      </div>
+      {currentCompany}
+      {previousCompanyList}
     </>
   );
 };

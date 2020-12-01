@@ -1,12 +1,17 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Location;
 
+use App\Commands\Location\GetCitiesCommand;
+use App\Commands\Location\GetCountriesCommand;
+use App\Commands\Location\GetRegionsCommand;
+use App\Exceptions\Custom\NotFoundException;
 use App\Models\Location\City;
 use App\Models\Location\Country;
 use App\Models\Location\Location;
 use App\Models\Location\Region;
 use App\Repositories\Location\LocationRepository;
+use Illuminate\Support\Collection;
 
 class LocationService
 {
@@ -43,40 +48,61 @@ class LocationService
         return null;
     }
 
-    public function findLocations(string $str): ?Location
+    public function findLocations(string $location): ?Location
     {
-        $locations = preg_split("/[\s,]+/", $str);
-        $count = count($locations);
-        for ($i = 0; $i <= $count; $i++) {
-            if ($i < $count - 1) {
-                $locations[] = $locations[$i] . ' ' . $locations[$i + 1];
-            }
+        $loc = new Location();
+        $city = $this->locationRepository->getCityByName($location);
+        if ($city instanceof City) {
+            $loc->setCity($city)
+                ->setRegion($city->region)
+                ->setCountry($city->region->country);
+            return $loc;
         }
 
-        $loc = new Location();
-        foreach ($locations as $location) {
-            $city = $this->locationRepository->getCityByName($location);
-            if ($city instanceof City) {
-                $loc->setCity($city)
-                    ->setRegion($city->region)
-                    ->setCountry($city->region->country);
-                break;
-            }
-            $region = $this->locationRepository->getRegionByName($location);
-            if ($region instanceof Region) {
-                $loc->setRegion($region)
-                    ->setCountry($region->country);
-                continue;
-            }
-            $country = $this->locationRepository->getCountryByName($location);
-            if ($country instanceof Country) {
-                $loc->setCountry($country);
-            }
+        $region = $this->locationRepository->getRegionByName($location);
+
+        if ($region instanceof Region) {
+            $loc->setRegion($region)
+                ->setCountry($region->country);
+            return $loc;
         }
+        $country = $this->locationRepository->getCountryByName($location);
+
+        if ($country instanceof Country) {
+            $loc->setCountry($country);
+        }
+
         if ($loc->isEmpty()) {
             $loc = null;
         }
 
         return $loc;
+    }
+
+    public function getRegions(string $countryCode): Collection
+    {
+        $regions = $this->locationRepository->getRegions($countryCode);
+
+        if ($regions instanceof Collection) {
+            return $regions;
+        }
+
+        throw new NotFoundException('Country code(' . $countryCode . ') not found');
+    }
+
+    public function getCountries(): Collection
+    {
+        return $this->locationRepository->getCountries();
+    }
+
+    public function getCities(string $regionCode): Collection
+    {
+        $cities = $this->locationRepository->getCities($regionCode);
+
+        if ($cities instanceof Collection) {
+            return $cities;
+        }
+
+        throw new NotFoundException('Region code(' . $regionCode . ') not found');
     }
 }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models;
 
@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CampaignStatus extends Model
 {
     public const STATUS_FIELD = 'status';
+    public const NAME_FIELD = 'name';
 
     protected $fillable = [
         'id',

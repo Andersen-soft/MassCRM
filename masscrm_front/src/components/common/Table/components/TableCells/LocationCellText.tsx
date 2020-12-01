@@ -1,4 +1,11 @@
-import React, { FC, useState, MouseEvent, useEffect, useCallback } from 'react';
+import React, {
+  FC,
+  useState,
+  MouseEvent,
+  useEffect,
+  useCallback,
+  useContext
+} from 'react';
 import { Popover } from '@material-ui/core';
 import { SingleInputForm } from 'src/components/common/SingleInputForm';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,6 +22,8 @@ import {
   updateContact
 } from 'src/actions';
 import { ILocation } from 'src/interfaces';
+import { ErrorEmitterContext } from 'src/context';
+import { DoubleClickError } from '../../../../../utils/errors';
 
 export const LocationCellText: FC<{
   location: ILocation;
@@ -23,6 +32,7 @@ export const LocationCellText: FC<{
   className?: string;
   required?: boolean;
 }> = ({ location, id, className, type, required }) => {
+  const { errorsEventEmitter } = useContext(ErrorEmitterContext);
   const dispatch = useDispatch();
   const { country, region } = location;
   const isCountry = type === 'country';
@@ -38,7 +48,7 @@ export const LocationCellText: FC<{
     if (!isCountry && !isCity) return regions.map(getNameCallBack);
     if (isCity) return cities.map(getNameCallBack);
     return countries.map(getNameCallBack);
-  }, []);
+  }, [countries, regions, cities]);
 
   const getCode = (
     val = '',
@@ -78,9 +88,13 @@ export const LocationCellText: FC<{
         city: val
       };
     }
-    updateContact({ location: newLocation }, id).then(() =>
-      dispatch(getAddContactList(filter))
-    );
+    updateContact({ location: newLocation }, id)
+      .then(() => dispatch(getAddContactList(filter)))
+      .catch(errors => {
+        errorsEventEmitter.emit('snackBarErrors', {
+          errorsArray: [DoubleClickError(errors)]
+        });
+      });
   };
 
   useEffect(() => {

@@ -5,17 +5,17 @@ import { IErrorStore } from 'src/interfaces/store';
 type S = IErrorStore;
 
 const initialState: IErrorStore = {
-  data: undefined
+  data: ''
 };
 
 export const errorReducer = handleActions(
   {
     [`${setErrorHTTPRequestAction}`]: (
       state: S,
-      { payload }: { payload: string }
+      { payload }: { payload: any }
     ): S => ({
       ...state,
-      data: payload
+      ...payload
     })
   },
   initialState

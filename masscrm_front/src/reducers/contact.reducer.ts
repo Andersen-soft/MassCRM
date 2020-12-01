@@ -1,5 +1,12 @@
 import { handleActions } from 'redux-actions';
-import { getContactListAction, getContactPlanAction } from 'src/actions';
+import {
+  getContactListAction,
+  getContactPlanAction,
+  getContactAction,
+  getPreviousCompaniesAction,
+  getAttachmentsAction,
+  getActivityLogAction
+} from 'src/actions';
 import { IContactStore } from 'src/interfaces/store';
 
 type S = IContactStore;
@@ -19,6 +26,22 @@ export const contactReducer = handleActions(
       ...payload
     }),
     [`${getContactPlanAction}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${getContactAction}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${getPreviousCompaniesAction}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${getAttachmentsAction}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${getActivityLogAction}`]: (state, { payload }) => ({
       ...state,
       ...payload
     })

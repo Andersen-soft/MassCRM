@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands\User;
 
 class UpdateUserCommand extends MainUserCommand
@@ -26,5 +28,4 @@ class UpdateUserCommand extends MainUserCommand
     {
         return $this->userId;
     }
-
 }

@@ -20,7 +20,7 @@ export type IImportStatus = 'none' | 'processing' | 'success';
 export interface IGetDisabledTabsProps {
   fileInfo: IFileInfo;
   importStatus: IImportStatus;
-  errorMessage: string;
+  errors: boolean;
 }
 export type IRow = string | number | null;
 

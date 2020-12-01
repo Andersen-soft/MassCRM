@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Parsers;
 
 use App\Models\Company\Company;
@@ -20,8 +22,6 @@ use Illuminate\Support\Facades\Log;
 class ParserReplayCsvService extends ParserMain implements ParserServiceInterface
 {
     protected const MAILING_TOOL = 'Reply';
-    protected const RESPONSIBLE = 'Katsiaryna Budai';
-
     protected const FIRST_NAME = 'First Name';
     protected const LAST_NAME = 'Last Name';
     protected const FULL_NAME = 'Full Name';
@@ -105,7 +105,7 @@ class ParserReplayCsvService extends ParserMain implements ParserServiceInterfac
         $file = fopen($pathToFile, 'r+');
         $this->headers = fgetcsv($file, 0, ',');
         $count = 0;
-        while (($line = fgetcsv($file, 0, ',')) !== FALSE) {
+        while (($line = fgetcsv($file, 0, ',')) !== false) {
             $count++;
             var_dump($count);
             try {
@@ -124,8 +124,7 @@ class ParserReplayCsvService extends ParserMain implements ParserServiceInterfac
                 }
 
                 $contact = (new Contact())
-                    ->setMailingTool(self::MAILING_TOOL)
-                    ->setResponsible(self::RESPONSIBLE);
+                    ->setMailingTool(self::MAILING_TOOL);
 
                 foreach (self::CONTACT_FIELDS as $field) {
                     if (!isset($this->line[$field]) || $this->line[$field] === '') {
@@ -236,13 +235,13 @@ class ParserReplayCsvService extends ParserMain implements ParserServiceInterfac
                 $contact->setGender($value);
                 break;
             case self::CONFIDENCE:
-                $contact->setConfidence((int)$value);
+                $contact->setConfidence((int) $value);
                 break;
             case self::POSITION:
                 $contact->setPosition($value);
                 break;
             case self::ID:
-                $contact->setServiceId((int)$value);
+                $contact->setServiceId((string) $value);
                 break;
             case self::ADDED_ON:
                 $contact->setAddedToMailing(Carbon::parse($value));
@@ -251,19 +250,19 @@ class ParserReplayCsvService extends ParserMain implements ParserServiceInterfac
                 $contact->setLastTouch(Carbon::parse($value));
                 break;
             case self::OPENS:
-                $contact->setOpens((int)$value);
+                $contact->setOpens((int) $value);
                 break;
             case self::VIEWS:
-                $contact->setViews((int)$value);
+                $contact->setViews((int) $value);
                 break;
             case self::DELIVERIES:
-                $contact->setDeliveries((int)$value);
+                $contact->setDeliveries((int) $value);
                 break;
             case self::REPLIES:
-                $contact->setReplies((int)$value);
+                $contact->setReplies((int) $value);
                 break;
             case self::BOUNCES:
-                $contact->setBounces((int)$value);
+                $contact->setBounces((int) $value);
                 break;
         }
     }

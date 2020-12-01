@@ -49,7 +49,8 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     onChange,
     formik,
     clear,
-    resetClearInputState
+    resetClearInputState,
+    validationSchema
   }) => {
     const inputStyles = inputStyle();
     const styles = multiStyle();
@@ -66,6 +67,7 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     const openList = Boolean(anchorList);
     const listId = openList ? 'list-popover' : undefined;
     const [showError, setShowError] = useState<boolean>(true);
+    const [duplicatedMess, setDuplicatedMess] = useState<string>();
 
     useEffect(() => {
       if (clear) {
@@ -77,10 +79,10 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     const classControl = useMemo(
       () => ({
         root: `${inputStyles.input} ${showError &&
-          errorMessage &&
+          (errorMessage || duplicatedMess) &&
           inputStyles.inputError} ${required && inputStyles.inputRequire}`
       }),
-      [showError, errorMessage]
+      [showError, errorMessage, duplicatedMess]
     );
     const classLabel = useMemo(
       () => ({
@@ -97,22 +99,27 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
         setShowError(false);
         setTipOpen(true);
       },
-      [inputValue]
+      [items, setInputValue, setShowError, setTipOpen, formik]
     );
+
     const onKeyHandler = useCallback(
       (key: string, value: string) => {
         if (key === 'Enter' && !errorMessage && value) {
-          const newArray = [...items];
-
-          newArray.push(value);
-          onChange(name, newArray);
-          setInputValue('');
+          if (items.includes(value)) {
+            setDuplicatedMess('Already exist');
+            setShowError(true);
+          } else {
+            onChange(name, [...items, value]);
+            setInputValue('');
+            setShowError(false);
+            setDuplicatedMess('');
+          }
         }
-        if (key === 'Enter' && errorMessage) {
+        if ((key === 'Enter' && errorMessage) || duplicatedMess) {
           setShowError(true);
         }
       },
-      [items, errorMessage]
+      [items, errorMessage, duplicatedMess]
     );
     const clearField = useCallback(() => {
       onChange(name, []);
@@ -134,25 +141,29 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     const closeList = useCallback(() => {
       setAnchorList(null);
     }, [anchorList]);
+
     const handleChange = useCallback(
       (data: ICustomMultiValues, index: number) => {
         const newData = [...items];
         newData[index] = data.formMulti;
         onChange(name, newData);
       },
-      [items]
+      [items, onChange]
     );
+
     const closeForm = useCallback(() => {
       setAnchorForm(null);
       setFormData(null);
     }, [formData, anchorForm]);
+
     const editItem = useCallback(
       (index, target) => {
         setFormData({ formMulti: items[index], index });
         setAnchorForm({ el: target, index });
       },
-      [anchorForm, formData]
+      [items, formData, setFormData, setAnchorForm]
     );
+
     const removeItem = useCallback(
       (index: number) => {
         onChange(
@@ -162,6 +173,34 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
       },
       [items]
     );
+
+    const editData = useMemo(
+      () =>
+        anchorForm && (
+          <CustomMultiForm
+            anchorForm={anchorForm}
+            data={formData}
+            onChange={handleChange}
+            onClose={closeForm}
+            placeholder={placeholder}
+            validationSchema={validationSchema}
+          />
+        ),
+      [anchorForm, formData]
+    );
+
+    const addNewItem = useCallback(
+      ({
+        key,
+        target: { value }
+      }: React.KeyboardEvent & React.ChangeEvent<HTMLInputElement>) =>
+        onKeyHandler(key, value),
+      [onKeyHandler]
+    );
+
+    useEffect(() => {
+      !inputValue && setDuplicatedMess('');
+    }, [inputValue]);
 
     return (
       <div className={styles.wrap}>
@@ -175,17 +214,17 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
             inputProps={{ id }}
             value={inputValue}
             onChange={onChangeHandler}
-            onKeyPress={(
-              event: React.KeyboardEvent & React.ChangeEvent<HTMLInputElement>
-            ) => onKeyHandler(event.key, event.target.value)}
+            onKeyPress={addNewItem}
             onMouseEnter={openTip}
             onMouseLeave={closeTip}
             placeholder={placeholder}
             type='text'
-            error={Boolean((showError && errorMessage) || errorRequired)}
+            error={Boolean(
+              (showError && errorMessage) || duplicatedMess || errorRequired
+            )}
             endAdornment={
               <InputAdornment position='end'>
-                <div className={styles.multiCount}>{items.length}</div>
+                <div className={styles.multiCount}>{items?.length}</div>
                 <IconButton
                   aria-label=''
                   onClick={handleOpenList}
@@ -233,17 +272,11 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
               />
             </div>
           </Popover>
-          <CustomMultiForm
-            anchorForm={anchorForm}
-            data={formData}
-            onChange={handleChange}
-            onClose={closeForm}
-            placeholder={placeholder}
-          />
+          {editData}
         </FormControl>
-        {((showError && errorMessage) || errorRequired) && (
+        {((showError && errorMessage) || duplicatedMess || errorRequired) && (
           <Box className={inputStyles.error}>
-            {errorMessage || errorRequired}
+            {errorMessage || errorRequired || duplicatedMess}
           </Box>
         )}
       </div>

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models;
 
@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Lang;
  * @property string $file_path
  * @property string $status
  * @property string $type
+ * @property int|null $operation_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property int $user_id
@@ -35,6 +36,7 @@ class Process extends Model
         'name',
         'status',
         'type',
+        'operation_id',
         'file_path',
         'user_id',
         'created_at',
@@ -47,6 +49,7 @@ class Process extends Model
         'status' => 'string',
         'type' => 'string',
         'user_id' => 'integer',
+        'operation_id' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -59,5 +62,10 @@ class Process extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function informationImport(): BelongsTo
+    {
+        return $this->belongsTo(InformationImport::class, 'operation_id');
     }
 }

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Parsers\Import\Contact;
 
 use App\Exceptions\Import\ImportFileException;
+use App\Helpers\Url;
 use App\Models\Company\Company;
 use App\Models\Contact\Contact;
 use App\Models\User\User;
@@ -10,6 +13,7 @@ use App\RulesValidateModels\Contact\RulesContact;
 use App\Services\Location\LocationService;
 use App\Services\User\UserService;
 use App\Services\Validator\ValidatorService;
+use Carbon\Carbon;
 
 class ImportContact
 {
@@ -37,10 +41,127 @@ class ImportContact
         ]
     ];
 
+    private const COUNTRY_MAPPING = [
+        'United States' => [
+            'United States',
+            'US',
+            'USA',
+            'The USA',
+            'United States of America',
+            'U.S.'
+        ],
+        'United Kingdom' => [
+            'United Kingdom',
+            'UK',
+            'United Kingdom of Great Britain and Northern Ireland'
+        ],
+        'United Arab Emirates' => [
+            'United Arab Emirates',
+            'UAE'
+        ],
+        'Venezuela' => [
+            'Venezuela',
+            'Bolivarian Republic of Venezuela'
+        ],
+        'Russia' => [
+            'Russia',
+            'Russian Federation'
+        ],
+        'Finland' => [
+            'Finland',
+            'Suomi'
+        ],
+        'Czechia' => [
+            'Czechia',
+            'Czech Republic'
+        ],
+        'Austria' => [
+            'Austria',
+            'Republic of Austria'
+        ],
+        'Australia' => [
+            'Australia',
+            'Commonwealth of Australia'
+        ],
+        'Cyprus' => [
+            'Cyprus',
+            'Republic of Cyprus'
+        ],
+        'Cuba' => [
+            'Cuba',
+            'Republic of Cuba'
+        ],
+        'Croatia' => [
+            'Croatia',
+            'Republic of Croatia'
+        ],
+        'Colombia' => [
+            'Colombia',
+            'Republic of Colombia'
+        ],
+        'China' => [
+            'China',
+            "People's Republic of China"
+        ],
+        'Chile' => [
+            'Chile',
+            'Republic of Chile'
+        ],
+        'Chad' => [
+            'Chad',
+            'Republic of Chad'
+        ],
+        'Brunei' => [
+            'Brunei',
+            'Nation of Brunei'
+        ],
+        'Bolivia' => [
+            'Bolivia',
+            'Plurinational State of Bolivia'
+        ],
+        'Bahrain' => [
+            'Bahrain',
+            'Kingdom of Bahrain'
+        ],
+        'Bahamas' => [
+            'Bahamas',
+            'Commonwealth of the Bahamas'
+        ],
+        'Azerbaijan' => [
+            'Azerbaijan',
+            'Republic of Azerbaijan'
+        ],
+        'Armenia' => [
+            'Armenia',
+            'Republic of Armenia'
+        ],
+        'Argentina' => [
+            'Argentina',
+            'Argentine Republic'
+        ],
+        'Angola' => [
+            'Angola',
+            'Republic of Angola'
+        ],
+        'Andorra' => [
+            'Andorra',
+            'Principality of Andorra'
+        ],
+        'Algeria' => [
+            'Algeria',
+            "People's Democratic Republic of Algeria"
+        ],
+        'Albania' => [
+            'Albania',
+            'Republic of Albania'
+        ]
+    ];
+
     private UserService $userService;
     private LocationService $locationService;
     private ValidatorService $validatorService;
     private RulesContact $rulesContact;
+    private Url $urlHelper;
 
     private const ALWAYS_MERGE_FIELDS = [
         Contact::LAST_TOUCH_FIELD,
@@ -59,12 +180,14 @@ class ImportContact
         UserService $userService,
         LocationService $locationService,
         ValidatorService $validatorService,
-        RulesContact $rulesContact
+        RulesContact $rulesContact,
+        Url $urlHelper
     ) {
         $this->userService = $userService;
         $this->locationService = $locationService;
         $this->validatorService = $validatorService;
         $this->rulesContact = $rulesContact;
+        $this->urlHelper = $urlHelper;
     }
 
     public function merge(
@@ -86,14 +209,16 @@ class ImportContact
             $contact->origin = implode(';', $origin);
         }
 
-        if (!$contact->responsible) {
-            $contact->responsible = $this->userService->fetchUser($responsible)->getFullNameAttribute();
-        }
-
         if (!$contact->comment) {
             $contact->comment = $this->getComment($row['contact'], $comment);
         }
 
+        $contact->responsible_id = $responsible;
+
+        /**
+         * @var string $item
+         * @var string $key
+         */
         foreach ($row['contact'] as $key => $item) {
             if (in_array($key, self::ALWAYS_MERGE_FIELDS, true)) {
                 $contact->{$key} = $item;
@@ -103,10 +228,28 @@ class ImportContact
                 $contact = $this->addLocation($contact, $row['contact']);
                 continue;
             }
-            if ($key === 'gender' && !$contact->gender && !empty($item)) {
+            if ($key === Contact::GENDER_FIELD && !empty($contact->gender) && !empty($item)) {
                 $contact->gender = $this->setGender($item);
+                continue;
             }
+
+            if ($key === Contact::LINKEDIN_FIELD && !empty($contact->linkedin) && !empty($item)) {
+                $contact->linkedin = $this->urlHelper->getUrlWithSchema($item);
+                continue;
+            }
+
             if ($contact->{$key} === null && !empty($item)) {
+                $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
+                $time = strtotime($item);
+
+                /** @phpstan-ignore-next-line */
+                if ($date || is_int($time) && Carbon::parse((int) $time)) {
+                    $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int) $item)->format('d-m-Y H:i');
+                    $contact->{$key} = $date;
+
+                    continue;
+                }
+
                 $contact->{$key} = $item;
             }
         }
@@ -168,7 +311,7 @@ class ImportContact
         Contact $contact,
         array $row,
         User $user,
-        int $responsible,
+        int $responsibleId,
         ?Company $company,
         ?array $origin,
         ?string $comment
@@ -180,22 +323,34 @@ class ImportContact
         }
 
         foreach ($row['contact'] as $key => $item) {
-
             if (in_array($key, self::LOCATION_FIELDS, true)) {
                 $contact = $this->addLocation($contact, $row['contact']);
                 continue;
             }
 
-            if ($key === 'gender') {
+            if ($key === Contact::GENDER_FIELD) {
                 $contact->gender = $this->setGender($item);
                 continue;
             }
 
-            $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
+            if (in_array($key, self::CHECK_DATE_FIELDS) && strtotime($item)) {
+                $contact->{$key} = 1;
 
-            if ($date || strtotime($item)) {
-                $date = !empty($date) ? $date : \DateTime::createFromFormat('d-m-Y H:i', $item);
-                $contact->{$key} = $date->format('d-m-Y H:i');
+                continue;
+            }
+
+            if ($key === Contact::LINKEDIN_FIELD) {
+                $contact->linkedin = $this->urlHelper->getUrlWithSchema($item);
+                continue;
+            }
+
+            $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
+            $time = strtotime($item);
+
+            /** @phpstan-ignore-next-line */
+            if ($date || is_int($time) && Carbon::parse((int) $time)) {
+                $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int) $item)->format('d-m-Y H:i');
+                $contact->{$key} = $date;
 
                 continue;
             }
@@ -204,7 +359,7 @@ class ImportContact
         }
 
         $contact->origin = implode(';', $origin);
-        $contact->responsible = $this->userService->fetchUser($responsible)->getFullNameAttribute();
+        $contact->responsible_id = $responsibleId;
         $contact->comment = $this->getComment($row['contact'], $comment);
 
         return $contact;
@@ -225,13 +380,13 @@ class ImportContact
     {
         $location = null;
         foreach (self::LOCATION_FIELDS as $field) {
-            if (!empty($row[$field])) {
-                $location = $row[$field];
-                break;
+            if (empty($row[$field])) {
+                continue;
             }
-        }
-        if ($location) {
-            $loc = $this->locationService->findLocations($location);
+
+            $row[$field] = $this->mapCountries($row[$field]);
+            $loc = $this->locationService->findLocations($row[$field]);
+
             if ($loc) {
                 $country = $loc->getCountry();
                 if ($country) {
@@ -248,7 +403,7 @@ class ImportContact
             }
         }
 
-        if(empty($contact->country)){
+        if (empty($contact->country)) {
             throw new ImportFileException(['The location is invalid']);
         }
 
@@ -281,5 +436,18 @@ class ImportContact
         }
 
         return implode('. ', $data);
+    }
+
+    private function mapCountries(string $country): string
+    {
+        foreach (self::COUNTRY_MAPPING as $originCountry => $countryVariation) {
+            if (in_array($country, $countryVariation)) {
+
+                return $originCountry;
+            }
+
+        }
+
+        return $country;
     }
 }

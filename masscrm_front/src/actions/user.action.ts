@@ -1,6 +1,5 @@
 import { createAction } from 'redux-actions';
 import { Dispatch } from 'redux';
-import fetchUser from 'src/services/fetchUser';
 import ldapUser from 'src/services/ldapUser';
 import sendAddUser from 'src/services/sendAddUser';
 import patchEditUser from 'src/services/patchEditUser';
@@ -8,9 +7,10 @@ import getRolesReq from 'src/services/getRolesReq';
 import { setToken } from 'src/services/setTokenToCookies';
 import qs from 'qs';
 import HTTP from '../utils/http';
-import { IFilter } from '../interfaces';
+import { IFilter, IUser } from '../interfaces';
 import { IAddUserFormInputs } from '../components/UsersCRM/AddUserForm';
 import { setLoaderAction } from './loader.action';
+import { SnackErrorBarData } from '../utils/errors';
 
 export const setUserDataAction = createAction('SET_USER_DATA');
 export const setError = createAction('SET_ERROR');
@@ -19,25 +19,40 @@ export const getUsersRolesAction = createAction('GET_USERS_ROLES');
 export const getLdapUserAction = createAction('GET_LDAP_USER');
 export const onClearFilter = createAction('CLEAR_FILTER_USERS');
 export const getRolesAction = createAction('GET_ROLES');
+export const getSearchUsers = createAction('GET_SEARCH_USERS');
 
 export const getUserData = (payload: {
   login: string;
   password: string;
   handle: Function;
+  errorsEventEmitter: any;
 }) => async (dispatch: Dispatch) => {
   try {
     const {
-      data: { access_token }
+      data: [tokenData]
     } = await HTTP.post('auth/login', {
       login: payload.login,
       password: payload.password
     });
-    setToken(String(access_token));
-    const userData = await fetchUser();
+    setToken(String(tokenData.access_token));
+    const {
+      data: [userData]
+    } = await HTTP.get('auth/user');
     dispatch(setUserDataAction({ userData }));
-  } catch (e) {
+  } catch (errors) {
+    const error: string[] = Object.values(errors);
     payload.handle();
-    dispatch(setError({ errorText: 'Incorrect login or password.' }));
+    payload.errorsEventEmitter.emit('snackBarErrors', {
+      errorsArray: SnackErrorBarData([...new Set(error.flat())])
+    });
+  }
+};
+
+export const logout = async () => {
+  try {
+    return await HTTP.get('/auth/logout');
+  } catch (error) {
+    return Promise.reject();
   }
 };
 
@@ -56,6 +71,19 @@ export const getUsers = (filter: IFilter) => async (dispatch: Dispatch) => {
   const name: number = filter.page || 1;
   dispatch(getUsersAction({ users: { [name]: data }, total: meta.total }));
   dispatch(setLoaderAction({ isLoading: false }));
+};
+
+export const searchUsers = (filter: IFilter) => async (dispatch: Dispatch) => {
+  const { data } = await HTTP.get(`users`, {
+    params: filter,
+    paramsSerializer(params) {
+      return qs.stringify(params, { arrayFormat: 'indices' });
+    }
+  });
+  const fullName = data?.map(
+    ({ name, surname }: IUser) => `${name} ${surname}`
+  );
+  dispatch(getSearchUsers({ searchUsers: data, fullName }));
 };
 
 export const getAutocompleteData = async (filter: IFilter) => {
@@ -137,4 +165,14 @@ export const getRolesDispatch = () => async (dispatch: Dispatch) => {
   } catch (e) {
     dispatch(setError({ errorText: e.response.data.errors }));
   }
+};
+
+export const getUsersById = async (ids: number[]) => {
+  const { data } = await HTTP.get('users/getUsersByIds', {
+    params: { ids },
+    paramsSerializer(params) {
+      return qs.stringify(params, { arrayFormat: 'indices' });
+    }
+  });
+  return data;
 };

@@ -1,3 +1,5 @@
+export type TOpen = 'edit' | 'copy' | boolean;
+
 export interface ITableHeaderItem {
   code?: string;
   name: string;
@@ -17,6 +19,7 @@ export interface ITableColumnConfig {
   hasSelectAll?: boolean;
   hasDelete?: boolean;
   hasEdit?: boolean;
+  hasCopy?: boolean;
   hasInfo?: boolean;
   hasControl?: boolean;
   selectedAll?: boolean;
@@ -25,7 +28,7 @@ export interface ITableColumnConfig {
   moreInfoRow?: (id: number) => Element;
   onSelectRow?: (id: number) => void;
   onFilteredBy?: (name: string) => void;
-  onEdit?: (id: number) => void;
+  onEdit?: (id: number, type?: TOpen) => void;
 }
 
 export interface ITableBodyConfig {

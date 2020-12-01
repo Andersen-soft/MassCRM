@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Reports;
 
@@ -18,6 +18,10 @@ use Illuminate\Support\Facades\Lang;
 
 abstract class AbstractReport implements SearchType
 {
+    private const WHEN_COLLEAGUE_DOES_NOT_EXIST = 'No data about colleague';
+    protected const HEADERS = 'headers';
+    protected const PATH_METHODS = 'pathMethods';
+
     protected function getContactSequences(Contact $contact): array
     {
         $listSequences = [];
@@ -88,8 +92,8 @@ abstract class AbstractReport implements SearchType
 
         /** @var ContactEmails $email */
         foreach ($contact->email_collection as $email) {
-                $emails[] = $email['email'];
-                $requiresValidationEmails[] = $email['verification'] ?
+            $emails[] = $email['email'];
+            $requiresValidationEmails[] = $email['verification'] ?
                     Lang::get('report.yes') :
                     Lang::get('report.no');
         }
@@ -104,6 +108,14 @@ abstract class AbstractReport implements SearchType
     {
         return [
             'in_blacklist' => $contact->in_blacklist ? Lang::get('report.yes') : Lang::get('report.no')
+        ];
+    }
+
+    protected function getColleagueFirst(Contact $contact): array
+    {
+        return [
+            'colleague_first' =>
+                ($contact->colleague_first ? $contact->colleague_first : $contact->colleague_second) ?? self::WHEN_COLLEAGUE_DOES_NOT_EXIST
         ];
     }
 
@@ -245,28 +257,51 @@ abstract class AbstractReport implements SearchType
 
     public function getListHeaders(array $listHeaders): array
     {
-        $listNameHeaders = [];
-        $pathMethod = [];
         if (empty($listHeaders)) {
-            foreach (SearchType::LIST_FIELDS as $key => $item) {
-                $listNameHeaders[] = $item['name'];
-                $pathMethod[$key] = $item['path'];
-            }
-        } else {
-            foreach ($listHeaders as $name) {
-                if (array_key_exists($name, SearchType::LIST_FIELDS)) {
-                    $listNameHeaders[] = SearchType::LIST_FIELDS[$name]['name'];
-                    $pathMethod[$name] = SearchType::LIST_FIELDS[$name]['path'];
-                }
+            return $this->getAllListHeaders();
+        }
+
+        return $this->getCertainListHeaders($listHeaders);
+    }
+
+    private function getAllListHeaders(): array
+    {
+        $lists = [];
+
+        foreach (SearchType::LIST_FIELDS as $key => $item) {
+            if (!empty($item['name'])) {
+                $lists[self::HEADERS][] = $item['name'];
+                $lists[self::PATH_METHODS][$key] = $item['path'];
             }
         }
 
-        return [
-            'headers' => $listNameHeaders,
-            'pathMethods' => $pathMethod,
-        ];
+        return $lists;
     }
 
+    private function getCertainListHeaders(array $listHeaders): array
+    {
+        $lists = [];
+
+        foreach ($listHeaders as $name) {
+            if (array_key_exists($name, SearchType::LIST_FIELDS) &&
+                !empty(SearchType::LIST_FIELDS[$name]['name'])
+            ) {
+                $lists[self::HEADERS][] = SearchType::LIST_FIELDS[$name]['name'];
+                $lists[self::PATH_METHODS][$name] = SearchType::LIST_FIELDS[$name]['path'];
+            }
+        }
+
+        $lists[self::HEADERS][] = SearchType::LIST_FIELDS['colleague_first']['name'];
+        $lists[self::PATH_METHODS]['colleague_first'] = SearchType::LIST_FIELDS['colleague_first']['path'];
+
+        return $lists;
+    }
+
+    /**
+     * @param Contact $contact
+     * @param array $paths
+     * @return mixed
+     */
     private function fetchContactElement(Contact $contact, array $paths)
     {
         $method = $paths[1];
@@ -277,6 +312,11 @@ abstract class AbstractReport implements SearchType
         return null;
     }
 
+    /**
+     * @param Contact $contact
+     * @param array $paths
+     * @return mixed
+     */
     private function fetchCompanyElement(Contact $contact, array $paths)
     {
         $method = $paths[1];

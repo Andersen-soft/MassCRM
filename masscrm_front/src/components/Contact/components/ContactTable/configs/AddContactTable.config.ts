@@ -87,7 +87,7 @@ export const TableConfigCallBack = (
   const emailInfo = [
     {
       code: 'emails',
-      name: 'E-mail',
+      name: 'Email',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
@@ -118,7 +118,7 @@ export const TableConfigCallBack = (
     },
     {
       code: 'company_linkedin',
-      name: 'Company LinkedIn',
+      name: 'Company Li',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
@@ -203,7 +203,7 @@ export const TableConfigCallBack = (
 
   const positionInfo = {
     code: 'position',
-    name: 'Position',
+    name: 'Title',
     hasFilter: true,
     isFiltered: false,
     hasMultiSelectFilter: true
@@ -243,7 +243,7 @@ export const TableConfigCallBack = (
   };
 
   const responsibleInfo = {
-    code: 'responsible',
+    code: 'responsible_id',
     name: 'Responsible',
     hasFilter: true,
     isFiltered: true,
@@ -253,17 +253,18 @@ export const TableConfigCallBack = (
   const inWorkInfo = [
     {
       code: 'is_in_work',
-      name: 'Work in',
-      hasFilter: false,
-      isFiltered: false,
+      name: 'In work',
+      hasFilter: true,
+      isFiltered: true,
       hasCheckboxFilter: true
     },
     {
       code: 'date_of_use',
       name: 'Date of use',
-      hasFilter: false,
+      hasFilter: true,
       isFiltered: true,
-      hasDataRangeFilter: true
+      hasDataRangeFilter: true,
+      hasSorting: true
     }
   ];
 
@@ -298,7 +299,8 @@ export const TableConfigCallBack = (
       hasSelectAll: true,
       hasDelete: true,
       hasEdit: true,
-      hasInfo: false
+      hasInfo: false,
+      hasCopy: true
     },
     body: {}
   };
@@ -439,7 +441,7 @@ export const TableConfigCallBack = (
             name: 'Bounces',
             hasFilter: true,
             isFiltered: false,
-            hasInputFilter: true
+            hasCheckboxFilter: true
           },
           {
             code: 'mails',

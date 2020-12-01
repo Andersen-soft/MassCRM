@@ -166,7 +166,7 @@ export const multiStyle = makeStyles(() =>
       display: 'flex',
       flexDirection: 'column',
       padding: '20px 15px 20px',
-      width: '200px'
+      minWidth: '200px'
     },
     modal: {
       '& .MuiPaper-elevation8': {

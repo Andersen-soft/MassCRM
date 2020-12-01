@@ -12,6 +12,8 @@ import { Search } from '@material-ui/icons';
 import { inputStyle } from 'src/styles/CommonInput.style';
 import { ISearchInputProps, ISearchItem } from './interfaces';
 import { searchStyle } from './SearchInput.style';
+import { CommonButton } from '../CommonButton';
+import { AddDialog } from './components';
 
 export const SearchInput: FC<ISearchInputProps> = ({
   width,
@@ -28,7 +30,9 @@ export const SearchInput: FC<ISearchInputProps> = ({
   freeSolo = true,
   onBlur,
   onFocus,
-  multi
+  multi,
+  inputValue,
+  autoFocus
 }) => {
   const style = inputStyle();
   const classes = searchStyle();
@@ -38,8 +42,17 @@ export const SearchInput: FC<ISearchInputProps> = ({
         classes.search
       } ${required && classes.required} ${className}`
     }),
-    [className, classes.required, classes.search, required, style.input]
+    [
+      className,
+      classes.required,
+      classes.search,
+      classes.paper,
+      required,
+      style.input
+    ]
   );
+
+  const isIndustry: boolean = name === 'industry';
 
   const [valueState, setValueState] = useState<
     string | ISearchItem | (string | ISearchItem)[] | null
@@ -49,10 +62,18 @@ export const SearchInput: FC<ISearchInputProps> = ({
     string | ISearchItem | (string | ISearchItem)[] | null
   >(value || '');
 
+  const [showButton, setShowButton] = useState<boolean>(false);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+
+  const handleSetOpen = () => setShowButton(prev => !prev);
+
   useEffect(() => {
     if (!value) {
       setValueState('');
       setInputValueState('');
+    }
+    if (value && !multi) {
+      setInputValueState(value);
     }
     if (multi && Array.isArray(value) && !value.length) {
       setValueState([]);
@@ -96,18 +117,28 @@ export const SearchInput: FC<ISearchInputProps> = ({
     []
   );
 
+  const handleSetOpenDialog = () => setOpenDialog(prev => !prev);
+
+  const handleCreateNewIndustry = useCallback(
+    (industryValue: string[]) => {
+      onChange(industryValue);
+    },
+    [valueState, value]
+  );
+
   return (
     <>
       <FormControl style={{ width }} variant='outlined' classes={rootClasses}>
         <Autocomplete
           id={name}
+          classes={{ paper: isIndustry ? classes.paper : '' }}
           options={items}
           multiple={multi}
           limitTags={1}
           size='small'
           freeSolo={freeSolo}
           value={Array.isArray(value) && value.length ? value : valueState}
-          inputValue={inputValueState as string}
+          inputValue={inputValue || (inputValueState as string)}
           onInputChange={handleChange}
           onChange={handleSelect}
           getOptionSelected={handleGetOptionSelected}
@@ -115,6 +146,8 @@ export const SearchInput: FC<ISearchInputProps> = ({
           disabled={disabled}
           onBlur={onBlur}
           onFocus={onFocus}
+          onClose={handleSetOpen}
+          onOpen={handleSetOpen}
           blurOnSelect={!multi}
           openOnFocus={!multi}
           disableCloseOnSelect={multi}
@@ -128,7 +161,17 @@ export const SearchInput: FC<ISearchInputProps> = ({
                 variant='outlined'
                 error={!!errorMessage}
                 onChange={handleChangeInput}
+                autoFocus={Boolean(autoFocus && autoFocus === name)}
               />
+              {isIndustry && showButton && (
+                <div className={classes.addButtonBlock}>
+                  <CommonButton
+                    text='Add new industry'
+                    color='yellow'
+                    onClickHandler={handleSetOpenDialog}
+                  />
+                </div>
+              )}
               <Search
                 className={`${classes.searchIcon} search-icon ${disabled &&
                   classes.disabledIcon}`}
@@ -136,6 +179,18 @@ export const SearchInput: FC<ISearchInputProps> = ({
             </div>
           )}
         />
+        {isIndustry && (
+          <AddDialog
+            name={name}
+            openDialog={openDialog}
+            handleSetOpenDialog={handleSetOpenDialog}
+            placeholder={placeholder}
+            className={rootClasses}
+            handleSubmitAction={handleCreateNewIndustry}
+            industries={items as string[]}
+            existValue={(value as (string | ISearchItem)[] | undefined) || []}
+          />
+        )}
       </FormControl>
       {errorMessage && <Box className={style.error}>{errorMessage}</Box>}
     </>

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Contact;
 
 use App\Repositories\Company\CompanyRepository;
 use App\Repositories\Contact\ContactRepository;
 use App\Services\ActivityLog\ActivityLogContactService;
+use App\Services\TransferCollection\TransferCollectionContactService;
 
 class BaseContactService
 {
@@ -15,6 +18,7 @@ class BaseContactService
     public ContactNotesService $contactNotesService;
     public ContactPhoneService $contactPhoneService;
     public ContactSocialNetworkService $contactSocialNetworkService;
+    public TransferCollectionContactService $transferCollectionContactService;
 
     public function __construct(
         ContactRepository $contactRepository,
@@ -23,7 +27,8 @@ class BaseContactService
         ContactEmailService $contactEmailService,
         ContactPhoneService $contactPhoneService,
         ContactNotesService $contactNotesService,
-        ContactSocialNetworkService $contactSocialNetworkService
+        ContactSocialNetworkService $contactSocialNetworkService,
+        TransferCollectionContactService $transferCollectionContactService
     ) {
         $this->contactRepository = $contactRepository;
         $this->activityLogContactService = $activityLogContactService;
@@ -32,5 +37,6 @@ class BaseContactService
         $this->contactPhoneService = $contactPhoneService;
         $this->contactNotesService = $contactNotesService;
         $this->contactSocialNetworkService = $contactSocialNetworkService;
+        $this->transferCollectionContactService = $transferCollectionContactService;
     }
 }

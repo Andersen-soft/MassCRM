@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Commands\User;
 
@@ -79,5 +79,20 @@ abstract class MainUserCommand
     public function getSkype(): string
     {
         return $this->skype;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'email' => $this->email,
+            'login' => $this->login,
+            'name' =>  $this->name,
+            'surname' => $this->surname,
+            'roles' => $this->roles,
+            'active' => $this->active,
+            'position' => $this->position,
+            'comment' => $this->comment,
+            'skype' => $this->skype
+        ];
     }
 }

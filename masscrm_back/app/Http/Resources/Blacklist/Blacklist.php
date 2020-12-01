@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources\Blacklist;
 
 use App\Http\Resources\User\User as UserResource;
@@ -12,17 +14,18 @@ class Blacklist extends JsonResource
 
     /**
      * @OA\Schema(
-     *    schema="Blacklist",
-     *    required={
-     *       "id", "created_at", "updated_at", "domain", "source", "user"
-     *    },
-     *    @OA\Property(property="id", type="integer", example=123),
-     *    @OA\Property(property="created_at", type="string", format="d.m.Y H:i", example="18.06.2020 13:15"),
-     *    @OA\Property(property="updated_at", type="string", format="d.m.Y H:i", example="18.08.2020 13:15"),
-     *    @OA\Property(property="domain", type="string", example="peter@pftech.co"),
-     *    @OA\Property(property="source", type="string", example="Reply"),
-     *    @OA\Property(property="user", type="object", ref="#/components/schemas/User"),
+     *     schema="Blacklist",
+     *     required={"id", "created_at", "updated_at", "domain", "source", "user"},
+     *     @OA\Property(property="id", type="integer", example=123),
+     *     @OA\Property(property="created_at", type="string", format="d.m.Y H:i", example="18.06.2020 13:15"),
+     *     @OA\Property(property="updated_at", type="string", format="d.m.Y H:i", example="18.08.2020 13:15"),
+     *     @OA\Property(property="domain", type="string", example="peter@pftech.co"),
+     *     @OA\Property(property="source", type="string", example="Reply"),
+     *     @OA\Property(property="user", type="object", ref="#/components/schemas/User"),
      * )
+     *
+     * @param Request $request
+     * @return array
      */
     public function toArray($request): array
     {

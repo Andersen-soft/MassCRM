@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use App\Models\Company\Company;
@@ -10,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Class BaseModel
  * @package App
+ * @property int $id
  */
 class BaseModel extends Model
 {
@@ -28,6 +31,7 @@ class BaseModel extends Model
 
     public const ID_FIELD = 'id';
     public const CREATED_AT_FIELD = 'created_at';
+    public const DATE_OF_USE_FIELD = 'date_of_use';
     public const UPDATED_AT_FIELD = 'updated_at';
     public const USER_ID_FIELD = 'user_id';
 

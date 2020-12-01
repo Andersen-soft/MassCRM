@@ -1,28 +1,15 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Providers\AttachmentFile;
 
-use App\Commands\AttachmentFile\Contact\{
-    CheckExistAttachmentFileContactCommand,
-    SaveAttachedFileContactCommand,
-    DeleteAttachmentFileContactCommand,
-    GetAttachedFileListContactCommand
-};
-
-use App\Commands\AttachmentFile\Contact\Handlers\{
-    CheckExistAttachmentFileContactHandler,
-    SaveAttachedFileContactHandler,
-    DeleteAttachmentFileContactHandler,
-    GetAttachedFileListContactHandler
-};
-
+use App\Commands\AttachmentFile\Contact\CheckExistAttachmentFileContactCommand;
+use App\Commands\AttachmentFile\Contact\Handlers\CheckExistAttachmentFileContactHandler;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\ServiceProvider;
 
-
 class AttachmentFileContactServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         $this->registerCommandHandlers();
     }
@@ -31,13 +18,10 @@ class AttachmentFileContactServiceProvider extends ServiceProvider
     {
     }
 
-    private function registerCommandHandlers()
+    private function registerCommandHandlers(): void
     {
         Bus::map([
             CheckExistAttachmentFileContactCommand::class => CheckExistAttachmentFileContactHandler::class,
-            SaveAttachedFileContactCommand::class => SaveAttachedFileContactHandler::class,
-            DeleteAttachmentFileContactCommand::class => DeleteAttachmentFileContactHandler::class,
-            GetAttachedFileListContactCommand::class => GetAttachedFileListContactHandler::class
         ]);
     }
 }

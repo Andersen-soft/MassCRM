@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models\Company\Fields;
 
@@ -59,6 +59,7 @@ class CompanyFields extends BaseModel implements FieldsInterface
     public const COMPANY_FIELD = 'company';
     public const WEBSITE_FIELD = 'website';
     public const NAME_FIELD = 'name';
+    public const POSITION = 'position';
     public const LINKEDIN_FIELD = 'linkedin';
     public const STO_FULL_NAME_FIELD = 'sto_full_name';
     public const TYPE_FIELD = 'type';

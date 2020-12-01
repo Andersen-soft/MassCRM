@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Parsers\Import\Company;
 
 use App\Models\Company\Company;
@@ -7,16 +9,19 @@ use App\Models\User\User;
 use App\Services\Validator\ValidatorService;
 use App\Exceptions\Import\ImportFileException;
 use App\RulesValidateModels\Company\RulesCompany;
+use App\Helpers\Url;
 
 class ImportCompany
 {
     private ValidatorService $validatorService;
     private RulesCompany $rulesCompany;
+    private Url $urlHelper;
 
-    public function __construct(ValidatorService $validatorService, RulesCompany $rulesCompany)
+    public function __construct(ValidatorService $validatorService, RulesCompany $rulesCompany, Url $urlHelper)
     {
         $this->validatorService = $validatorService;
         $this->rulesCompany = $rulesCompany;
+        $this->urlHelper = $urlHelper;
     }
 
     public function merge(Company $company, array $row, User $user): Company
@@ -38,6 +43,10 @@ class ImportCompany
             }
 
             if ($company->{$key} === null && !empty($item)) {
+                if ($key === Company::WEBSITE_FIELD || $key === Company::LINKEDIN_FIELD) {
+                    $item = $this->urlHelper->getUrlWithSchema($item);
+                }
+
                 $company->{$key} = $item;
             }
         }
@@ -97,6 +106,10 @@ class ImportCompany
                 $company->max_employees = $companySize['max'];
 
                 continue;
+            }
+
+            if ($key === Company::WEBSITE_FIELD || $key === Company::LINKEDIN_FIELD) {
+                $item = $this->urlHelper->getUrlWithSchema($item);
             }
 
             $company->{$key} = $item;

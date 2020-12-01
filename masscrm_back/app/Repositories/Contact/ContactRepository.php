@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Contact;
 
 use App\Models\BaseModel;
@@ -7,11 +9,10 @@ use App\Models\Blacklist;
 use App\Models\Company\Company;
 use App\Models\Contact\Contact;
 use App\Models\User\User;
-use App\Services\Parsers\Import\Contact\ImportEmail;
 use App\Services\Reports\SearchType;
 use Carbon\Carbon;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
@@ -22,6 +23,8 @@ class ContactRepository
     private const LAST_MONTH_AND_DAY_YEAR = 1231;
     private const START_MONTH_AND_DAY_YEAR = 101;
     private const FORMAT_MASK_STRING_TO_INT = '9999';
+    private const EXCLUDE_NO_EMAIL_CONDITION = 'exclude';
+    private const ONLY_NO_EMAIL_CONDITION = 'only';
 
     public function isJoined(Builder $query, string $table): bool
     {
@@ -51,18 +54,34 @@ class ContactRepository
         return $query;
     }
 
-    public function getContactList(array $search, array $sort, int $limit = 10, User $user = null): LengthAwarePaginator
+    public function getContactList(array $search, User $user, array $exceptIds = [], array $sort = []): Builder
     {
         $query = Contact::query()->select(['contacts.*']);
-        $query = $this->getRelationTablesQuery($search, $query);
-        if ($user) {
-            $query->where('contacts.user_id', $user->getId());
+
+        if (isset($search['contact']['global'])) {
+            $data = Contact::search(json_encode($search['contact']['global']))->select([Contact::ID_FIELD])->take(1000)->keys();
+            $query->whereIn(Contact::ID_FIELD, $data);
         }
+
+        $query = $this->getRelationTablesQuery($search, $query);
+
+        if (!$user->hasRole(User::USER_ROLE_MANAGER) && (
+                isset($search['contact']['skip_responsibility'])
+                && false === (bool) $search['contact']['skip_responsibility']
+            )
+        ) {
+            $query->where('contacts.responsible_id', $user->getId());
+        }
+
+        if (!empty($exceptIds)) {
+            $query = $query->whereNotIn('id', $exceptIds);
+        }
+
         $query = $this->setParamsSearch($search, $query);
+
         $query = $this->setParamSort($sort, $query);
 
-        //TODO "companies.id" was deleted from groupBy
-        return $query->groupBy('contacts.id')->paginate($limit);
+        return $query->groupBy('contacts.id');
     }
 
     private function setParamsSearch(array $search, Builder $query): Builder
@@ -93,7 +112,8 @@ class ContactRepository
                         $query->whereBetween($filterConfig[BaseModel::FIELD], [$value['min'], $value['max']]);
                         break;
                     case SearchType::TYPE_SEARCH_FIELD_DATA_RANGE:
-                        $query->whereBetween($filterConfig[BaseModel::FIELD],
+                        $query->whereBetween(
+                            $filterConfig[BaseModel::FIELD],
                             [Carbon::parse($value['min'])->startOfDay(), Carbon::parse($value['max'])->endOfDay()]
                         );
                         break;
@@ -116,24 +136,30 @@ class ContactRepository
                         }
                         break;
                     case SearchType::TYPE_SEARCH_FIELD_BOUNCES:
-                        if ($value) {
-                            $query->where($filterConfig[BaseModel::FIELD], '>', 0);
-                        } else {
-                            $query->where(static function (Builder $query) use ($filterConfig) {
-                                return $query->where($filterConfig[BaseModel::FIELD], '=', 0)
-                                    ->orWhereNull($filterConfig[BaseModel::FIELD]);
-                            });
-                        }
+                        $query->where(static function (Builder $query) use ($value, $filterConfig) {
+                            foreach ($value as $item) {
+                                $query->orWhere($filterConfig[BaseModel::FIELD],'=', $item);
+                            }
+                        });
                         break;
                     case SearchType::TYPE_SEARCH_FIELD_FIO_TEXT_LIKE:
                         $query->where(DB::raw($filterConfig[BaseModel::FIELD]), 'ILIKE', '%' . $value . '%');
                         break;
                     case SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT:
-                        $query->where(static function (Builder $query) use ($value, $filterConfig) {
-                            foreach ($value as $item) {
-                                $query->orWhere($filterConfig[BaseModel::FIELD], '=', $item);
-                            }
-                        });
+                        if ($value === self::EXCLUDE_NO_EMAIL_CONDITION) {
+                            $query->where($filterConfig[BaseModel::FIELD], '!=', Contact::EXCEPT_EMAIL_TEMPLATE);
+                        } elseif ($value === self::ONLY_NO_EMAIL_CONDITION) {
+                            $query->where($filterConfig[BaseModel::FIELD], '=', Contact::EXCEPT_EMAIL_TEMPLATE);
+                        } else {
+                            $query->where(
+                                static function (Builder $query) use ($value, $filterConfig) {
+                                    foreach ($value as $item) {
+                                        $query->orWhere($filterConfig[BaseModel::FIELD], '=', $item);
+                                    }
+                                }
+                            );
+                        }
+
                         break;
                     case SearchType::TYPE_SEARCH_SUBSIDIARY_COMPANIES:
                         $query->where('companies_clone.type', '=', Company::TYPE_COMPANY_SUBSIDIARY)
@@ -148,7 +174,8 @@ class ContactRepository
                             ->where('linkedin', 'ILIKE', '%' . $value . '%')->get()->toArray();
                         $query->where(static function (Builder $query) use ($value, $filterConfig, $contactsId) {
                             $query->orWhere($filterConfig[BaseModel::FIELD], 'ILIKE', '%' . $value . '%');
-                            $query->orWhereIn('contact_colleagues.contact_id_relation',
+                            $query->orWhereIn(
+                                'contact_colleagues.contact_id_relation',
                                 array_map(static function ($contactsId) {
                                     return $contactsId['id'];
                                 }, $contactsId)
@@ -158,6 +185,7 @@ class ContactRepository
                 }
             }
         }
+
         return $query;
     }
 
@@ -198,35 +226,42 @@ class ContactRepository
     private function setParamSort(array $sort, Builder $query): Builder
     {
         if (empty($sort)) {
-            return $query->orderBy('contacts.id' , 'desc');
+            return $query->orderBy('contacts.id', 'desc');
         }
 
         if ($sort['field_name'] === Contact::CREATED_AT_FIELD) {
-            return $query->orderBy('contacts.id' , $sort['type_sort']);
+            return $query->orderBy('contacts.id', $sort['type_sort']);
         }
 
         return $query->orderBy($sort['field_name'], $sort['type_sort']);
     }
 
-    private function revertValue($value): int
+    private function revertValue(string $value): int
     {
-        return (int)mb_eregi_replace('[^0-9]', '', $value);
+        return (int) mb_eregi_replace('[^0-9]', '', $value);
     }
 
     public function getCounterDailyPlanUser(int $userId): int
     {
-        return Contact::query()->where([['user_id', $userId], ['created_at', '>', Carbon::now()->startOfDay()]])
-            ->count('id');
+        return Contact::query()
+            ->where('responsible_id', '=', $userId)
+            ->where('created_at', '>', Carbon::now()->startOfDay())
+            ->count();
     }
 
     public function checkUniqueContact(array $emails, ?string $linkedIn): ?Contact
     {
-        $query = Contact::query()->with(['contactEmails']);
+        if (!$linkedIn && in_array(Contact::EXCEPT_EMAIL_TEMPLATE, $emails, true)) {
+            return null;
+        }
+
+        $query = Contact::query()->select(['contacts.*']);
 
         if (!in_array(Contact::EXCEPT_EMAIL_TEMPLATE, $emails, true) && !empty($emails)) {
-            $query->whereHas('contactEmails', static function (Builder $query) use ($emails) {
-                $query->whereIn('email', $emails);
-            });
+            $query->leftJoin('contact_emails', 'contact_emails.contact_id', '=', 'contacts.id');
+            foreach ($emails as $email) {
+                $query->orWhere('contact_emails.email', 'ILIKE', $email);
+            }
         }
 
         if ($linkedIn) {
@@ -251,12 +286,10 @@ class ContactRepository
 
     public function getListContactExistEmail(string $email, bool $flag): LazyCollection
     {
-        preg_match(Blacklist::REGEX_EMAIL, $email, $emailMatch);
-
         $query = Contact::query()->select(['contacts.*'])
             ->join('contact_emails', 'contact_emails.contact_id', '=', 'contacts.id');
 
-        if ($emailMatch) {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $query->where('contact_emails.email', 'ILIKE', $email);
         } else {
             $query->where('contact_emails.email', 'ILIKE', '%@' . $email);
@@ -273,5 +306,24 @@ class ContactRepository
     public function getContactById(int $id): ?Contact
     {
         return Contact::query()->find($id);
+    }
+
+    public function changeResponsibleById(array $ids, int $responsibleId): void
+    {
+        $contact = Contact::query()->whereIn('id', $ids);
+
+        $this->changeResponsibleByBuilder($contact, $responsibleId);
+    }
+
+    public function changeResponsibleByBuilder(Builder $contact, int $responsibleId): void
+    {
+        $contact->update([
+             'responsible_id' => $responsibleId
+        ]);
+    }
+
+    public function deleteContact(Builder $contact): void
+    {
+        $contact->delete();
     }
 }

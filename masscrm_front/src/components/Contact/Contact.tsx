@@ -3,6 +3,7 @@ import { styleNames } from 'src/services';
 import { Header } from 'src/components/common';
 import { useDispatch, useSelector } from 'react-redux';
 import { getContactsLength, getShowContact, getUserRoles } from 'src/selectors';
+import { getCountryList, getFiltersData, getIndustriesList } from 'src/actions';
 import {
   DailyPlan,
   ContactTable,
@@ -12,19 +13,13 @@ import {
   ContactForm
 } from './components';
 import style from './Contact.scss';
-import {
-  getCompanyList,
-  getCountryList,
-  getFiltersData,
-  getIndustriesList
-} from '../../actions';
 
 const sn = styleNames(style);
 
 export const Contact: FC<{
   addContactsPage?: boolean;
   myContactPage?: boolean;
-}> = ({ addContactsPage }) => {
+}> = ({ addContactsPage, myContactPage }) => {
   const dispatch = useDispatch();
   const userRole = useSelector(getUserRoles);
   const dataLength = useSelector(getContactsLength);
@@ -41,20 +36,23 @@ export const Contact: FC<{
       addContactsPage ? (
         <AddContactSearch />
       ) : (
-        <TablePanel title={title} total={dataLength} show={showContact} />
+        <TablePanel
+          title={title}
+          total={dataLength}
+          show={showContact}
+          Search={TableSearch}
+        />
       ),
     [addContactsPage, title, dataLength, showContact]
   );
 
   const tools = useMemo(
     () =>
-      addContactsPage ? (
+      addContactsPage && (
         <>
           <DailyPlan />
           <ContactForm />
         </>
-      ) : (
-        <TableSearch isFullTable={isFullTable} />
       ),
     [addContactsPage, isFullTable]
   );
@@ -63,7 +61,6 @@ export const Contact: FC<{
     dispatch(getIndustriesList());
     dispatch(getCountryList());
     dispatch(getFiltersData());
-    dispatch(getCompanyList({ mode: 'all' }));
   }, []);
 
   return (
@@ -78,6 +75,7 @@ export const Contact: FC<{
               daily={addContactsPage}
               isFullTable={isFullTable}
               rowsForJob={rowsForJob}
+              myContact={myContactPage}
             />
           </div>
         </div>
@@ -85,3 +83,5 @@ export const Contact: FC<{
     </>
   );
 };
+
+export default Contact;

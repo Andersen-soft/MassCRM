@@ -1,10 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Company;
 
 use App\Http\Requests\AbstractRequest;
 use App\Rules\Company\CheckCountSubsidiariesCompany;
 use App\Rules\Company\CheckTypeSubsidiariesCompany;
+use App\Rules\Company\UniqueCompanyLinkedIn;
+use App\Rules\Company\UniqueCompanyNameRule;
+use App\Rules\Company\UniqueCompanyWebsite;
 use Illuminate\Support\Facades\Lang;
 
 class CreateCompanyRequest extends AbstractRequest
@@ -29,9 +34,19 @@ class CreateCompanyRequest extends AbstractRequest
         $type = implode(',', Lang::get('filters.company_type'));
 
         return [
-            'name' => 'required|string|max:150|unique:companies,name',
-            'website' => 'string|url|unique:companies,website',
-            'linkedin' => 'nullable|string|unique:companies,linkedin|regex:' . static::REGEX_LINK_LINKEDIN,
+            'name' => ['required', 'string', 'max:150', new UniqueCompanyNameRule()],
+            'website' => [
+                'nullable',
+                'string',
+                'url',
+                new UniqueCompanyWebsite(self::REGEX_GET_URL, (bool) $this->skip_validation)
+            ],
+            'linkedin' => [
+                'nullable',
+                'string',
+                'regex:' . static::REGEX_LINK_LINKEDIN,
+                new UniqueCompanyLinkedIn(self::REGEX_GET_URL, (bool) $this->skip_validation)
+            ],
             'sto_full_name' => 'nullable|string|max:150',
             'type' => 'required_with:subsidiaries|nullable|string|max:50|in:'. $type,
             'founded' => 'nullable|date',
@@ -42,8 +57,8 @@ class CreateCompanyRequest extends AbstractRequest
             'vacancies' => 'array|min:1',
             'vacancies.*' => 'array',
             'vacancies.*.job' => 'required_with:vacancies|string',
-            'vacancies.*.skills' => 'string',
-            'vacancies.*.link' => 'string|url',
+            'vacancies.*.skills' => 'nullable|string',
+            'vacancies.*.link' => 'nullable|string|url',
             'subsidiaries' => ['array', new CheckCountSubsidiariesCompany($this->type)],
             'subsidiaries.*' => [
                 'integer',
@@ -51,6 +66,7 @@ class CreateCompanyRequest extends AbstractRequest
                 'exists:companies,id',
                 new CheckTypeSubsidiariesCompany($this->type)
             ],
+            'skip_validation' => 'nullable|boolean',
             'comment' => 'nullable|string',
         ];
     }

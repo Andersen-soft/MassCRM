@@ -1,20 +1,27 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\RulesValidateModels\Company;
 
+use App\Models\BaseModel;
 use App\Models\Company\Company;
+use App\Rules\Company\UniqueCompanyNameRule;
 use App\RulesValidateModels\RulesValidateInterface;
 use Illuminate\Support\Facades\Lang;
 use App\Http\Requests\AbstractRequest;
 
 class RulesCompany implements RulesValidateInterface
 {
+    public function rules(): array
+    {
+        return [];
+    }
+
     public function rulesCreate(): array
     {
         return [
-            'name' => 'required|string|max:150|unique:companies,name',
-            'website' => 'nullable|string|url|unique:companies,website',
-            'linkedin' => 'nullable|string|unique:companies,linkedin|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN,
+            'name' => ['required', 'string', 'max:150', new UniqueCompanyNameRule()],
+            'website' => 'nullable|string|url',
+            'linkedin' => 'nullable|string|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN,
             'sto_full_name' => 'nullable|string|max:150',
             'type' => 'nullable|string|max:50|in:' . implode(',', [
                 Company::TYPE_COMPANY_SUBSIDIARY,
@@ -27,13 +34,13 @@ class RulesCompany implements RulesValidateInterface
         ];
     }
 
-    public function rulesUpdate(Company $company): array
+    public function rulesUpdate(BaseModel $company): array
     {
         return [
-            'name' => 'required|string|max:150|unique:companies,name,' . $company->id,
-            'website' => 'nullable|string|url|unique:companies,website,' . $company->id,
+            'name' => 'required|string|max:150',
+            'website' => 'nullable|string|url',
             'linkedin' =>
-                'nullable|string|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN . '|unique:companies,linkedin,' . $company->id,
+                'nullable|string|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN,
             'sto_full_name' => 'nullable|string|max:150',
             'type' => 'nullable|string|max:50|in:' . implode(',', [
                 Company::TYPE_COMPANY_SUBSIDIARY,
@@ -49,12 +56,9 @@ class RulesCompany implements RulesValidateInterface
     public function messages(): array
     {
         return [
-            'name.unique' => Lang::get('validationModel.company.company_name_already_exist'),
             'name.required' => Lang::get('validationModel.company.company_name_required'),
             'name.string' => Lang::get('validationModel.company.company_name_string'),
-            'website.unique' => Lang::get('validationModel.company.company_website_already_exist'),
             'website.url' => Lang::get('validationModel.company.company_website_url'),
-            'linkedin.unique' => Lang::get('validationModel.company.company_linkedIn_already_exist'),
             'linkedin.regex' => Lang::get('validationModel.company.company_linkedIn_regex'),
             'type.in' => Lang::get('validationModel.company.company_type_error'),
             'founded.date' => Lang::get('validationModel.company.founded_date')

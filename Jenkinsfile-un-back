@@ -12,6 +12,7 @@ pipeline {
         image1 = "nginx-masscrm"
         image2 = "php-fpm7.4-masscrm"
         image3 = "redis-masscrm"
+        image4 = "elasticsearch"
         registry = "https://nexus-docker.andersenlab.dev"
         registryCredentials = 'nexus.andersenlab.dev'
         dockerCreds="masscrm-$env.BRANCH_NAME-docker"
@@ -20,15 +21,16 @@ pipeline {
     stages { 
         stage('Sonarqube') {
          when {
-            expression { return (env.BRANCH_NAME == 'dev_') }
+            expression { return (env.BRANCH_NAME == 'dev') }
             }
             environment {
                scannerHome = tool 'SonarQube'
             }
             steps {
               withSonarQubeEnv('SonarQube_6.0'){
-              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=MassCRM-back:1 -Dsonar.projectName=MassCRM-back -Dsonar.projectVersion=1.0 -Dsonar.sources=masscrm_back/ -Dsonar.exclusions=masscrm_back/database/**/*,masscrm_back/storage/**/*"
-              sh "/var/lib/jenkins/workspace/waitForSonarQube.sh"
+              sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=MassCRM-back-New:1 -Dsonar.projectName=MassCRM-back-New -Dsonar.projectVersion=1.0 -Dsonar.sources=masscrm_back/ -Dsonar.exclusions=masscrm_back/database/**/*,masscrm_back/storage/**/*"
+              //sh "/var/lib/jenkins/workspace/waitForSonarQube.sh"
+
               }
             }
         }
@@ -85,15 +87,28 @@ pipeline {
                             sh 'docker stop ${image1} || true'
                             sh 'docker stop ${image2} || true'
                             sh 'docker stop ${image3} || true'
-                            sh 'docker rm ${image1} ||true && docker rm ${image2} ||true && docker rm ${image3} ||true'
+                            sh 'docker stop ${image4} || true'
+                            sh 'docker rm ${image1} ||true && docker rm ${image2} ||true && docker rm ${image3} ||true && docker rm ${image4} ||true'
                             sh "docker-compose --file $composefile pull"
                             sh "docker-compose -f $composefile up --force-recreate -d"
                             sh "docker image prune -f"
-                             }
+                        }
                     }
                 }
             }
         }
+
+        stage ('Run autotests after deploy') {
+            when {
+            expression { return (env.BRANCH_NAME == 'stage') }
+            } 
+            steps{
+            build job: 'Andersen/MassCRM/Run_tests_param', parameters: [string(name: 'branch', value: "${env.BRANCH_NAME}")], propagate: false
+            }
+
+
+        }
+
     }
       post{
         cleanup{

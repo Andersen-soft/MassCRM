@@ -12,4 +12,5 @@ export interface ICommonInputProps {
   onChangeValue: (
     value: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
+  autoFocus?: string;
 }

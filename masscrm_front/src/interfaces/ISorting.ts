@@ -10,6 +10,7 @@ export interface ISortingState {
   'Date of birth': ISortingObject;
   'Added to mailing': ISortingObject;
   'Last touch': ISortingObject;
+  'Date of use': ISortingObject;
 }
 
 export interface ISortingFieldId {
@@ -19,4 +20,5 @@ export interface ISortingFieldId {
   'Date of birth'?: string;
   'Added to mailing'?: string;
   'Last touch'?: string;
+  'Date of use'?: string;
 }

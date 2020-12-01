@@ -18,3 +18,5 @@ export const UsersCRM: FC = () => {
     </>
   );
 };
+
+export default UsersCRM;

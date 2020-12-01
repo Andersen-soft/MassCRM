@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Commands\Contact;
 
@@ -18,7 +18,7 @@ class UpdateContactCommand
     protected array $contactFields;
     protected ?array $colleagues;
     protected ?array $socialNetworks;
-    protected ?array $note;
+    protected ?array $note = [];
     protected bool $requiresValidation;
     protected User $user;
 
@@ -32,8 +32,7 @@ class UpdateContactCommand
         ?array $colleagues,
         ?array $socialNetworks,
         bool $requiresValidation,
-        ?int $companyId = null,
-        ?array $notes
+        ?int $companyId = null
     ) {
         $this->contactId = $contactId;
         $this->user = $user;
@@ -45,7 +44,6 @@ class UpdateContactCommand
         $this->colleagues = $colleagues;
         $this->socialNetworks = $socialNetworks;
         $this->requiresValidation = $requiresValidation ? in_array($requiresValidation, ['1', 'true']) : false;
-        $this->notes = $notes;
     }
 
     public function getEmails(): array
@@ -61,11 +59,6 @@ class UpdateContactCommand
     public function getPhones(): ?array
     {
         return $this->phones;
-    }
-
-    public function getNotes(): ?array
-    {
-        return $this->notes;
     }
 
     public function getContactFields(): array
@@ -101,5 +94,10 @@ class UpdateContactCommand
     public function getUser(): User
     {
         return $this->user;
+    }
+
+    public function getNotes(): ?array
+    {
+        return $this->note;
     }
 }

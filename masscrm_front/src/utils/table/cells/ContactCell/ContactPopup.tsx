@@ -9,7 +9,8 @@ const sn = styleNames(style);
 export const ContactPopup: FC<{
   value: Array<string>;
   linkItemMap: (val: string) => void;
-}> = ({ value, linkItemMap }) => {
+  isLink: boolean;
+}> = ({ value, linkItemMap, isLink }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const openText = (event: MouseEvent<HTMLElement>) => {
@@ -34,7 +35,11 @@ export const ContactPopup: FC<{
           horizontal: 'center'
         }}
       >
-        <div className={sn('list-td_wrap')}>{value?.map(linkItemMap)}</div>
+        <div className={sn('list-td_wrap')}>
+          {value?.map((item: string) =>
+            isLink ? linkItemMap(item) : <div key={item}>{item}</div>
+          )}
+        </div>
       </Popover>
     </>
   );

@@ -1,10 +1,4 @@
-import React, {
-  FC,
-  SyntheticEvent,
-  useCallback,
-  useEffect,
-  useState
-} from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useDispatch, useSelector } from 'react-redux';
@@ -15,7 +9,7 @@ import { INotificationStore, IStoreState } from 'src/interfaces/store';
 import { getUserRoles } from 'src/selectors';
 import Badge from '@material-ui/core/Badge';
 import NotificationsNoneRoundedIcon from '@material-ui/icons/NotificationsNoneRounded';
-import Snackbar, { SnackbarCloseReason } from '@material-ui/core/Snackbar';
+import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 import {
   changeViewed,
@@ -25,7 +19,9 @@ import {
   getImportResult,
   getNotification,
   setSelectedTabAction,
-  getExportFile
+  getExportFile,
+  logout,
+  setPage
 } from 'src/actions';
 import { INotification, INotificationPayload } from 'src/interfaces';
 import { Logo } from '../Logo';
@@ -36,6 +32,7 @@ import { useStyles } from './Header.style';
 import { CommonError } from '..';
 import { ImportModal } from '../../ImportModal';
 import { Notification } from '../../Notification';
+import { DisplayErrors } from '../../DisplayErrors';
 
 const sn = styleNames(style);
 
@@ -62,7 +59,7 @@ export const Header: FC = () => {
       });
     },
     export_contacts_finished: (id: number, data: INotificationPayload) => {
-      getContactExportFile(data.file_path).then(() => {
+      getContactExportFile(data.file_path, data.created_at).then(() => {
         if (data.new) {
           changeViewed(id).then(() => dispatch(getNotification()));
         }
@@ -82,20 +79,15 @@ export const Header: FC = () => {
     RESULT[type](id, data);
 
   const onLogout = useCallback(() => {
-    Cookies.remove('token');
-    location.href = '/';
+    logout().then(() => {
+      Cookies.remove('token');
+      location.href = '/';
+    });
   }, []);
 
-  const handleClose = (
-    event: SyntheticEvent<Element, Event>,
-    reason?: SnackbarCloseReason
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+  const handleClose = () => setOpen(false);
 
-    setOpen(false);
-  };
+  const onFirstPage = () => dispatch(setPage(1));
 
   const headerCallBack = useCallback(() => {
     if (roles.length > 0) {
@@ -111,6 +103,7 @@ export const Header: FC = () => {
                   ? sn('header__item_active')
                   : ''
               }`}
+              onClick={onFirstPage}
             >
               <span>{name}</span>
             </Link>
@@ -176,6 +169,7 @@ export const Header: FC = () => {
           <ExitIcon onClickHandler={onLogout} />
         </div>
       </div>
+      <DisplayErrors />
       <Snackbar
         className={classes.snackbar}
         open={open}

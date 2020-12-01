@@ -14,13 +14,23 @@ import {
   initialMultiFilterState
 } from './tableFilters.reducer';
 import { initialSortingState } from './tableSorting.reducer';
+import history from '../store/history';
+
+const currentParam = new URLSearchParams(history.location.search);
+const getDataByJson = (param: string) =>
+  JSON.parse(currentParam.get(param) as string) || null;
+
+const sortBy = getDataByJson('sort');
+const sorting = getDataByJson('sorting');
+const filter = getDataByJson('filter');
 
 const initialState: IFilterStore = {
   data: {},
   settings: {},
-  values: initialFiltersState,
+  values: { ...initialFiltersState, ...filter },
   multiValues: initialMultiFilterState,
-  sort: initialSortingState
+  sort: sorting || initialSortingState,
+  sortBy: sortBy || {}
 };
 
 export const filterReducer = handleActions(

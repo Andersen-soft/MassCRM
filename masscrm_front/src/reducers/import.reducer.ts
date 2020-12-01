@@ -154,6 +154,12 @@ export const importReducer = handleActions(
     ): S => ({
       ...state,
       ...payload
+    }),
+    [importActionTypes.CLEAR_IMPORT_FORM_STATE]: (state: S): S => ({
+      ...state,
+      fileInfo: initialState.fileInfo,
+      formState: initialState.formState,
+      docInfo: undefined
     })
   },
   initialState

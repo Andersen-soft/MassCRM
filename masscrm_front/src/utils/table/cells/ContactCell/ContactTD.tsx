@@ -10,8 +10,6 @@ const sn = styleNames(style);
 export const ContactTD: FC<IContactCell> = ({ value = [], type }) => {
   const hrefLink = useMemo(() => {
     switch (type) {
-      case 'emails':
-        return `mailto:`;
       case 'phones':
         return 'tel:';
       default:
@@ -30,9 +28,13 @@ export const ContactTD: FC<IContactCell> = ({ value = [], type }) => {
     <ShowAllTD value={value} />
   ) : (
     <div className={sn('list-td')}>
-      {value?.length > 0 ? linkItem(value[0]) : ''}
+      {value?.length > 0 && hrefLink ? linkItem(value[0]) : value[0]}
       {value?.length > 1 ? (
-        <ContactPopup value={value} linkItemMap={linkItem} />
+        <ContactPopup
+          value={value}
+          linkItemMap={linkItem}
+          isLink={!!hrefLink}
+        />
       ) : (
         ''
       )}

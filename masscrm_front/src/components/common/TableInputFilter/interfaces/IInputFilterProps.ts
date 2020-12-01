@@ -1,6 +1,8 @@
 export interface IInputFilterProps {
   placeholder: string;
   items: Array<string>;
+  mainFilter?: boolean;
+  className?: string;
   changeFilter: (value: {
     name: string;
     item: string | string[] | (string | string[])[] | null;

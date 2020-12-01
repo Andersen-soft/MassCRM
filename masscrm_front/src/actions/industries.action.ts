@@ -13,3 +13,11 @@ export const getIndustriesList = () => async (dispatch: Dispatch) => {
     setNotification(error);
   }
 };
+
+export const createNewIndustry = async (value: string) => {
+  try {
+    await HTTP.post('/industries', { name: value });
+  } catch (error) {
+    throw JSON.stringify(error);
+  }
+};

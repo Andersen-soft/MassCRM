@@ -13,12 +13,12 @@ export const initialFiltersState: IContactFiltersState = {
   Country: [],
   Region: [],
   City: [],
-  Position: [],
+  Title: [],
   Li: '',
   'Social Networks': '',
   Phone: '',
   Skype: '',
-  'E-mail': '',
+  Email: '',
   Validation: '',
   Confidence: [],
   Collegue: '',
@@ -31,7 +31,7 @@ export const initialFiltersState: IContactFiltersState = {
   Views: [],
   Deliveries: [],
   Replies: [],
-  Bounces: '',
+  Bounces: [],
   Mails: '',
   'My notes': '',
   'Sale created': [],
@@ -54,8 +54,11 @@ export const initialFiltersState: IContactFiltersState = {
   'Job Skills': '',
   blacklist: ['No'],
   'Date of use': [],
-  'Work in': ['No'],
-  Comment: ''
+  'In work': [],
+  Comment: '',
+  noEmail: '',
+  mainBounces: [],
+  global: {}
 };
 
 export const initialMultiFilterState = {
@@ -63,9 +66,10 @@ export const initialMultiFilterState = {
   Country: [],
   Region: [],
   City: [],
-  Position: [],
+  Title: [],
   Company: [],
-  Industry: []
+  Industry: [],
+  Source: []
 };
 
 export const filtersReducer = (

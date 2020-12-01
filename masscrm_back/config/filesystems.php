@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 return [
 
@@ -60,7 +60,11 @@ return [
             'root' => storage_path('importFiles'),
             'visibility' => 'private',
         ],
-
+        'cities' => [
+            'driver' => 'local',
+            'root' => storage_path('cities'),
+            'visibility' => 'private',
+        ],
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

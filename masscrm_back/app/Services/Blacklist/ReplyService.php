@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Blacklist;
 
@@ -8,7 +8,11 @@ use Illuminate\Support\Facades\Http;
 class ReplyService
 {
     private const NAME_SERVICE = 'Reply';
+
+    private const DOMAINS = 'domains';
+
     private BlacklistService $blacklistService;
+
     private BlacklistRepository $blacklistRepository;
 
     public function __construct(BlacklistService $blacklistService, BlacklistRepository $blacklistRepository)
@@ -23,14 +27,14 @@ class ReplyService
             'x-api-key' => config('app.reply_api_key')
         ])->get($replyUrlBlacklist)->json();
 
-        if (empty($response['domains'])) {
+        if (empty($response[self::DOMAINS])) {
             return;
         }
 
         $emails = [];
 
-        foreach ($response['domains'] as $item) {
-            if (!$this->blacklistService->validateDomain($item)) {
+        foreach ($response[self::DOMAINS] as $item) {
+            if (!$this->blacklistService->isValidateDomain($item)) {
                 continue;
             }
 

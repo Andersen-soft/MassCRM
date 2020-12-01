@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use App\Models\Company\Company;
 use App\Models\Process;
@@ -31,12 +31,12 @@ return [
         'country' => 'Country',
         'region' => 'Region',
         'city' => 'City',
-        'position' => 'Position',
+        'position' => 'Title',
         'c_linkedin' => 'Contact linkedIn',
         'c_social' => 'Other social network',
         'phone' => 'Phone',
         'skype' => 'Skype',
-        'email' => 'E-mail',
+        'email' => 'Email',
         'requires_validation' => 'Requires validation',
         'confidence' => 'Confidence',
         'colleague' => 'Colleague',
@@ -52,11 +52,6 @@ return [
         'bounces' => 'Bounces',
         'mails' => 'Mails',
         'my_notes' => 'My notes',
-        'sale_created' => 'Sale created',
-        'source' => 'Source',
-        'sale_id' => 'Sale ID',
-        'sale_status' => 'Sale status',
-        'sale_project_c1' => '1C Project',
         'c_comment' => 'Comment',
         'company' => 'Company',
         'website' => 'Website',
@@ -78,7 +73,7 @@ return [
     ],
     'company_size' => [
         [
-            'name' => 'Self-emploed',
+            'name' => 'Self-employed',
             'min' => 1,
             'max' => 1
         ],

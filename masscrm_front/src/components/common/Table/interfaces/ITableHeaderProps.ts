@@ -2,10 +2,10 @@ import {
   IBlacklistFiltersState,
   IContactFiltersState,
   IFilterValuesUsers,
-  ISortingObject,
   IExportInputFilterValues
 } from 'src/interfaces';
 import { ITableConfig } from './ITableConfig';
+import { ITableRow } from './ITableRow';
 
 export interface IFilterValue {
   name: string;
@@ -24,7 +24,7 @@ export interface ITableHeaderProps {
     | IBlacklistFiltersState
     | IExportInputFilterValues;
   inputFilter?: Function;
-  data?: Array<object>;
-  sorting?: (parameter: ISortingObject) => void;
+  data?: Array<ITableRow>;
   clearAutocompleteList?: () => void;
+  isFullTable?: boolean;
 }

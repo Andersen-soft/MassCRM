@@ -2,6 +2,7 @@ import React from 'react';
 import { IContactResult, ICompany } from 'src/interfaces';
 import { TableCellBaseProps } from '@material-ui/core';
 import { ITableCell, ITableRow } from 'src/components/common/Table/interfaces';
+import { format } from 'date-fns';
 import {
   countryCell,
   textCell,
@@ -11,12 +12,21 @@ import {
   companySizeCell,
   originCell,
   confidenceCell,
-  subsidiaryHoldingCell,
+  companyCell,
   typeCompanyCell,
   networkCell,
   jobCell
 } from './cells';
 import { industryCell } from './cells/ItemsCell/industryCell';
+import { getCompanySize } from '../map';
+import { LINKEDIN_REG_EXP, URL_REGEX } from '../../constants';
+import { checkUrl } from '../form/chekUrl';
+
+type FormatterType = (
+  name: string,
+  value?: string | boolean,
+  isDate?: boolean
+) => string | boolean | undefined;
 
 export const addContactMapCallback = (
   isNC2: boolean,
@@ -89,10 +99,46 @@ export const addContactMapCallback = (
     );
   };
 
-  const textContactTD = (name: string, required?: boolean, isDate?: boolean) =>
-    textCell({ id, name, value: contact[name], required, isDate });
+  const formatter = (
+    name: string,
+    value?: string | boolean,
+    isDate?: boolean
+  ) => {
+    if (isDate && value && typeof value === 'string') {
+      return format(new Date(value), 'd.MM.yyyy');
+    }
+    if (name === 'linkedin') {
+      return checkUrl(value as string);
+    }
+    return value;
+  };
 
-  const textCompanyTD = (name: string, required?: boolean, isDate?: boolean) =>
+  const isLinkedin = (val: string) => LINKEDIN_REG_EXP.test(val);
+
+  const isWebsite = (val: string) => URL_REGEX.test(val);
+
+  const textContactTD = (
+    name: string,
+    required?: boolean,
+    isDate?: boolean,
+    formatterFunction?: FormatterType
+  ) =>
+    textCell({
+      id,
+      name,
+      value: contact[name],
+      required,
+      isDate,
+      contact,
+      formatter: formatterFunction
+    });
+
+  const textCompanyTD = (
+    name: string,
+    required?: boolean,
+    isDate?: boolean,
+    formatterFunction?: FormatterType
+  ) =>
     textCell({
       id: company?.id,
       name,
@@ -100,7 +146,8 @@ export const addContactMapCallback = (
       required,
       isCompany: true,
       isDate,
-      contact
+      contact,
+      formatter: formatterFunction
     });
 
   const linkCompanyTD = (name: string, required?: boolean) =>
@@ -112,7 +159,8 @@ export const addContactMapCallback = (
       isCompany: true,
       link: company[name]?.toString().split('://')[1],
       type: 'link',
-      contact
+      contact,
+      validation: isWebsite
     });
 
   const contactLink = textCell({
@@ -126,9 +174,6 @@ export const addContactMapCallback = (
     contact
   });
 
-  const isLinkedin = (val: string | string[]) =>
-    val.indexOf('https://www.linkedin.com/') < 0 ? 'invalid link' : false;
-
   const personalInfo: Array<ITableCell> = [
     {
       code: 'linkedin',
@@ -138,12 +183,22 @@ export const addContactMapCallback = (
         value: linkedin,
         required: true,
         validation: isLinkedin,
-        type: 'linkedin'
+        type: 'linkedin',
+        formatter
       })
     },
     { code: 'first_name', component: contactLink },
     { code: 'last_name', component: textContactTD('last_name', true) },
-    { code: 'full_name', component: textContactTD('full_name') },
+    {
+      code: 'full_name',
+      component: textCell({
+        id,
+        name: 'full_name',
+        value:
+          contact.full_name || `${contact.first_name} ${contact.last_name}`,
+        contact
+      })
+    },
     { code: 'gender', component: genderCell({ id, value: gender }) }
   ];
 
@@ -192,7 +247,15 @@ export const addContactMapCallback = (
   ];
 
   const companyInfo = [
-    { code: 'company', component: textCompanyTD('name') },
+    {
+      code: 'company',
+      component: companyCell({
+        value: [company],
+        id: companyId,
+        contactID: id,
+        type: 'name'
+      })
+    },
     {
       code: 'company_size',
       component: companySizeCell({
@@ -323,7 +386,7 @@ export const addContactMapCallback = (
     { code: 'company_created', component: dateTypeTD(companyCreated) },
     {
       code: 'company_founded',
-      component: textCompanyTD('founded', false, true)
+      component: textCompanyTD('founded', false, true, formatter)
     }
   ];
 
@@ -352,19 +415,19 @@ export const addContactMapCallback = (
       id,
       name: 'skype',
       value: skype,
-      link: `skype:${skype}`,
+      link: skype,
       type: 'skype'
     })
   };
 
   const responsibleInfo = {
-    code: 'responsible',
+    code: 'responsible_id',
     data: responsible
   };
 
   const birthdayInfo = {
     code: 'birthday',
-    component: textContactTD('birthday', false, true)
+    component: textContactTD('birthday', false, true, formatter)
   };
 
   if (isMyContact) {
@@ -417,7 +480,7 @@ export const addContactMapCallback = (
           },
           {
             code: 'company_holding',
-            component: subsidiaryHoldingCell({
+            component: companyCell({
               value: subsidiary,
               id: companyId,
               type: companyType === 'Holding' ? companyType : undefined,
@@ -426,7 +489,7 @@ export const addContactMapCallback = (
           },
           {
             code: 'company_subsidiary',
-            component: subsidiaryHoldingCell({
+            component: companyCell({
               value: holding,
               id: companyId,
               type: companyType === 'Subsidiary' ? companyType : undefined,
@@ -596,6 +659,9 @@ export const addItemFilter = (filter: string[] | string, item: string) => [
   item
 ];
 
+export const getBouncesValue = (bounncesValue: string[]) =>
+  bounncesValue.map(item => (item === 'Yes' ? 1 : 0));
+
 export const ROWS_COUNT = 50;
 
 export const MAP_AUTOCOMPLETE_VALUES: any = {
@@ -621,7 +687,7 @@ export const MAP_AUTOCOMPLETE_VALUES: any = {
     current.location.city
       ? [...acc.result, current.location.city]
       : [...acc.result],
-  Position: (acc: IContactResult, current: IContactResult) =>
+  Title: (acc: IContactResult, current: IContactResult) =>
     current.position ? [...acc.result, current.position] : [...acc.result],
   Li: (acc: IContactResult, current: IContactResult) =>
     current.linkedin ? [...acc.result, current.linkedin] : [...acc.result],
@@ -635,7 +701,7 @@ export const MAP_AUTOCOMPLETE_VALUES: any = {
       : [...acc.result],
   Skype: (acc: IContactResult, current: IContactResult) =>
     current.skype ? [...acc.result, current.skype] : [...acc.result],
-  'E-mail': (acc: IContactResult, current: IContactResult) =>
+  Email: (acc: IContactResult, current: IContactResult) =>
     current.emails
       ? [...acc.result?.concat(current.emails.map(item => item.email))]
       : [...acc.result],
@@ -704,14 +770,19 @@ export const MAP_AUTOCOMPLETE_VALUES: any = {
           )
         ]
       : [...acc.result],
-  'Company size': (acc: IContactResult, current: IContactResult) =>
-    current.company?.min_employees
-      ? [
-          ...acc.result.concat(
-            `${current.company.min_employees} - ${current.company.max_employees}`
-          )
-        ]
-      : [...acc.result],
+  'Company size': (acc: IContactResult, current: IContactResult) => {
+    let item = `${current.company.min_employees}-${current.company.max_employees}`;
+    if (
+      current.company?.min_employees === 1 &&
+      current.company?.max_employees === 1
+    ) {
+      item = 'Self-employed';
+    }
+    if (current.company?.min_employees === 10001) item = '10001+';
+    return current.company?.min_employees
+      ? [...acc.result.concat(item)]
+      : [...acc.result];
+  },
   'Company LinkedIn': (acc: IContactResult, current: IContactResult) =>
     current.company?.linkedin
       ? [...acc.result, current.company.linkedin]
@@ -749,272 +820,326 @@ export const MAP_AUTOCOMPLETE_VALUES: any = {
 };
 
 export const MAP_AUTOCOMPLETE_RESPONSE: any = {
-  Responsible: (value: string, date: object) => {
+  Responsible: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         responsible: [value]
       }
     };
   },
-  'First name': (value: string, date: object) => {
+  'First name': (value: string, date: object, skip_responsibility: number) => {
     return {
       limit: 50,
       search: {
+        skip_responsibility,
         created_at: date,
         first_name: value || undefined
       }
     };
   },
-  'Last name': (value: string, date: object) => {
+  'Last name': (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         last_name: value || undefined
       }
     };
   },
-  'Full name': (value: string, date: object) => {
+  'Full name': (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         full_name: value || undefined
       }
     };
   },
-  Country: (value: string, date: object) => {
+  Country: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         country: [value]
       }
     };
   },
-  Region: (value: string, date: object) => {
+  Region: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         region: [value]
       }
     };
   },
-  City: (value: string, date: object) => {
+  City: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         city: [value]
       }
     };
   },
-  Position: (value: string, date: object) => {
+  Title: (value: string, date: object, skip_responsibility: number) => {
     return {
       limit: 50,
       search: {
+        skip_responsibility,
         created_at: date,
         position: [value]
       }
     };
   },
-  Li: (value: string, date: object) => {
+  Li: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         linkedin: value || undefined
       }
     };
   },
-  'Social Networks': (value: string, date: object) => {
+  'Social Networks': (
+    value: string,
+    date: object,
+    skip_responsibility: number
+  ) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         social_networks: value || undefined
       }
     };
   },
-  Phone: (value: string, date: object) => {
+  Phone: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         phone: value || undefined
       }
     };
   },
-  Skype: (value: string, date: object) => {
+  Skype: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         skype: value || undefined
       }
     };
   },
-  'E-mail': (value: string, date: object) => {
+  Email: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         email: value || undefined
       }
     };
   },
-  ID: (value: string, date: object) => {
+  ID: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         service_id: Number(value)
       }
     };
   },
-  Colleague: (value: string, date: object) => {
+  Colleague: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         colleague_name: value
       }
     };
   },
-  Sequence: (value: string, date: object) => {
+  Sequence: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         sequence: value
       }
     };
   },
-  Bounces: (value: string, date: object) => {
+  Bounces: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         bounces: Number(value)
       }
     };
   },
-  Mails: (value: string, date: object) => {
+  Mails: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         mails: value
       }
     };
   },
-  'My notes': (value: string, date: object) => {
+  'My notes': (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         my_notes: value
       }
     };
   },
-  Source: (value: string, date: object) => {
+  Source: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         sale: { source: [value] }
       }
     };
   },
-  'Sale ID': (value: string, date: object) => {
+  'Sale ID': (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         sale: { id: value }
       }
     };
   },
-  'Sale status': (value: string, date: object) => {
+  'Sale status': (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         sale: { status: [value] }
       }
     };
   },
-  Company: (value: string, date: object) => {
+  Company: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { name: [value] }
       }
     };
   },
-  'Company website': (value: string, date: object) => {
+  'Company website': (
+    value: string,
+    date: object,
+    skip_responsibility: number
+  ) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { website: value }
       }
     };
   },
-  'Company LinkedIn': (value: string, date: object) => {
+  'Company LinkedIn': (
+    value: string,
+    date: object,
+    skip_responsibility: number
+  ) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { linkedin: value }
       }
     };
   },
-  Industry: (value: string, date: object) => {
+  Industry: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { industry: [value] }
       }
     };
   },
-  'Company size': (value: string, date: object) => {
+  'Company size': (
+    value: string,
+    date: object,
+    skip_responsibility: number
+  ) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: {
-          company_size: {
-            min: Number(value.split(' ')[0]) || undefined,
-            max: Number(value.split(' ')[2]) || undefined
-          }
+          company_size: getCompanySize(value)
         }
       }
     };
   },
-  'Subsidiary companies': (value: string, date: object) => {
+  'Subsidiary companies': (
+    value: string,
+    date: object,
+    skip_responsibility: number
+  ) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { subsidiary: value }
       }
     };
   },
-  'Holding company': (value: string, date: object) => {
+  'Holding company': (
+    value: string,
+    date: object,
+    skip_responsibility: number
+  ) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { holding: value }
       }
     };
   },
-  CTO: (value: string, date: object) => {
+  CTO: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { sto_full_name: value || undefined }
       }
     };
   },
-  Job: (value: string, date: object) => {
+  Job: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { jobs: [value] }
       }
     };
   },
-  'Job Skills': (value: string, date: object) => {
+  'Job Skills': (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         company: { skills: [value] }
       }
     };
   },
-  Comment: (value: string, date: object) => {
+  Comment: (value: string, date: object, skip_responsibility: number) => {
     return {
       search: {
+        skip_responsibility,
         created_at: date,
         comment: value || undefined
       }

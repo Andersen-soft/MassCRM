@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Resources\Location;
 
@@ -8,7 +8,13 @@ use Illuminate\Http\Resources\Json\ResourceCollection;
 class CityCollection extends ResourceCollection
 {
     /**
-     * Transform the resource into an array.
+     * @OA\Schema(
+     *    schema="City",
+     *    required={"id", "name", "region_id"},
+     *    @OA\Property(property="id", type="integer", example=1),
+     *    @OA\Property(property="name", type="string", example="Vitebsk"),
+     *    @OA\Property(property="region_id", type="integer", example=1),
+     * )
      *
      * @param Request $request
      * @return array

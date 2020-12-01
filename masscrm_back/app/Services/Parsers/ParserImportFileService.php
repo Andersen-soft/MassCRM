@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Parsers;
 
 use App\Commands\Import\ImportContactsDto;
 use App\Commands\Import\ImportStartParseCommand;
 use App\Models\Contact\Contact;
+use App\Models\InformationImport;
 use App\Models\User\User;
 use App\Services\Parsers\Import\Company\ImportCompanyService;
 use App\Services\Parsers\Import\Contact\ImportContactService;
@@ -22,7 +25,7 @@ use App\Exceptions\Import\ImportFileException;
  * Class ParserImportFileService
  * @package App
  */
-class ParserImportFileService extends ParserMain implements ParserServiceInterface
+class ParserImportFileService extends ParserMain
 {
     protected array $fields = [];
     protected ?string $comment;
@@ -65,10 +68,9 @@ class ParserImportFileService extends ParserMain implements ParserServiceInterfa
         $this->responsible = $importContactsData->getCommand()->getResponsible();
         $this->user = $importContactsData->getCommand()->getUser();
         $this->importContactsData = $importContactsData;
-
     }
 
-    public function parse(string $pathToFile): void
+    public function parse(string $pathToFile): InformationImport
     {
         $spreadsheet = IOFactory::load($pathToFile);
         $startIndex = $this->importContactsData->getCommand()->isHeader() ? 2 : 1;
@@ -78,7 +80,7 @@ class ParserImportFileService extends ParserMain implements ParserServiceInterfa
         }
 
         foreach ($spreadsheet->getActiveSheet()->getRowIterator($startIndex) as $row) {
-            $arrayRow = $this->rowToArray($row);
+            $arrayRow = $this->rowToArray($row, count($this->fields));
             if (empty(array_filter($arrayRow))) {
                 break;
             }
@@ -133,7 +135,7 @@ class ParserImportFileService extends ParserMain implements ParserServiceInterfa
             }
         }
 
-        $this->importResult->save($this->user);
+        return $this->importResult->save($this->user);
     }
 
     private function parseCompany(array $data, ?Company $company): ?Company

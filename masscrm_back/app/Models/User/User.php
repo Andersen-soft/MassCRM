@@ -1,20 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\User;
 
 use App\Models\Blacklist;
-use App\Models\Contact\Contact;
-use App\Models\Industry;
 use App\Models\InformationImport;
 use App\Models\Process;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Support\Facades\Lang;
 
@@ -239,7 +235,7 @@ class User extends Authenticatable implements JWTSubject
         return array_intersect($this->roles, $rolesPermission);
     }
 
-    public function hasRole($role): bool
+    public function hasRole(string $role): bool
     {
         return in_array($role, $this->roles, true);
     }
@@ -318,5 +314,41 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    public function createUser(array $data): self
+    {
+        $user = new self($data);
+        $user->save();
+
+        return $user;
+    }
+
+    public function updateUser(self $user, array $data): self
+    {
+        if (!$user->from_active_directory && $data['active']) {
+            $user->login = $data['login'];
+            $user->email = $data['email'];
+        }
+
+        $user->name = $data['name'];
+        $user->surname = $data['surname'];
+        $user->roles = $data['roles'];
+        $user->active = $data['active'];
+        $user->position = $data['position'];
+        $user->comment = $data['comment'];
+        $user->skype = $data['skype'];
+        $user->save();
+
+        return $user;
+    }
+
+    public function setNewPassword(self $user, string $password): self
+    {
+        $user->setPassword($password);
+        $user->allow_setting_password = false;
+        $user->save();
+
+        return $user;
     }
 }

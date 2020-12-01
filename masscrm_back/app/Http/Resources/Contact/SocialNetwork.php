@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Resources\Contact;
 
 use Illuminate\Http\Request;
@@ -15,7 +17,7 @@ class SocialNetwork extends JsonResource
      */
     public function toArray($request): array
     {
-         return   [
+        return   [
              'id' => $this->id,
              'link' => $this->link
          ];

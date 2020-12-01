@@ -1,13 +1,3 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SocialIcon SocialIcon should render correctly 1`] = `
-<span>
-  <svg
-    className="icon"
-  >
-    <use
-      xlinkHref="../assets/svg/sprite.svg#linkedin"
-    />
-  </svg>
-</span>
-`;
+exports[`SocialIcon SocialIcon should render correctly 1`] = `""`;

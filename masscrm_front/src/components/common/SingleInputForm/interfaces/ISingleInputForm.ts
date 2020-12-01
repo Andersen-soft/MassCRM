@@ -5,7 +5,7 @@ export interface ISingleInputFormProps {
   onSubmit: (val?: any) => void;
   onCancel: () => void;
   items?: Array<string>;
-  validation?: (val: string) => string | false;
+  validation?: (val: string) => boolean;
   type?: 'link' | 'text' | 'switch' | 'linkedin' | 'skype';
   switchValue?: boolean;
   isDate?: boolean;

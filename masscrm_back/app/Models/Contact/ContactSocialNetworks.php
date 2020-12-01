@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models\Contact;
 
@@ -21,6 +21,7 @@ class ContactSocialNetworks extends Model
 {
     public const SOCIAL_FIELD = 'c_social';
     public const SOCIAL_NETWORKS_FIELD = 'social_networks';
+    public const SOCIAL_LINK_FIELD = 'link';
 
     protected $fillable = [
         'id',

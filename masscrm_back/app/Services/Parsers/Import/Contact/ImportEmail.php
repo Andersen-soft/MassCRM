@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Parsers\Import\Contact;
 
 use App\Exceptions\Import\ImportFileException;
@@ -35,7 +37,8 @@ class ImportEmail
         }
 
         $flagReplace = false;
-        if (strtolower($contact->getOriginal('linkedin')) !== strtolower($contact->linkedin)
+        if (is_string($contact->getOriginal('linkedin')) &&
+            strtolower($contact->getOriginal('linkedin')) !== strtolower($contact->linkedin)
             && !empty($contact->linkedin)
         ) {
             $flagReplace = true;

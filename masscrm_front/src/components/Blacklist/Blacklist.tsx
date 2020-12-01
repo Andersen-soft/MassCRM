@@ -32,3 +32,5 @@ export const Blacklist = () => {
     </>
   );
 };
+
+export default Blacklist;

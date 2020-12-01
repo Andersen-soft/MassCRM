@@ -1,21 +1,29 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Repositories\AttachmentFile;
 
 use App\Models\AttachmentFile\ContactAttachment;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class AttachmentFileContactRepository
 {
-    public function checkExistAttachedFileContactId(int $contactId, string $nameFile): ?ContactAttachment
+    public function getAttachedFileContactId(int $contactId, string $nameFile): ?ContactAttachment
     {
         return ContactAttachment::query()->where(['contact_id' => $contactId, 'file_name' => $nameFile])->first();
     }
 
-    public function getAttachedFiles(int $contactId, int $limit): LengthAwarePaginator
+    public function getAttachedFiles(int $contactId): Builder
     {
-        $query = ContactAttachment::query()->where('contact_id', '=', $contactId);
+        return ContactAttachment::query()->where('contact_id', '=', $contactId);
+    }
 
-        return $query->paginate($limit);
+    public function getAttachFileById(int $id): ?ContactAttachment
+    {
+        return ContactAttachment::query()->find($id);
+    }
+
+    public function checkExistAttachedFileContactId(int $contactId, string $nameFile): ?ContactAttachment
+    {
+        return ContactAttachment::query()->where(['contact_id' => $contactId, 'file_name' => $nameFile])->first();
     }
 }

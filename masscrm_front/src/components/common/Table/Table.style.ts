@@ -1,10 +1,4 @@
-import {
-  createStyles,
-  makeStyles,
-  withStyles,
-  Theme
-} from '@material-ui/core/styles';
-import { TableCell } from '@material-ui/core/';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 
 export const tableStyle = makeStyles(() =>
   createStyles({
@@ -57,23 +51,6 @@ export const tableStyle = makeStyles(() =>
     tableBlur: {
       filter: 'blur(10px)'
     },
-    customCell: {
-      display: 'flex',
-      alignItems: 'center',
-      '& .MuiSvgIcon-root': {
-        padding: '0 3px'
-      }
-    },
-    customIcon: {
-      '& .MuiBox-root': {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        paddingBottom: '5px'
-      },
-      '& .MuiBox-root-33': {
-        float: 'right'
-      }
-    },
     customTooltip: {
       background: '#fff'
     },
@@ -96,54 +73,6 @@ export const tableStyle = makeStyles(() =>
       '& .MuiPagination-ul': {
         display: 'none'
       }
-    },
-    resetButton: {
-      background: 'transparent',
-      padding: 0,
-      width: '24px',
-      height: '24px',
-      border: 'none',
-      outline: 'none'
-    },
-    customTableRow: {
-      display: 'flex'
-    },
-    resetButtonNone: {
-      display: 'none'
-    },
-    sortButton: {
-      width: '24px',
-      display: 'flex',
-      height: '24px',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'transparent',
-      padding: 0,
-      border: 'none',
-      outline: 'none'
     }
   })
 );
-
-export const tooltipStyle = makeStyles(() =>
-  createStyles({
-    tooltip: {
-      color: '#000',
-      fontSize: '12px',
-      lineHeight: '16px',
-      fontWeight: 300,
-      backgroundColor: '#fff',
-      maxWidth: '230px',
-      padding: 10,
-      boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.25)'
-    }
-  })
-);
-
-export const StyledTableCell = withStyles((theme: Theme) =>
-  createStyles({
-    head: {
-      background: theme.palette.common.white
-    }
-  })
-)(TableCell);

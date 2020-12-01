@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Commands\Contact;
 
@@ -14,7 +14,6 @@ class CreateContactCommand
     protected ?int $companyId;
     protected ?array $origin;
     protected array $contactFields;
-    protected array $colleagues;
     protected array $phones;
     protected ?array $socialNetworks;
     protected bool $requiresValidation;
@@ -24,7 +23,6 @@ class CreateContactCommand
         array $emails,
         ?array $origin,
         array $contactFields,
-        array $colleagues,
         array $phones,
         ?array $socialNetworks,
         bool $requiresValidation,
@@ -35,7 +33,6 @@ class CreateContactCommand
         $this->origin = $origin;
         $this->companyId = $companyId;
         $this->contactFields = $contactFields;
-        $this->colleagues = $colleagues;
         $this->phones = $phones;
         $this->socialNetworks = $socialNetworks;
         $this->requiresValidation = in_array($requiresValidation, ['1', 'true']);
@@ -55,11 +52,6 @@ class CreateContactCommand
     public function getContactFields(): array
     {
         return $this->contactFields;
-    }
-
-    public function getColleagues(): array
-    {
-        return $this->colleagues;
     }
 
     public function getPhones(): array

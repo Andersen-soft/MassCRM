@@ -1,3 +1,6 @@
+import { ILocation } from 'src/interfaces';
+import { checkUrl } from './chekUrl';
+
 export class ContactBuilder {
   public responsible?: string;
 
@@ -55,15 +58,15 @@ export class ContactBuilder {
     return this;
   }
 
-  setLocation(location: any, region?: string, city?: string) {
+  setLocation(location: ILocation, region?: string, city?: string) {
     this.location = location;
-    if (region) this.location.region = region;
-    if (city) this.location.city = city;
+    this.location.region = region || '';
+    this.location.city = city || '';
     return this;
   }
 
-  setEmails(emails: string | string[]) {
-    this.emails = emails ? [...emails] : undefined;
+  setEmails(emails: string[]) {
+    this.emails = [...new Set(emails)];
     return this;
   }
 
@@ -88,9 +91,10 @@ export class ContactBuilder {
   }
 
   setFullName(full_name?: string, isEditedFullName?: boolean) {
-    this.full_name = isEditedFullName
-      ? full_name
-      : `${this.first_name} ${this.last_name}`;
+    this.full_name =
+      isEditedFullName && full_name
+        ? full_name
+        : `${this.first_name} ${this.last_name}`;
     return this;
   }
 
@@ -104,13 +108,13 @@ export class ContactBuilder {
     return this;
   }
 
-  setOrigin(origin?: string | string[]) {
+  setOrigin(origin?: string[]) {
     this.origin = origin ? [...origin] : undefined;
     return this;
   }
 
   setLinkedIn(linkedin?: string) {
-    this.linkedin = linkedin;
+    this.linkedin = linkedin ? checkUrl(linkedin) : '';
     return this;
   }
 
@@ -119,15 +123,13 @@ export class ContactBuilder {
     return this;
   }
 
-  setSocialNetworks(network?: string | string[]) {
-    if (network) {
-      this.social_networks = network;
-    }
+  setSocialNetworks(network?: string[]) {
+    this.social_networks = network ? network.map(checkUrl) : [];
     return this;
   }
 
-  setPhones(phones?: string | string[]) {
-    this.phones = phones ? [...phones] : undefined;
+  setPhones(phones?: string[]) {
+    this.phones = [...new Set(phones)];
     return this;
   }
 }

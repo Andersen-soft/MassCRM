@@ -19,13 +19,11 @@ export const NumericRangeFilter: FC<INumericRangeFilterProps> = ({
   }, [sliderValue]);
 
   return (
-    <>
-      <SliderFilter
-        valueLabelDisplay='auto'
-        onChange={handleChange}
-        onChangeCommitted={handlePushValue}
-        value={sliderValue}
-      />
-    </>
+    <SliderFilter
+      valueLabelDisplay='auto'
+      onChange={handleChange}
+      onChangeCommitted={handlePushValue}
+      value={sliderValue}
+    />
   );
 };

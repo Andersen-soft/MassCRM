@@ -4,14 +4,13 @@ import { Pagination } from '@material-ui/lab';
 import { useDispatch, useSelector } from 'react-redux';
 import { setPage } from 'src/actions';
 import { getCurrentPage, getLoader } from 'src/selectors';
-import history from 'src/store/history';
+import { useLocation } from 'react-router-dom';
 import { TableHeader, TableRowItem } from './components';
 import { ITableConfig, ITableProps, ITableRow } from './interfaces';
 import { tableStyle } from './Table.style';
 import { Loader } from '../Loader';
 
 export const TableBase: FC<ITableProps> = ({
-  sorting,
   changeInput,
   count,
   resetFilter,
@@ -23,14 +22,21 @@ export const TableBase: FC<ITableProps> = ({
   onDeleteData,
   onEdit,
   clearAutocompleteList,
-  otherHeight
+  otherHeight,
+  isFullTable
 }) => {
   const dispatch = useDispatch();
+  const location = useLocation();
   const load = useSelector(getLoader);
   const style = tableStyle({ otherHeight });
 
   const [dataPage, setDataPage] = useState<Array<ITableRow>>(data);
-  const [selectedRows, setSelectedRows] = useState<Array<number>>([]);
+  const [selectedRows, setSelectedRows] = useState<Array<number>>(() => {
+    if (new URLSearchParams(location.search).get('selectAll') === 'on') {
+      return data.map(item => item.id);
+    }
+    return [];
+  });
   const [filteredBy, setFilteredBy] = useState<Array<string>>([]);
   const currentPage = useSelector(getCurrentPage);
 
@@ -43,21 +49,16 @@ export const TableBase: FC<ITableProps> = ({
     );
   };
 
-  const onSelectAll = () => {
+  const onSelectAll = () =>
     setSelectedRows(
       selectedRows.length > 0 ? [] : dataPage.map(item => item.id)
     );
-  };
 
   const onFilteredBy = () => {
     return setFilteredBy(state => state.filter(id => !filteredBy.includes(id)));
   };
 
   const onChangePage = (event: ChangeEvent<unknown>, page: number) => {
-    history.push({
-      pathname: history.location.pathname,
-      search: `?page=${page}`
-    });
     dispatch(setPage(page));
   };
 
@@ -82,6 +83,13 @@ export const TableBase: FC<ITableProps> = ({
     setSelectedRows([]);
   }, [currentPage, data]);
 
+  useEffect(() => {
+    const param = new URLSearchParams(location.search).get('selectAll');
+    if (param) {
+      setSelectedRows(param === 'on' ? data.map(item => item.id) : []);
+    }
+  }, [location]);
+
   return (
     <>
       <TableContainer
@@ -90,7 +98,7 @@ export const TableBase: FC<ITableProps> = ({
       >
         <Table stickyHeader aria-label='sticky table'>
           <TableHeader
-            sorting={sorting}
+            data={data}
             changeInput={changeInput}
             resetFilter={resetFilter}
             autocompleteValues={autocompleteValues}
@@ -98,6 +106,7 @@ export const TableBase: FC<ITableProps> = ({
             changeFilter={changeFilter}
             config={tableConfig}
             clearAutocompleteList={clearAutocompleteList}
+            isFullTable={isFullTable}
           />
           <TableBody
             classes={{ root: `${style.customBody} ${load && style.tableBlur}` }}

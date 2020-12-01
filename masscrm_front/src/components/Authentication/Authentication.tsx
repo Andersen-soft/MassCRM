@@ -1,25 +1,25 @@
-import React, { FC, useState, useMemo, SyntheticEvent } from 'react';
+import React, { FC, useState, useMemo, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import { useFormik } from 'formik';
-import Snackbar, { SnackbarCloseReason } from '@material-ui/core/Snackbar';
-import MuiAlert, { AlertProps } from '@material-ui/lab/Alert';
 import { CommonInput, CommonButton } from 'src/components/common';
 import { getUserData } from 'src/actions/user.action';
 import { applicationPath } from 'src/data/params';
 import { styleNames } from 'src/services';
+import { ErrorEmitterContext } from 'src/context';
 import styles from './Authentication.scss';
+import { CommonAlert } from '../common/CommonAlert';
 
 const sn = styleNames(styles);
-
-function Alert(props: AlertProps) {
-  return <MuiAlert elevation={6} variant='filled' {...props} />;
-}
 
 export const Authentication: FC = () => {
   const dispatch = useDispatch();
 
   const [open, setOpen] = useState(false);
-
+  const {
+    errorsEventEmitter,
+    errorsData: { snackBarErrors },
+    handleClearErrors
+  } = useContext(ErrorEmitterContext);
   const [background, logoBackground] = useMemo(
     () => [
       `url(${applicationPath}/assets/img/backgroung.png) center/100%  no-repeat`,
@@ -32,15 +32,9 @@ export const Authentication: FC = () => {
     setOpen(true);
   };
 
-  const handleClose = (
-    event: SyntheticEvent<Element, Event>,
-    reason?: SnackbarCloseReason
-  ) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
+  const handleClose = () => {
     setOpen(false);
+    handleClearErrors();
   };
 
   const formik = useFormik({
@@ -50,10 +44,11 @@ export const Authentication: FC = () => {
     },
     onSubmit: async () => {
       dispatch(
-        await getUserData({
+        getUserData({
           login: formik.values.login,
           password: formik.values.password,
-          handle: handleClick
+          handle: handleClick,
+          errorsEventEmitter
         })
       );
     }
@@ -97,12 +92,12 @@ export const Authentication: FC = () => {
           </div>
         </div>
       </div>
-
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity='error'>
-          Incorrect login or password.
-        </Alert>
-      </Snackbar>
+      <CommonAlert
+        open={open}
+        onClose={handleClose}
+        errorMessage={snackBarErrors}
+        type='error'
+      />
     </form>
   );
 };

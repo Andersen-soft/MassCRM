@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Parsers;
 
 use App\Models\InformationImport;
@@ -35,8 +37,13 @@ class ImportResult
     ];
 
     private string $duplicateFileName;
+
     private string $errorFileName;
+
+    /** @var false|resource $duplicateFile */
     private $duplicateFile;
+
+    /** @var false|resource $errorsFile */
     private $errorsFile;
 
     public function __construct()
@@ -105,6 +112,10 @@ class ImportResult
         fputcsv($this->duplicateFile, $line);
     }
 
+    /**
+     * @param array $line
+     * @param array|string $comment
+     */
     public function addLineToErrorFile(array $line, $comment = null): void
     {
         if ($comment) {
@@ -124,7 +135,7 @@ class ImportResult
         $this->counterPrevious = $this->counter;
     }
 
-    public function save(User $user): void
+    public function save(User $user): InformationImport
     {
         /** @var InformationImport $infoImport */
         $infoImport = $user->informationImport()->create([
@@ -145,5 +156,7 @@ class ImportResult
             '',
             $infoImport->id
         );
+
+        return $infoImport;
     }
 }

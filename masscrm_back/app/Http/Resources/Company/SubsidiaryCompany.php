@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Resources\Company;
 
@@ -8,7 +8,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class SubsidiaryCompany extends JsonResource
 {
     /**
-     * Transform the resource into an array.
+     * @OA\Schema(
+     *    schema="SubsidiaryCompany",
+     *    required={"id", "name"},
+     *    @OA\Property(property="id", type="integer", example=123),
+     *    @OA\Property(property="name", type="string", format="Subsidiary Company"),
+     * )
      *
      * @param Request $request
      * @return array

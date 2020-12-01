@@ -18,7 +18,7 @@ export interface ITableCellText {
   onSubmitChanges: (value?: string | boolean) => void;
   required?: boolean;
   link?: string;
-  validation?: (val: string) => string | false;
+  validation?: (val: string) => boolean;
   type?: 'link' | 'text' | 'switch' | 'linkedin' | 'skype';
   isDate?: boolean;
   href?: string;

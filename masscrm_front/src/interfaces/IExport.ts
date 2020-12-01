@@ -9,6 +9,7 @@ export interface IExport {
   type?: string;
   updated_at?: string;
   user: IUser;
+  operation_id?: number;
 }
 
 export interface IExportMetaData {

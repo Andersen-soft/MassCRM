@@ -10,7 +10,7 @@ export const getExportListAction = createAction('GET_EXPORT_LIST');
 export const setExportFilterAction = createAction('GET_EXPORT_FILTER');
 
 export const getExportListRequest = (filter: IExportSearch) => {
-  return HTTP.get(`export/processes`, {
+  return HTTP.get(`processes/export`, {
     params: { ...filter },
     paramsSerializer(params: IExportSearch) {
       return qs.stringify(params, { arrayFormat: 'indices' });

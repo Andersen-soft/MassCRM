@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\ActivityLog;
 
 use App\Repositories\ActivityLog\ActivityLogContactRepository;
 use Illuminate\Support\LazyCollection;
+use Illuminate\Database\Eloquent\Builder;
 
 class ActivityLogContactService
 {
@@ -14,8 +17,13 @@ class ActivityLogContactService
         $this->activityLogContactRepository = $activityLogContactRepository;
     }
 
-    public function fetchLogsContact(int $contactId, string $modelField = null, string $modelName = null): LazyCollection
+    public function fetchLogsContact(int $contactId, array $fields = null): LazyCollection
     {
-        return $this->activityLogContactRepository->fetchActivityLogWithParams($contactId, $modelField, $modelName);
+        return $this->activityLogContactRepository->fetchActivityLogWithParams($contactId, $fields);
+    }
+
+    public function getActivityLogContact(int $contactId, array $search = []): Builder
+    {
+        return $this->activityLogContactRepository->getActivityLog($contactId, $search);
     }
 }

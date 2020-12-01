@@ -1,5 +1,6 @@
-import { ICompanySize, IIndustry } from 'src/interfaces';
 import { IJob } from 'src/interfaces/IJob';
+import { checkUrl, checkJobUrl } from './chekUrl';
+import { IIndustry } from '../../interfaces';
 
 export class CompanyBuilder {
   public name?: string;
@@ -24,30 +25,32 @@ export class CompanyBuilder {
 
   public linkedin?: string;
 
+  public skip_validation?: number;
+
   setName(company?: string) {
     this.name = company;
     return this;
   }
 
   setWebsite(companyWebSite?: string) {
-    this.website = companyWebSite;
+    this.website = companyWebSite ? checkUrl(companyWebSite as string) : '';
     return this;
   }
 
-  setIndustries(industries: Array<IIndustry>, industry?: string[]) {
-    this.industries = industries.reduce((acc: number[], cur) => {
-      return industry?.includes(cur.name) ? [...acc, cur.id] : [...acc];
+  setIndustries(allIndustries: IIndustry[], industries?: string[]) {
+    this.industries = allIndustries.reduce((acc: number[], cur: IIndustry) => {
+      return industries?.includes(cur.name) ? [...acc, cur.id] : [...acc];
     }, []);
     return this;
   }
 
-  setMinEmployees(selectedSizeCompany?: ICompanySize) {
-    this.min_employees = selectedSizeCompany?.min;
+  setMinEmployees(min?: number) {
+    this.min_employees = min;
     return this;
   }
 
-  setMaxEmployees(selectedSizeCompany?: ICompanySize) {
-    this.max_employees = selectedSizeCompany?.max;
+  setMaxEmployees(max?: number) {
+    this.max_employees = max;
     return this;
   }
 
@@ -77,7 +80,9 @@ export class CompanyBuilder {
 
   setVacancies(formForVacancies: boolean, vacancies?: Array<IJob>) {
     if (formForVacancies) {
-      this.vacancies = vacancies?.length ? vacancies : undefined;
+      this.vacancies = vacancies?.length
+        ? vacancies.map(checkJobUrl)
+        : undefined;
     }
     return this;
   }
@@ -88,7 +93,12 @@ export class CompanyBuilder {
   }
 
   setCompanyLinkedIn(companyLinkedIn?: string) {
-    this.linkedin = companyLinkedIn;
+    this.linkedin = companyLinkedIn ? checkUrl(companyLinkedIn) : '';
+    return this;
+  }
+
+  setSkipValidation(skip_validation: boolean) {
+    this.skip_validation = skip_validation ? 1 : 0;
     return this;
   }
 }

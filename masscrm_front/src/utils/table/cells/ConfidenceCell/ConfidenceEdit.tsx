@@ -1,12 +1,14 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
 import { Check, Close } from '@material-ui/icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { CommonIcon, SliderRange } from 'src/components/common';
 import { getAddContactList, updateContact } from 'src/actions';
 import { getFilterSettings } from 'src/selectors';
 import { styleNames } from 'src/services';
+import { ErrorEmitterContext } from 'src/context';
 import style from '../cell.scss';
 import { IConfidenceCell, IConfidenceEdit } from './interfaces/IConfidenceCell';
+import { DoubleClickError } from '../../../errors';
 
 const sn = styleNames(style);
 
@@ -15,14 +17,19 @@ export const ConfidenceEdit: FC<IConfidenceCell & IConfidenceEdit> = ({
   value = 0,
   handleClose
 }) => {
+  const { errorsEventEmitter } = useContext(ErrorEmitterContext);
   const dispatch = useDispatch();
   const filter = useSelector(getFilterSettings);
   const [val, setVal] = useState<number>(value);
 
   const onSubmitHandler = () =>
-    updateContact({ confidence: val }, id).then(() =>
-      dispatch(getAddContactList(filter))
-    );
+    updateContact({ confidence: val }, id)
+      .then(() => dispatch(getAddContactList(filter)))
+      .catch(errors => {
+        errorsEventEmitter.emit('snackBarErrors', {
+          errorsArray: [DoubleClickError(errors)]
+        });
+      });
 
   const onChangeHandler = (newVal: number) => {
     setVal(newVal);

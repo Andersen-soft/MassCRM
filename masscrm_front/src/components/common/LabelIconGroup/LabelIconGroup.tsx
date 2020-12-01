@@ -10,10 +10,11 @@ export const LabelIconGroup: FC<ILabelIconGroupProps> = ({
   label,
   count,
   icon,
-  isActive
+  isActive,
+  className = ''
 }) => {
   return (
-    <div className={sn('label-icon')}>
+    <div className={`${sn('label-icon')} ${className}`}>
       <span className={sn('label-icon_text')}>{label}:</span>
       <span className={sn('label-icon_count')}>{count}</span>
       <CommonIcon IconComponent={icon} isActive={isActive} />

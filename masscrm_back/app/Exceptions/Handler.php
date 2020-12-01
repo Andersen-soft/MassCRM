@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -7,12 +9,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Exceptions\Validation\ValidationRequestException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
 {
+    private CONST ROUTE_NOT_FOUND = 'Route not found';
     /**
      * A list of the exception types that are not reported.
      *
@@ -60,6 +64,8 @@ class Handler extends ExceptionHandler
             case ($exception instanceof UnauthorizedHttpException):
             case ($exception instanceof JWTException):
                 return $this->renderException([$exception->getMessage()], JsonResponse::HTTP_UNAUTHORIZED);
+            case ($exception instanceof NotFoundHttpException):
+                return $this->renderException([self::ROUTE_NOT_FOUND], JsonResponse::HTTP_NOT_FOUND);
             default:
                 return $this->renderException([$exception->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }

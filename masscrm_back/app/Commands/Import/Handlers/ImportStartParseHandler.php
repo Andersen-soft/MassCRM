@@ -7,6 +7,7 @@ use App\Commands\Import\ImportStartParseCommand;
 use App\Exceptions\Import\ImportException;
 use App\Jobs\ImportContactsJob;
 use App\Models\Process;
+use Illuminate\Support\Facades\Lang;
 
 class ImportStartParseHandler
 {
@@ -16,6 +17,7 @@ class ImportStartParseHandler
 
         /** @var Process $process */
         $process = $command->getUser()->processes()->create([
+            'name' => Lang::get('import.name_import', ['file' => basename($filePath)]),
             'status' => Process::TYPE_STATUS_PROCESS_WAIT,
             'type' => Process::TYPE_PROCESS_IMPORT_CONTACT
         ]);
@@ -28,11 +30,14 @@ class ImportStartParseHandler
     private function checkFileExist(int $userId): string
     {
         $path = storage_path('importFiles') . '/' . $userId;
+
         if (!file_exists($path) && !is_dir($path)) {
             throw new ImportException('File to import not found', 404);
         }
+
         $fileNames = array_diff(scandir($path), ['.', '..']);
         $fileName = array_shift($fileNames);
+
         if (!$fileName) {
             throw new ImportException('File to import not found', 404);
         }

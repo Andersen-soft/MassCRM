@@ -67,12 +67,8 @@ export const SetPassword: FC = () => {
     }
   });
 
-  const isEnableButton = (password: string, passwordConfirm: string) => {
-    if (checkPassword(password) && checkPassword(passwordConfirm)) {
-      return false;
-    }
-    return true;
-  };
+  const isEnableButton = (password: string, passwordConfirm: string) =>
+    !(checkPassword(password) && checkPassword(passwordConfirm));
 
   return (
     <form
@@ -151,3 +147,5 @@ export const SetPassword: FC = () => {
     </form>
   );
 };
+
+export default SetPassword;

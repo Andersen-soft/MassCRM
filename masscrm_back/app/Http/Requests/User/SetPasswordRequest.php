@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Requests\User;
 
@@ -26,7 +26,7 @@ class SetPasswordRequest extends AbstractRequest
     public function rules(): array
     {
         return [
-            'id' => 'required|integer|min:1',
+            'id' => 'required|integer|min:1|exists:users,id',
             'password' => 'required|string|regex:'. $this->regexPassword
         ];
     }

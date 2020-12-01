@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\TransferCollection;
 
@@ -21,13 +21,12 @@ class TransferCollectionCompanyService
 
     public function transfer(): void
     {
-        do{
+        do {
             /** @var Company $company*/
             $company = $this->companyRepository->getCompanyForTransfer();
-            if ($company) {
+            if (null !== $company) {
                 $this->updateCollectionCompany($company);
             }
-
         } while ($company);
     }
 
@@ -35,13 +34,12 @@ class TransferCollectionCompanyService
     {
         $vacancies = [];
 
-        if (!$company->vacancies) {
+        if (empty($company->vacancies)) {
             return $vacancies;
         }
 
         /** @var CompanyVacancy $companyVacancy */
-        foreach ($company->vacancies as $companyVacancy)
-        {
+        foreach ($company->vacancies as $companyVacancy) {
             $vacancies[] = [
                 'id' => $companyVacancy->id,
                 'job' => $companyVacancy->vacancy,
@@ -57,13 +55,12 @@ class TransferCollectionCompanyService
     {
         $industries = [];
 
-        if (!$company->industries) {
+        if (empty($company->industries)) {
             return $industries;
         }
 
         /** @var Industry $industry */
-        foreach ($company->industries as $industry)
-        {
+        foreach ($company->industries as $industry) {
             $industries[] = [
                 'id' => $industry->id,
                 'name' => $industry->name,
@@ -77,13 +74,12 @@ class TransferCollectionCompanyService
     {
         $subsidiaries = [];
 
-        if (!$company->companySubsidiary) {
+        if (empty($company->companySubsidiary)) {
             return $subsidiaries;
         }
 
         /** @var Company $subsidiary */
-        foreach ($company->companySubsidiary as $subsidiary)
-        {
+        foreach ($company->companySubsidiary as $subsidiary) {
             $subsidiaries[] = [
                 'id' => $subsidiary->id,
                 'name' => $subsidiary->name,

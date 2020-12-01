@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Observers\AttachmentFile;
 
@@ -13,9 +13,9 @@ class ContactAttachmentObserver
     public function created(ContactAttachment $contactAttachment): void
     {
         (new ActivityLogContact())
+            ->setContactId($contactAttachment->getContactId())
             ->setUserId($contactAttachment->getUserId())
             ->setActivityType(ActivityLogContact::STORE_ATTACHMENT_FILE_EVENT)
-            ->setContactId($contactAttachment->getContactId())
             ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataNew($contactAttachment->getFileName())
@@ -26,9 +26,9 @@ class ContactAttachmentObserver
     public function updated(ContactAttachment $contactAttachment): void
     {
         (new ActivityLogContact())
+            ->setContactId($contactAttachment->getContactId())
             ->setUserId($contactAttachment->getUserId())
             ->setActivityType(ActivityLogContact::UPDATE_ATTACHMENT_FILE_EVENT)
-            ->setContactId($contactAttachment->getContactId())
             ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataOld($contactAttachment->getOriginal(self::FIELD_FILE_NAME))
@@ -40,9 +40,9 @@ class ContactAttachmentObserver
     public function deleting(ContactAttachment $contactAttachment): void
     {
         (new ActivityLogContact())
+            ->setContactId($contactAttachment->getContactId())
             ->setUserId($contactAttachment->getUserId())
             ->setActivityType(ActivityLogContact::DELETE_ATTACHMENT_FILE_EVENT)
-            ->setContactId($contactAttachment->getContactId())
             ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
             ->setModelField(self::FIELD_FILE_NAME)
             ->setDataOld($contactAttachment->getOriginal(self::FIELD_FILE_NAME))

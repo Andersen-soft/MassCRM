@@ -6,7 +6,7 @@ import React, {
   ReactElement
 } from 'react';
 import { MaterialUiPickersDate } from 'material-ui-pickers/typings/date';
-import { MuiPickersContext } from '@material-ui/pickers';
+import { MuiPickersContext, DatePicker } from '@material-ui/pickers';
 import cn from 'classnames';
 import withStyles from '@material-ui/core/styles/withStyles';
 import { IPickerProps } from './interfaces';
@@ -15,7 +15,6 @@ import { pickerStyle, dayStyle } from './Picker.style';
 const DatePickerBody: FC<IPickerProps> = ({
   minDate,
   onlyCalendar,
-  PickerComponent,
   shouldDisableDate,
   value,
   onChange,
@@ -24,19 +23,23 @@ const DatePickerBody: FC<IPickerProps> = ({
   classes,
   placeholder,
   singular,
-  autoOk,
   labelFunc,
   emptyLabel,
   disabledYear,
   hasDataRangeFilter,
   onClean,
+  autoOk,
+  isCleaned,
   ...props
 }: IPickerProps) => {
   const pickerClasses = pickerStyle();
-  const [begin, setBegin] = useState<MaterialUiPickersDate | undefined>(
-    value[0]
-  );
-  const [end, setEnd] = useState<MaterialUiPickersDate | undefined>(value[1]);
+  const [{ begin, end }, setPickerValues] = useState<{
+    begin: MaterialUiPickersDate | undefined;
+    end: MaterialUiPickersDate | undefined;
+  }>(() => {
+    const [beginDay, endDay] = value;
+    return { begin: beginDay, end: endDay };
+  });
   const [hover, setHover] = useState<MaterialUiPickersDate | undefined>(
     undefined
   );
@@ -69,10 +72,9 @@ const DatePickerBody: FC<IPickerProps> = ({
       ? React.cloneElement(dayComponent, {
           onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.stopPropagation();
-            setBegin(day);
-            setEnd(undefined);
+            setPickerValues({ begin: day, end: undefined });
             if (autoOk) {
-              onChange && onChange([begin, day].sort());
+              onChange && onChange(false, [begin, day].sort())();
               onClose && onClose([begin, day].sort());
             }
           },
@@ -81,16 +83,22 @@ const DatePickerBody: FC<IPickerProps> = ({
       : React.cloneElement(dayComponent, {
           onClick: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
             e.stopPropagation();
-            if (!begin) setBegin(day);
+            if (!begin)
+              setPickerValues(state => ({
+                ...state,
+                begin: day
+              }));
             else if (!end) {
-              setEnd(day);
+              setPickerValues(state => ({
+                ...state,
+                end: day
+              }));
               if (autoOk) {
-                onChange && onChange([begin, day].sort());
+                onChange && onChange(false, [begin, day].sort())();
                 onClose && onClose([begin, day].sort());
               }
             } else {
-              setBegin(day);
-              setEnd(undefined);
+              setPickerValues({ begin: day, end: undefined });
             }
           },
           onMouseEnter: () => setHover(day),
@@ -110,7 +118,7 @@ const DatePickerBody: FC<IPickerProps> = ({
     : { ...props };
 
   const onCloseHandle = () => {
-    onClose && onClose([begin, end].sort());
+    onClose && onClose([begin, end]);
   };
 
   const labelFuncHandle = (
@@ -126,16 +134,24 @@ const DatePickerBody: FC<IPickerProps> = ({
     return date && begin ? `${formatDate(begin)}` : emptyLabel || '';
   };
 
-  const onChangeHandle = () => onClose && onClose([begin, end].sort());
+  const onChangeHandle = () => {
+    onChange && onChange(false, [begin, end])();
+  };
 
   useEffect(() => {
     if (begin && end && onChange) {
-      onChange([begin, end].sort());
+      onChange(false, [begin, end])();
     }
   }, [begin, end]);
 
+  useEffect(() => {
+    if (isCleaned) {
+      setPickerValues({ begin: undefined, end: undefined });
+    }
+  }, [isCleaned]);
+
   return (
-    <PickerComponent
+    <DatePicker
       {...newProps}
       value={begin}
       renderDay={renderDay}
@@ -148,6 +164,8 @@ const DatePickerBody: FC<IPickerProps> = ({
       onChange={onChangeHandle}
       views={['year', 'month', 'date']}
       labelFunc={labelFuncHandle}
+      clearable
+      autoOk={autoOk}
       InputProps={{
         classes: {
           underline: pickerClasses.MuiInputUnderline

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -36,22 +38,22 @@ class Controller extends BaseController
  * @OA\Schema(
  *    schema="UnauthorizedError",
  *    @OA\Property(property="success", type="boolean", example=false),
- *    @OA\Property(property="payload", type="object",
- *        @OA\Property(property="message", type="string", example="Token has expired."),
+ *    @OA\Property(property="errors", type="array",
+ *        @OA\Items(type="string", example="Token has expired."),
  *    )
  * )
  * @OA\Schema(
  *    schema="ForbiddenError",
  *    @OA\Property(property="success", type="boolean", example=false),
- *    @OA\Property(property="payload", type="object",
- *        @OA\Property(property="message", type="string", example="The link has already been used to set password."),
+ *    @OA\Property(property="errors", type="array",
+ *        @OA\Items(type="string", example="The link has already been used to set password."),
  *    )
  * )
  * @OA\Schema(
  *    schema="ServiceUnavailableError",
  *    @OA\Property(property="success", type="boolean", example=false),
- *    @OA\Property(property="payload", type="object",
- *        @OA\Property(property="message", type="string", example="Ldap service unavailable."),
+ *    @OA\Property(property="errors", type="array",
+ *        @OA\Items(type="string", example="Ldap service unavailable."),
  *    )
  * )
  * @OA\Schema(
@@ -67,8 +69,8 @@ class Controller extends BaseController
  * @OA\Schema(
  *    schema="NotFoundError",
  *    @OA\Property(property="success", type="boolean", example=false),
- *    @OA\Property(property="payload", type="object",
- *       @OA\Property(property="message", type="string", example="Contact value(1) not found"),
+ *    @OA\Property(property="errors", type="array",
+ *       @OA\Items(type="string", example="Contact value(1) not found"),
  *    ),
  * )
  * @OA\Components(

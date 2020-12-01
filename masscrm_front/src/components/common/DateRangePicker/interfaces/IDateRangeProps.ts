@@ -13,4 +13,5 @@ export interface IDateRangeProps {
     isCheckbox?: boolean;
   }) => void;
   hasDataRangeFilter?: boolean;
+  resetDateFilter?: Function;
 }

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\User;
 
@@ -6,7 +6,7 @@ use App\Exceptions\Custom\NotFoundException;
 use App\Models\User\User;
 use App\Models\User\UsersNotification;
 use App\Repositories\User\NotificationRepository;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class NotificationService
 {
@@ -31,8 +31,8 @@ class NotificationService
         return $notification;
     }
 
-    public function getNotificationList(User $user, int $limit, ?bool $new): LengthAwarePaginator
+    public function getNotificationList(User $user, ?bool $new): Builder
     {
-        return $this->repository->getNotificationList($user, $limit, $new);
+        return $this->repository->getNotificationList($user, $new);
     }
 }

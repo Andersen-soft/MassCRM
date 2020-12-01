@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Contact;
 
 use App\Exceptions\Validation\ValidationRequestException;
@@ -35,14 +37,10 @@ class ContactSocialNetworkService
                 unset($contactSocial[$socialKey]);
                 continue;
             }
-            if ($this->contactSocialNetworksRepository->checkUniqueness($socialNetwork)) {
-                throw new ValidationRequestException([
-                    Lang::get('validation.social_networks_link_already_exist')
-                ]);
-            }
-            (new ContactSocialNetworks(['contact_id' => $contact->getId()]))
-                ->setLink($socialNetwork)
-                ->save();
+
+            $contact->contactSocialNetworks()->create([
+                'link' => $socialNetwork
+            ]);
         }
 
         if (!empty($contactSocial)) {
@@ -51,5 +49,18 @@ class ContactSocialNetworkService
 
         $contact->social_network_collection = $this->transferCollectionContactService->getSocialNetworks($contact);
         $contact->save();
+    }
+
+    public function addSocialNetworks(Contact $contact, ?array $socialNetworks): void
+    {
+        if (empty($socialNetworks)) {
+            return;
+        }
+
+        foreach ($socialNetworks as $link) {
+            $contact->contactSocialNetworks()->create([
+                'link' => $link
+            ]);
+        }
     }
 }

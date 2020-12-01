@@ -1,7 +1,8 @@
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import { MoreVert } from '@material-ui/icons';
 import { styleNames } from 'src/services';
 import { Popover, Tooltip } from '@material-ui/core';
+import { tooltipStyle } from 'src/styles/ToolTip.style';
 import { IMoreInformationProps } from './interfaces';
 import { OpenBtn } from './components';
 import style from './MoreInformation.scss';
@@ -14,9 +15,11 @@ export const MoreInformation: FC<IMoreInformationProps> = ({
   icon,
   tooltip,
   clearAutocompleteList,
-  notification
+  notification,
+  autoClose
 }) => {
   const stylePopover = customPopover();
+  const styleTooltip = tooltipStyle();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popper' : undefined;
@@ -30,17 +33,26 @@ export const MoreInformation: FC<IMoreInformationProps> = ({
     clearAutocompleteList && clearAutocompleteList();
   };
 
-  const openModeBtn = (
-    <OpenBtn
-      anchorEl={anchorEl}
-      handleClick={handleClick}
-      icon={icon || MoreVert}
-    />
+  const openModeBtn = useMemo(
+    () => (
+      <OpenBtn
+        anchorEl={anchorEl}
+        handleClick={handleClick}
+        icon={icon || MoreVert}
+      />
+    ),
+    [anchorEl]
   );
 
   return (
     <div className={sn('more')}>
-      {tooltip ? <Tooltip title={tooltip}>{openModeBtn}</Tooltip> : openModeBtn}
+      {tooltip ? (
+        <Tooltip title={tooltip} placement='top' classes={styleTooltip}>
+          <div>{openModeBtn}</div>
+        </Tooltip>
+      ) : (
+        openModeBtn
+      )}
       <Popover
         className={
           notification
@@ -49,6 +61,7 @@ export const MoreInformation: FC<IMoreInformationProps> = ({
         }
         id={id}
         open={open}
+        onClick={autoClose ? handleClose : undefined}
         anchorEl={anchorEl}
         onClose={handleClose}
         anchorOrigin={{

@@ -18,6 +18,7 @@ exports[`CommonButton input should render correctly 1`] = `
     <WithStyles(ForwardRef(InputLabel)) />
     <WithStyles(ForwardRef(OutlinedInput))
       aria-describedby="component-error-text"
+      autoFocus={false}
       endAdornment={
         <ForwardRef(WithStyles)
           position="end"
@@ -56,6 +57,7 @@ exports[`CommonButton input should render error 1`] = `
     <WithStyles(ForwardRef(InputLabel)) />
     <WithStyles(ForwardRef(OutlinedInput))
       aria-describedby="component-error-text"
+      autoFocus={false}
       endAdornment={
         <ForwardRef(WithStyles)
           position="end"

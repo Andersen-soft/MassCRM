@@ -2,11 +2,10 @@ import {
   IContactFiltersState,
   IFilterValuesUsers,
   IUserFiltersValues,
-  ISortingObject,
   IBlacklistFiltersState,
   IExportInputFilterValues
 } from 'src/interfaces';
-import { IFilterValue, ITableConfig, ITableRow } from '.';
+import { IFilterValue, ITableConfig, ITableRow, TOpen } from '.';
 
 export interface ITableProps {
   config: ITableConfig;
@@ -29,7 +28,7 @@ export interface ITableProps {
   data: Array<ITableRow>;
   onChangeData?: (fun: (item: ITableRow) => boolean) => void;
   onDeleteData?: (ids: Array<number>) => void;
-  onEdit?: (id: number) => void;
-  sorting?: (parameter: ISortingObject) => void;
-  otherHeight?: string;
+  onEdit?: (id: number, type?: TOpen) => void;
+  otherHeight?: any;
+  isFullTable?: boolean;
 }

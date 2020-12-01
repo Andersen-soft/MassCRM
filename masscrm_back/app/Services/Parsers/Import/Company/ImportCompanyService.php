@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Parsers\Import\Company;
 
@@ -63,27 +63,15 @@ class ImportCompanyService
     public function getUnique(array $fields, array $row): ?Company
     {
         $name = null;
-        $linkedIn = null;
-        $website = null;
 
         foreach ($fields as $key => $field) {
-            switch ($field) {
-                case 'company':
-                    $name = trim($row[$key]);
-                    break;
-                case 'comp_linkedin':
-                    $linkedIn = trim($row[$key]);
-                    break;
-                case 'website':
-                    $website = trim($row[$key]);
-                    break;
-                default:
-                    break;
+            if ($field === 'company') {
+                $name = trim($row[$key]);
             }
         }
 
-        if ($name || $linkedIn || $website) {
-            return $this->companyRepository->checkUniqueCompany($name, $linkedIn, $website);
+        if (!empty($name)) {
+            return $this->companyRepository->checkUniqueCompany($name);
         }
 
         return null;

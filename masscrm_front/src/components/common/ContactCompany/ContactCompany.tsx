@@ -21,6 +21,7 @@ export const ContactCompany: FC<{
   value?: string;
   id?: number;
   onSelect: (value?: ICompany) => void;
+  autoFocus?: string;
 }> = ({ id, value, onSelect, type, ...props }) => {
   const dispatch = useDispatch();
   const [companies, setCompanies] = useState<ICompany[]>([]);

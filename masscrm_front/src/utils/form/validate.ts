@@ -1,7 +1,13 @@
 import * as Yup from 'yup';
 import { string, object, array, boolean } from 'yup';
 import { IRoles } from 'src/interfaces';
-import { URL_REGEX, PHONE_REG_EXP, LINKEDIN_REG_EXP } from 'src/constants/form';
+import {
+  URL_REGEX,
+  PHONE_REG_EXP,
+  LINKEDIN_REG_EXP,
+  REGEX_INDUSTRY_NAME,
+  SOCIALS_REG_EXP
+} from 'src/constants/form';
 
 const countreisForGender = [
   'Luxembourg',
@@ -17,8 +23,12 @@ export const contactFormSchema = (roles: IRoles) =>
     formCondition: boolean(),
     first_name: string().required('Required field'),
     last_name: string().required('Required field'),
-    country: string().required('Required field'),
-    position: string().required('Required field'),
+    country: string()
+      .required('Required field')
+      .nullable(),
+    position: string()
+      .required('Required field')
+      .nullable(),
     linkedin: string()
       .matches(LINKEDIN_REG_EXP, 'Invalid format')
       .nullable(),
@@ -35,7 +45,7 @@ export const contactFormSchema = (roles: IRoles) =>
     email: string().email('Invalid email'),
     phone: string().matches(PHONE_REG_EXP, 'Invalid phone number'),
     vacancies: roles?.nc2 ? array().required('Required field') : array(),
-    social_network: string().matches(URL_REGEX, 'Invalid format'),
+    social_network: string().matches(SOCIALS_REG_EXP, 'Invalid format'),
     gender: string().when('country', {
       is: (val: string) =>
         Boolean(countreisForGender.find(value => val === value)),
@@ -52,3 +62,18 @@ export const addUserFormSchema = Yup.object({
   skype: string().required(' '),
   surname: string().required(' ')
 });
+
+export const createIndustrySchema = (industries: string[]) =>
+  object().shape({
+    industry: string()
+      .lowercase()
+      .matches(
+        REGEX_INDUSTRY_NAME,
+        'Only latin letters and symbols & \\ / , - are available'
+      )
+      .notOneOf(
+        industries.map(item => item.toLocaleLowerCase()),
+        'The industry is already exist'
+      )
+      .required()
+  });

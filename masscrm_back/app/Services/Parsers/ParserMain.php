@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\Parsers;
 
 use App\Models\CampaignStatus;
@@ -14,14 +16,22 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Row;
 abstract class ParserMain
 {
     protected array $statuses = [];
+
     protected array $industries = [];
+
     protected array $headers = [];
 
-    protected function rowToArray(Row $row): array
+    protected function rowToArray(Row $row, int $strictCountColumn): array
     {
         $arr = [];
+        $i = 0;
         foreach ($row->getCellIterator() as $cell) {
+            if ($i >= $strictCountColumn) {
+                break;
+            }
+
             $arr[] = $cell->getFormattedValue() !== '' ? trim($cell->getFormattedValue()) : null;
+            $i++;
         }
 
         return $arr;

@@ -4,9 +4,9 @@ import {
   ICompanySize,
   IContactFilter,
   IContactFiltersState,
-  ISortingObject,
   ISortingState,
-  IMultiFilterState
+  IMultiFilterState,
+  ISort
 } from 'src/interfaces';
 import {
   initialFiltersState,
@@ -55,15 +55,17 @@ export const getFilterSorting = createSelector(
 );
 
 export const getSortBy = createSelector(
-  ({ filter: { sortBy } }: IStoreState): ISortingObject =>
-    sortBy || {
-      field_name: 'created_at',
-      type_sort: 'DESC'
-    },
+  ({ filter: { sortBy } }: IStoreState): ISort => sortBy || {},
   data => data
 );
 
 export const getFilterExportData = createSelector(
+  ({ filter: { data } }: IStoreState): { [key: string]: string } =>
+    data?.export_status || {},
+  data => data
+);
+
+export const getFilter = createSelector(
   ({ filter: { data } }: IStoreState): { [key: string]: string } =>
     data?.export_status || {},
   data => data

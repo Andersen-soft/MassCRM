@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models\Contact;
 
@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Class ContactPhones
  * @package Contact
  * @property int $id
- * @property int contact_id
+ * @property int $contact_id
  * @property string $phone
  * @property boolean $active
  * @property Carbon $created_at

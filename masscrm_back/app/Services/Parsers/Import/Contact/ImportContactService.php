@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Parsers\Import\Contact;
 
@@ -18,7 +18,6 @@ class ImportContactService
     private ImportMail $parserImportMail;
     private ImportNote $parserImportNote;
     private ImportPhone $parserImportPhone;
-    private ImportSale $parserImportSale;
 
     public function __construct(
         ContactRepository $contactRepository,
@@ -29,8 +28,7 @@ class ImportContactService
         ImportEmail $parserImportEmail,
         ImportMail $parserImportMail,
         ImportNote $parserImportNote,
-        ImportPhone $parserImportPhone,
-        ImportSale $parserImportSale
+        ImportPhone $parserImportPhone
     ) {
         $this->contactRepository = $contactRepository;
         $this->parserImportCampaign = $parserImportCampaign;
@@ -41,7 +39,6 @@ class ImportContactService
         $this->parserImportMail = $parserImportMail;
         $this->parserImportNote = $parserImportNote;
         $this->parserImportPhone = $parserImportPhone;
-        $this->parserImportSale = $parserImportSale;
     }
 
     public function replace(
@@ -61,7 +58,6 @@ class ImportContactService
         $this->parserImportMail->replace($contact, $row);
         $this->parserImportNote->replace($contact, $row);
         $this->parserImportPhone->replace($contact, $row);
-        $this->parserImportSale->replace($contact, $row);
 
         return $contact;
     }
@@ -83,7 +79,6 @@ class ImportContactService
             $this->parserImportMail->create($contact, $row);
             $this->parserImportNote->create($contact, $row);
             $this->parserImportPhone->create($contact, $row);
-            $this->parserImportSale->create($contact, $row);
         }
 
         return $contact;

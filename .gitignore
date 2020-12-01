@@ -1,3 +1,4 @@
+.DS_Store
 .git
 masscrm_back/node_modules
 masscrm_back/public/hot
@@ -8,6 +9,7 @@ masscrm_back/vendor
 masscrm_back/.env
 masscrm_back/.env.backup
 masscrm_back/.phpunit.result.cache
+masscrm_back/.php_cs.cache
 masscrm_back/Homestead.json
 masscrm_back/Homestead.yaml
 masscrm_back/npm-debug.log
@@ -20,6 +22,8 @@ masscrm_front/node_modules
 masscrm_front/package-lock.json
 masscrm_front/dist
 masscrm_front/.env
+masscrm_front/debug.log
+masscrm_front/*.log
 postgres-db/
 logs/
 redis-data/

@@ -1,24 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Providers\User;
 
-use App\Commands\User\{
-    CreateUserCommand,
-    GetUserListCommand,
-    SetPasswordUserCommand,
-    UpdateUserCommand,
-    GetUserCommand,
-    ChangePasswordUserCommand
-};
-
-use App\Commands\User\Handlers\{
-    GetUserHandler,
-    GetUserListHandler,
-    CreateUserHandler,
-    UpdateUserHandler,
-    SetPasswordUserHandler,
-    ChangePasswordUserHandler
-};
+use App\Commands\User\ChangePasswordUserCommand;
+use App\Commands\User\Handlers\ChangePasswordUserHandler;
 
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\ServiceProvider;
@@ -37,11 +22,6 @@ class UserServiceProvider extends ServiceProvider
     private function registerCommandHandlers(): void
     {
         Bus::map([
-            CreateUserCommand::class => CreateUserHandler::class,
-            UpdateUserCommand::class => UpdateUserHandler::class,
-            SetPasswordUserCommand::class => SetPasswordUserHandler::class,
-            GetUserCommand::class => GetUserHandler::class,
-            GetUserListCommand::class => GetUserListHandler::class,
             ChangePasswordUserCommand::class => ChangePasswordUserHandler::class
         ]);
     }

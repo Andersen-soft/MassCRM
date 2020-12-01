@@ -6,6 +6,7 @@
   display: flex;
   align-items: center;
 }
+
 .startLine {
   border-radius: 1px;
   width: 2px;
@@ -33,27 +34,37 @@
 .wrapper {
   display: flex;
   justify-content: space-between;
-  padding: 16px 21px 0 24px;
+
   .column {
     display: flex;
-  flex-direction: column;
-    .anotherTestField{
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 67%;
+
+    &_small {
+      width: 33%;
+    }
+
+    .anotherTestField {
       background-color: #939bb2;
     }
-    width: 33%;
-    margin-right: 41px;
+
     .wrapperForShowMoreButton {
-      margin-bottom: 6px ;
+      margin-bottom: 6px;
+
       .spanRightForButton {
         float: right;
       }
     }
+
     .wrapperForDataPair {
-      margin-bottom: 16px;
-      .icon{
+      width: 100%;
+
+      .icon {
         width: 16px;
         height: 16px
       }
+
       .spanLeft {
         font-family: 'Roboto', serif;
         font-style: normal;
@@ -62,23 +73,32 @@
         line-height: 18px;
         color: #939BB2;
       }
+
       .spanRight {
         float: right;
+
         .logo {
           width: 16px;
           height: 16px
         }
       }
+
       .commentField {
         text-align: right;
         float: right;
         width: 275px;
       }
     }
-
   }
-
-
-
 }
 
+.list {
+  padding: 10px 20px;
+}
+
+.item {
+  width: 50%;
+  box-sizing: border-box;
+  padding-right: 40px;
+  margin-bottom: 16px;
+}

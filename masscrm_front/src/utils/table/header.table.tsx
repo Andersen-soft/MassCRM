@@ -1,4 +1,6 @@
 import { ISortingFieldId } from 'src/interfaces/ISorting';
+import { FiltersStateType } from '../../interfaces';
+import { deleteEmptyFields } from '../form/objectHelpers';
 
 export const VISIBLE_RESET_FILTER: { [key: string]: boolean } = {
   'full name': false,
@@ -23,7 +25,7 @@ export const VISIBLE_RESET_FILTER: { [key: string]: boolean } = {
   'Other social networks': false,
   Phone: false,
   Skype: false,
-  'E-mail': false,
+  Email: false,
   'Request validation': false,
   Confidence: false,
   Collegue: false,
@@ -67,11 +69,13 @@ export const SORTING_FIELD_ID: ISortingFieldId = {
   'Contact updated': 'updated_at',
   'Date of birth': 'birthday',
   'Added to mailing': 'added_to_mailing',
-  'Last touch': 'last_touch'
+  'Last touch': 'last_touch',
+  'Date of use': 'date_of_use'
 };
 
 interface ITableHeight {
   userTable: string;
+  dailyTable: string;
   contactTable: string;
   myContactTable: string;
   blacklistTable: string;
@@ -80,8 +84,35 @@ interface ITableHeight {
 
 export const OTHER_HEIGHT: ITableHeight = {
   userTable: '201px',
-  contactTable: '305px',
-  myContactTable: '305px',
+  dailyTable: '375px',
+  contactTable: '280px',
+  myContactTable: '280px',
   blacklistTable: '520px',
   exportTable: '465px'
+};
+
+export const OTHER_HEIGHT_SMALL_SCREEN: ITableHeight = {
+  userTable: '201px',
+  dailyTable: '375px',
+  contactTable: '330px',
+  myContactTable: '330px',
+  blacklistTable: '520px',
+  exportTable: '465px'
+};
+
+export const INITIAL_IS_BIG_SCREEN = window.innerWidth > 1493;
+
+export const getOtherHeight = (isBigScreen?: boolean) =>
+  window.innerWidth > 1493 || isBigScreen
+    ? OTHER_HEIGHT
+    : OTHER_HEIGHT_SMALL_SCREEN;
+
+export const getFilteringFields = (filtersState: FiltersStateType) => {
+  const withoutEmptyFields = deleteEmptyFields(filtersState);
+  return Object.keys(withoutEmptyFields).reduce(
+    (acc: { [key: string]: boolean }, cur: string) => {
+      return withoutEmptyFields[cur] ? { ...acc, [cur]: true } : acc;
+    },
+    {}
+  );
 };

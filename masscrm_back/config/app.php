@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 return [
 
@@ -14,6 +14,15 @@ return [
     */
 
     'name' => env('APP_NAME', 'Laravel'),
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application API Version
+    |--------------------------------------------------------------------------
+    */
+
+    'api_version' => env('APP_API_VERSION', 'v1'),
 
     /*
     |--------------------------------------------------------------------------
@@ -34,6 +43,7 @@ return [
 
     'lemlist_username' => env('LEMLIST_USERNAME'),
     'lemlist_password' => env('LEMLIST_PASSWORD'),
+    'lemlist_password_second' => env('LEMLIST_PASSWORD_SECOND'),
     'lemlist_blacklist_api_url' => env('LEMLIST_BLACKLIST_API_URL'),
     'reply_api_key' => env('REPLY_API_KEY'),
     'reply_blacklist_domains_api_url' => env('REPLY_BLACKLIST_DOMAINS_API_URL'),
@@ -207,18 +217,13 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\Contact\ContactServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\Filters\FilterServiceProvider::class,
-        App\Providers\Import\ImportServiceProvider::class,
-        App\Providers\Contact\ContactServiceProvider::class,
-        App\Providers\Company\CompanyServiceProvider::class,
-        App\Providers\User\UserServiceProvider::class,
-        App\Providers\Location\LocationServiceProvider::class,
         App\Providers\AttachmentFile\AttachmentFileContactServiceProvider::class,
-        App\Providers\AttachmentFile\AttachmentFileCompanyServiceProvider::class,
         App\Providers\ActivityLog\ActivityLogContactServiceProvider::class,
         App\Providers\ActivityLog\ActivityLogCompanyServiceProvider::class,
     ],

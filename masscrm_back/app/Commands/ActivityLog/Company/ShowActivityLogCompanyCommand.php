@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Commands\ActivityLog\Company;
+declare(strict_types=1);
 
+namespace App\Commands\ActivityLog\Company;
 
 class ShowActivityLogCompanyCommand
 {

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Observers\Contact;
 
@@ -21,11 +21,11 @@ class ContactSocialNetworksObserver
             return;
         }
 
-        foreach(self::NAME_FIELDS as $item) {
+        foreach (self::NAME_FIELDS as $item) {
             (new ActivityLogContact())
+                ->setContactId($contact->getId())
                 ->setUserId($contact->getUserId())
                 ->setActivityType(ActivityLogContact::ADDED_NEW_VALUE_FIELD_EVENT)
-                ->setContactId($contact->getId())
                 ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
                 ->setModelField($item)
                 ->setDataNew($contactSocialNetworks->{$item})
@@ -42,9 +42,9 @@ class ContactSocialNetworksObserver
         foreach ($contactSocialNetworks->getChanges() as $key => $value) {
             if (in_array($key, self::NAME_FIELDS, true)) {
                 (new ActivityLogContact())
+                    ->setContactId($contact->getId())
                     ->setUserId($contact->getUserId())
                     ->setActivityType(ActivityLogContact::UPDATE_VALUE_FIELD_EVENT)
-                    ->setContactId($contact->getId())
                     ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
                     ->setModelField($key)
                     ->setDataNew($contactSocialNetworks->{$key})
@@ -61,9 +61,9 @@ class ContactSocialNetworksObserver
         $contact = $contactSocialNetworks->contact;
 
         (new ActivityLogContact())
+            ->setContactId($contact->getId())
             ->setUserId($contact->getUserId())
             ->setActivityType(ActivityLogContact::DELETE_VALUE_FIELD_EVENT)
-            ->setContactId($contact->getId())
             ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
             ->setModelField(self::FIELD_LINK)
             ->setDataOld($contactSocialNetworks->getOriginal(self::FIELD_LINK))

@@ -12,7 +12,7 @@ export const FieldMatchingHead: React.FC = () => {
       <div className={classes.fieldContainer}>
         <span className={classes.paddingRight40}>
           <span className={classes.fieldLabel}>For contact:</span>{' '}
-          <span className={classes.fieldName}>E-mail</span>
+          <span className={classes.fieldName}>Email</span>
         </span>
         <span>
           <span className={classes.fieldLabel}>For company:</span>{' '}

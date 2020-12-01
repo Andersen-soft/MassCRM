@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 use App\Models\User\User;
 use Illuminate\Database\Migrations\Migration;
@@ -29,7 +29,7 @@ class AddSkypeToUsersTable extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('skype',);
+            $table->dropColumn('skype');
         });
     }
 }

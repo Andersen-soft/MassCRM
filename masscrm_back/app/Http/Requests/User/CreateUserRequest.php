@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Requests\User;
 
@@ -27,8 +27,8 @@ class CreateUserRequest extends AbstractRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|unique:users,email|regex:' . static::REGEX_EMAIL,
-            'login' => 'required|string|unique:users,login',
+            'email' => 'required|unique:users,email|email:filter',
+            'login' => 'required|string|min:1|unique:users,login',
             'name' => 'required|string|max:50',
             'surname' => 'required|string|max:50',
             'roles' => 'required|array',

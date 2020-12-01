@@ -53,3 +53,5 @@ export const AuthPage: FC<Props> = ({ children, token, userRole }) => {
     </>
   );
 };
+
+export default AuthPage;

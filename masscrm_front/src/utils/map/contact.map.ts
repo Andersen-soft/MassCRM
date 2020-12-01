@@ -25,3 +25,8 @@ export const getContactForUpdate = ({
   note: note?.map(({ message }) => message),
   ...contact
 });
+
+export const GENDER_MAP: { [key: string]: string } = {
+  m: 'Male',
+  f: 'Female'
+};

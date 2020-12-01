@@ -3,7 +3,7 @@ import { styleNames } from 'src/services';
 import style from './PopUp.scss';
 
 interface IPopUp {
-  message: string;
+  message: string[];
 }
 
 const sn = styleNames(style);
@@ -11,7 +11,11 @@ const sn = styleNames(style);
 export const OccupiedMessage = ({ message }: IPopUp) => {
   return (
     <div className={sn('wrapperThree')}>
-      <p className={sn('occupied')}>{message}</p>
+      {message.map(item => (
+        <p key={item} className={sn('occupied')}>
+          {item}
+        </p>
+      ))}
     </div>
   );
 };

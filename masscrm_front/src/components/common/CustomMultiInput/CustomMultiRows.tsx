@@ -21,7 +21,7 @@ export const CustomMultiRows: FC<ICustomMultiRows> = ({
 
   const renderItems = useCallback(() => {
     return items.map((item, index) => {
-      const linkURI = placeholder === 'E-mail' ? `mailto:${item}` : '';
+      const linkURI = placeholder === 'Email' ? `mailto:${item}` : '';
 
       return (
         <li className={styles.listEl} key={item}>

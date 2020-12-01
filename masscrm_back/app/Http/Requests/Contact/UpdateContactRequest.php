@@ -1,10 +1,12 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Http\Requests\Contact;
 
 use App\Http\Requests\AbstractRequest;
 use App\Models\Contact\Contact;
 use App\Rules\Contact\CheckUniqueEmailContact;
+use App\Rules\Contact\UniqueContactLinkedIn;
+use App\Rules\Contact\UniqueContactSocialNetwork;
 use App\Rules\DistinctRule;
 use Illuminate\Support\Facades\Lang;
 
@@ -35,8 +37,8 @@ class UpdateContactRequest extends AbstractRequest
             'emails' => ['array', new DistinctRule()],
             'emails.*' => [
                 'required',
-                'regex:' . static::REGEX_EMAIL,
-                new CheckUniqueEmailContact($this->contact)
+                'email:filter',
+                new CheckUniqueEmailContact((int) $this->contact)
             ],
             'phones' => 'nullable|array',
             'phones.*' => 'string|regex:'. static::REGEX_PHONE,
@@ -45,20 +47,20 @@ class UpdateContactRequest extends AbstractRequest
             'full_name' => 'nullable|string|max:150',
             'gender' =>
                 'required_if:location.country,' . $countries . '|nullable|string|in:' . implode(',', $gender),
-            'linkedin' =>
-                'nullable|string|unique:contacts,linkedin,' . $this->contact . '|regex:' . static::REGEX_LINK_LINKEDIN,
+            'linkedin' => [
+                'nullable',
+                'string',
+                'regex:' . static::REGEX_LINK_LINKEDIN,
+                new UniqueContactLinkedIn((int) $this->contact)
+            ],
             'requires_validation' => 'nullable|boolean',
             'location' => 'array',
             'location.country' => 'required_without:gender|string|max:50',
             'location.region' => 'nullable|string|max:150',
             'location.city' => 'nullable|string|max:50',
             'position' => 'string',
-            'colleagues' => 'nullable|array',
-            'colleagues.*.link' => 'required_with:colleagues|distinct|string|url',
-            'colleagues.*.full_name' => 'required_with:colleagues|string',
-            'colleagues.*.id' => 'integer|exists:contact_colleagues,id',
             'social_networks' => 'nullable|array',
-            'social_networks.*' => 'string|url',
+            'social_networks.*' => ['string', 'url', new UniqueContactSocialNetwork((int) $this->contact)],
             'comment' => 'nullable|string',
             'company_id' => 'nullable|integer|exists:companies,id',
             'skype' => 'nullable|string|max:60',
@@ -70,7 +72,7 @@ class UpdateContactRequest extends AbstractRequest
             'replies' => 'nullable|integer|min:0',
             'bounces' => 'nullable|integer|min:0',
             'confidence' => 'nullable|integer|min:0',
-            'service_id' => 'nullable|integer|min:1',
+            'service_id' => 'nullable|string',
             'last_touch' => 'nullable|date',
             'mailing_tool' => 'nullable|string|max:50',
             'added_to_mailing' => 'nullable|date',

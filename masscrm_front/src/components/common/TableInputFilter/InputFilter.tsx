@@ -18,7 +18,9 @@ export const InputFilter: FC<IInputFilterProps> = ({
   items,
   value,
   name,
-  errorMessage
+  errorMessage,
+  mainFilter,
+  className
 }) => {
   const style = inputStyle();
   const classes = searchStyle();
@@ -74,13 +76,17 @@ export const InputFilter: FC<IInputFilterProps> = ({
           size='small'
           options={
             items &&
-            ((multiSelect && withoutRepeat(items, multiFilterState[name])) ||
+            ((!mainFilter &&
+              multiSelect &&
+              withoutRepeat(items, multiFilterState[name])) ||
               items)
           }
           autoHighlight
           disableCloseOnSelect={!!multiSelect}
-          value={multiSelect ? multiFilterState[name] : value}
-          onChange={multiSelect ? handleMultiChange : handleChange}
+          value={!mainFilter && multiSelect ? multiFilterState[name] : value}
+          onChange={
+            !mainFilter && multiSelect ? handleMultiChange : handleChange
+          }
           onInputChange={handleChangeInput}
           getOptionLabel={option => option as string}
           renderOption={(option, { selected }) =>
@@ -96,15 +102,15 @@ export const InputFilter: FC<IInputFilterProps> = ({
           renderInput={params => (
             <div className={classes.searchWrap}>
               <TextField
-                className={classes.input}
+                label={placeholder}
+                className={className || classes.input}
                 {...params}
                 id={name}
                 name={name}
-                placeholder={placeholder}
                 variant='outlined'
                 error={!!errorMessage}
               />
-              {multiSelect && (
+              {!mainFilter && multiSelect && (
                 <CommonButton
                   text='Search'
                   color='yellow'

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Blacklist;
 
@@ -54,7 +54,7 @@ class BlacklistExportService
         foreach ($domains as $domain) {
             fputcsv($file, [
                 $domain->domain,
-                $domain->source_user,
+                $domain->source,
                 $domain->created_at->format(self::DATE_TIME_FORMAT)
             ]);
         }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Report;
 
 use App\Repositories\Contact\ContactRepository;
@@ -48,20 +50,45 @@ class ReportRepository implements SearchType
         return $query;
     }
 
-    public function buildQueryReport(array $search, array $sort): Builder
+    public function buildQueryReport(array $search, array $sort, array $ids = []): Builder
     {
         $query = Contact::query()->select(['contacts.*']);
+
+        if (isset($search['global'])) {
+            $data = Contact::search(json_encode($search['global']))->select([Contact::ID_FIELD])->take(1000)->keys();
+            $query->whereIn(Contact::ID_FIELD, $data);
+        }
+
         $query = $this->getRelationTablesQuery($search, $query);
-        $query = $this->setParamsSearch($search, $query);
+        $query = $this->setParamsSearch($search, $query, $ids);
         $query = $this->setParamSort($sort, $query);
+
+        $query = $query->selectSub('SELECT CONCAT(first_name,\' \',last_name) FROM contacts subContactFirst
+        WHERE (
+			position ILIKE \'%ceo%\'
+			AND contacts.company_id = subContactFirst.company_id
+			AND contacts.id != subContactFirst.id
+		) OR (
+			position NOT ILIKE \'%ceo%\'
+			AND subContactFirst.company_id = contacts.company_id
+			AND (subContactFirst.position ILIKE \'%ceo%\')
+        ) LIMIT 1',
+            'colleague_first'
+        );
+
+        $query = $query->selectSub(
+            'SELECT CONCAT(first_name,\' \',last_name) FROM contacts subContactSecond
+                WHERE subContactSecond.company_id = contacts.company_id AND subContactSecond.id != contacts.id LIMIT 1',
+            'colleague_second'
+        );
 
         return $query->groupBy(self::GROUP_BY_QUERY);
     }
 
-    private function setParamsSearch(array $search, Builder $query): Builder
+    private function setParamsSearch(array $search, Builder $query, array $ids = []): Builder
     {
-        if (empty($search)) {
-            return $query;
+        if (empty($search) || !empty($ids)) {
+            return $query->orWhereIn('id', $ids);
         }
 
         foreach ($search as $key => $value) {
@@ -77,7 +104,8 @@ class ReportRepository implements SearchType
                     $query->whereBetween(self::LIST_FIELDS[$key]['field'], [$value['min'], $value['max']]);
                     break;
                 case self::TYPE_SEARCH_FIELD_DATA_RANGE:
-                    $query->whereBetween(self::LIST_FIELDS[$key]['field'],
+                    $query->whereBetween(
+                        self::LIST_FIELDS[$key]['field'],
                         [Carbon::parse($value['min'])->startOfDay(), Carbon::parse($value['max'])->endOfDay()]
                     );
                     break;
@@ -129,7 +157,8 @@ class ReportRepository implements SearchType
                         ->where('linkedin', 'ILIKE', '%' . $value . '%')->get()->toArray();
                     $query->where(static function (Builder $query) use ($value, $key, $contactsId) {
                         $query->orWhere(self::LIST_FIELDS[$key]['field'], 'ILIKE', '%' . $value . '%');
-                        $query->orWhereIn('contact_colleagues.contact_id_relation',
+                        $query->orWhereIn(
+                            'contact_colleagues.contact_id_relation',
                             array_map(static function ($contactsId) {
                                 return $contactsId['id'];
                             }, $contactsId)
@@ -193,8 +222,8 @@ class ReportRepository implements SearchType
         return $query;
     }
 
-    private function revertValue($value): int
+    private function revertValue(string $value): int
     {
-        return (int)mb_eregi_replace('[^0-9]', '', $value);
+        return (int) mb_eregi_replace('[^0-9]', '', $value);
     }
 }

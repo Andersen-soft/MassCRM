@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace App\Repositories\Process;
 
 use App\Models\Process;
@@ -17,18 +20,22 @@ class ProcessRepository
             ->count();
     }
 
-    public function getListProcessExport(array $types, array $search): Builder
+    public function getListProcess(array $types, array $search, User $user = null): Builder
     {
         $query = Process::query()->select(['processes.*'])
-            ->join('users', 'processes.user_id', '=', 'users.id')
+            ->leftJoin('users', 'processes.user_id', '=', 'users.id')
             ->whereIn('type', $types);
-        $query = $this->setParamsSearch($search, $query);
+        $query = $this->setParamsSearch($search, $query, $user);
 
         return $query->groupBy('processes.id')->latest('updated_at');
     }
 
-    private function setParamsSearch(array $search, Builder $query): Builder
+    private function setParamsSearch(array $search, Builder $query, User $user = null): Builder
     {
+        if ($user) {
+            $query->where('users.id', '=', $user->id);
+        }
+
         if (empty($search)) {
             return $query;
         }
@@ -49,7 +56,8 @@ class ProcessRepository
                     $query->where('processes.status', '=', $value);
                     break;
                 case 'date':
-                    $query->whereBetween('processes.updated_at',
+                    $query->whereBetween(
+                        'processes.updated_at',
                         [Carbon::parse($value['min'])->startOfDay(), Carbon::parse($value['max'])->endOfDay()]
                     );
                     break;

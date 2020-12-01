@@ -1,34 +1,33 @@
 import { ISearchItem } from 'src/components/common/SearchInput/interfaces';
-import { ILocations } from './ILocation';
-import { IUser } from './IUser';
 import {
+  ILocations,
+  IUser,
   IContactFilter,
   IContactFiltersState,
   IContactResult,
-  IMultiFilterState
-} from './IContact';
-import { ICompany } from './ICompany';
-import { IIndustry } from './IIndustry';
-import { IFilterData } from './IFilterData';
-import { IRoles } from './IRoles';
-import {
+  IMultiFilterState,
+  ICompany,
+  IIndustry,
+  IFilterData,
+  IRoles,
   IImportModalFormState,
   IFetching,
   IDocInfo,
   IFieldsList,
   IImportStatus,
-  IInfo
-} from './IImportModal';
-import { IFileInfo } from './IFile';
-import { IWebsocketStore } from './IWebsocket';
-import { ISortingObject, ISortingState } from './ISorting';
-import { IBlacklistFiltersState, IBlacklistItem } from './IBlacklist';
-import {
-  IOneContactActivityLogItem,
-  IOneContactAttachmentItem,
-  IOneContactData
-} from './IOneContactData';
-import { IExportStore } from './IExport';
+  IInfo,
+  IFileInfo,
+  IWebsocketStore,
+  ISortingObject,
+  ISortingState,
+  IBlacklistFiltersState,
+  IBlacklistItem,
+  IExportStore,
+  IPreviousCompany,
+  IAttachment,
+  IActivityLog,
+  IImportDataStore
+} from '.';
 
 export type ILocationStore = ILocations;
 
@@ -48,7 +47,6 @@ export interface IBlacklistStore {
   total?: number;
   per_page?: number;
   showCount: number;
-  errors: string[];
 }
 
 export interface IContactStore {
@@ -59,6 +57,9 @@ export interface IContactStore {
   };
   total?: number;
   per_page?: number;
+  previous_companies?: Array<IPreviousCompany>;
+  attachments?: Array<IAttachment>;
+  activity_log?: IActivityLog;
 }
 
 export interface IUsersStore {
@@ -69,6 +70,8 @@ export interface IUsersStore {
   filteredUsers?: Array<{ [key: string]: string }> | null;
   errorText?: string;
   total?: number;
+  searchUsers?: Array<IUser>;
+  fullName?: string[];
 }
 
 export interface ICompanyStore {
@@ -108,18 +111,6 @@ export interface IPageStore {
   currentPage: number;
 }
 
-export interface IOneContact {
-  data: IOneContactData;
-}
-
-export interface IOneContactActivityLog {
-  data: Array<IOneContactActivityLogItem>;
-}
-
-export interface IOneContactAttachment {
-  data: Array<IOneContactAttachmentItem>;
-}
-
 export interface IErrorStore {
   data?: string;
 }
@@ -137,9 +128,7 @@ export interface IStoreState {
   websocket: IWebsocketStore;
   loader: ILoaderStore;
   blacklist: IBlacklistStore;
-  oneContact: IOneContact;
-  oneContactActivityLog: IOneContactActivityLog;
-  oneContactAttachment: IOneContactAttachment;
   exportData: IExportStore;
   errorData: IErrorStore;
+  importData: IImportDataStore;
 }

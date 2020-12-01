@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core';
 import { getRoles } from 'src/selectors/user.selector';
 import { InfoOutlined } from '@material-ui/icons';
-import { tableStyle } from 'src/components/common/Table/Table.style';
+import { rolesInfoStyles } from './RolesInfo.style';
 import styles from './RolesInfo.scss';
 
 const anchorOriginValue: PopoverOrigin = {
@@ -25,7 +25,7 @@ const transformOriginValue: PopoverOrigin = {
 };
 
 export const RolesInfo: FC = () => {
-  const style = tableStyle();
+  const style = rolesInfoStyles();
 
   const roles = useSelector(getRoles);
 

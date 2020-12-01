@@ -3,7 +3,7 @@ import { Box } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import { isSameDay } from 'date-fns';
 import { EventNote, Close } from '@material-ui/icons';
-import { DatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { styleNames } from 'src/services';
 import { DateRangePicker } from './components';
 import myStyle from './DateRange.scss';
@@ -12,16 +12,28 @@ import { IDateRangeProps } from './interfaces/IDateRangeProps';
 const sn = styleNames(myStyle);
 
 export const DateRange: FC<IDateRangeProps> = ({
-  date,
+  date = [],
   changeFilter,
   name,
   onChange,
+  singular,
   hasDataRangeFilter,
+  resetDateFilter,
   ...props
 }) => {
-  const [dates, setDates] = useState<Array<Date>>(date || []);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const clearDate = useCallback(() => setDates([]), []);
+  const [isCleaned, setIsCleaned] = useState<boolean>(false);
+  const handleDate = useCallback(
+    (clear: boolean, value: Date[] = []) => () => {
+      if (!value.length && resetDateFilter) {
+        resetDateFilter();
+      }
+      setIsCleaned(clear);
+      onChange(name, value);
+      name && changeFilter && changeFilter({ name, item: value });
+    },
+    [setIsCleaned, onChange, name, resetDateFilter]
+  );
 
   const openCalendar = useCallback(() => setIsOpen(true), []);
 
@@ -32,47 +44,42 @@ export const DateRange: FC<IDateRangeProps> = ({
     setIsOpen(false);
   }, []);
 
-  useEffect(() => {
-    if (name && dates?.length && dates[0] && dates[1]) {
-      if (changeFilter) {
-        changeFilter({ name, item: dates });
-      }
-    }
-  }, [dates]);
-
   const disabledDate = useCallback(
     (day: Date) => isSameDay(day, new Date('2020-08-20')),
     []
   );
 
-  const handleDateChange = (value?: Array<Date>) => {
-    setDates(value || []);
-  };
-
-  const handleOnClean = () => {
-    onChange(name, '');
-  };
+  useEffect(() => {
+    if (name && date?.length && date[0] && date[1]) {
+      if (changeFilter) {
+        changeFilter({ name, item: date });
+      }
+    }
+  }, [date]);
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
       <Box className={sn('date-range')}>
         <DateRangePicker
           {...props}
-          value={dates}
+          value={date}
           onlyCalendar
           hasDataRangeFilter={hasDataRangeFilter}
-          PickerComponent={DatePicker}
           shouldDisableDate={disabledDate}
           onOpen={openCalendar}
           onClose={closeCalendar}
-          onChange={handleDateChange}
-          onClean={handleOnClean}
+          onChange={handleDate}
+          onClean={handleDate(true)}
+          singular={singular}
+          isCleaned={isCleaned}
+          open={isOpen}
+          autoOk
         />
-        {dates.length > 0 && !isOpen ? (
+        {date.length > 0 && !isOpen ? (
           <Close
             fontSize='small'
             className={sn('date-range_icon')}
-            onClick={clearDate}
+            onClick={handleDate(true)}
           />
         ) : (
           <EventNote fontSize='small' className={sn('date-range_icon')} />

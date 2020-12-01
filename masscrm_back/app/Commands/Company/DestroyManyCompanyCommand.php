@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Commands\Company;
 
 /**
@@ -10,9 +12,7 @@ class DestroyManyCompanyCommand
 {
     protected array $ids;
 
-    public function __construct(
-        array $ids
-    ) {
+    public function __construct(array $ids) {
         $this->ids = $ids;
     }
 

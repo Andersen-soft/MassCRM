@@ -5,7 +5,7 @@ exports[`SearchInput NumericRangeFilter should render correctly 1`] = `
   <WithStyles(ForwardRef(FormControl))
     classes={
       Object {
-        "root": "makeStyles-input-1 makeStyles-soloInput-2 makeStyles-search-10 undefined undefined",
+        "root": "makeStyles-input-1 makeStyles-soloInput-2 makeStyles-search-13 undefined undefined",
       }
     }
     style={
@@ -17,13 +17,20 @@ exports[`SearchInput NumericRangeFilter should render correctly 1`] = `
   >
     <WithStyles(ForwardRef(Autocomplete))
       blurOnSelect={true}
+      classes={
+        Object {
+          "paper": "",
+        }
+      }
       freeSolo={true}
       getOptionLabel={[Function]}
       getOptionSelected={[Function]}
       inputValue=""
       limitTags={1}
       onChange={[Function]}
+      onClose={[Function]}
       onInputChange={[Function]}
+      onOpen={[Function]}
       openOnFocus={true}
       options={
         Array [

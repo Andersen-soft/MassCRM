@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models\User\Fields;
 
@@ -8,6 +8,8 @@ use App\Services\Reports\SearchType;
 class UserFields extends BaseModel
 {
     public const FULL_NAME_FIELD = 'fullName';
+    public const NAME_FIELD = 'name';
+    public const SURNAME_FIELD = 'surname';
     public const EMAIL_FIELD = 'email';
     public const LOGIN_FIELD = 'login';
     public const ROLES_FIELD = 'roles';

@@ -1,8 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Parsers\Mapping;
 
 use App\Exceptions\Import\ImportFileException;
+use App\Models\BaseModel;
 use App\Models\Company\Fields\CompanyFields;
 use App\Models\Company\CompanyVacancy;
 use App\Models\Contact\Contact;
@@ -125,13 +126,6 @@ class FieldMapping
             'contactCampaigns' => [
                 'sequence' => ContactCampaigns::SEQUENCE_FIELD,
                 'status' => ContactCampaigns::STATUS_ID_FIELD,
-            ],
-            'contactSales' => [
-                'sale_id' => ContactSale::LINK_FIELD,
-                'sale_created' => ContactSale::CREATED_AT_FIELD,
-                'source' => ContactSale::SOURCE_ID_FIELD,
-                'sale_status' => ContactSale::STATUS_ID_FIELD,
-                'sale_project_c1' => ContactSale::PROJECT_C1_FIELD
             ]
         ];
     }
@@ -142,18 +136,17 @@ class FieldMapping
         $entityValues = [];
 
         foreach ($fields as $key => $field) {
-
-            if ($field === 'job'){
+            if ($field === 'job') {
                 $valueFields[$field][] = $data[$key];
                 continue;
             }
 
-            if ($field === 'job_skills'){
+            if ($field === 'job_skills') {
                 $valueFields[$field][] = $data[$key];
                 continue;
             }
 
-            if ($field === 'job_urls'){
+            if ($field === 'job_urls') {
                 $valueFields[$field][] = $data[$key];
                 continue;
             }
@@ -164,10 +157,14 @@ class FieldMapping
         }
 
         foreach ($this->getMapEntity() as $entity => $item) {
-            $this->mapEntityFields($item, $valueFields, $entity, $separator,$entityValues);
+            $this->mapEntityFields($item, $valueFields, $entity, $separator, $entityValues);
         }
 
-        $entityValues['companyVacancies']['vacancy'] = $this->formJobData($valueFields);
+        $isJobFieldPassed = (bool) array_search('job', $fields);
+
+        if ($isJobFieldPassed) {
+            $entityValues['companyVacancies']['vacancy'] = $this->formJobData($valueFields);
+        }
 
         $this->validate($entityValues);
 
@@ -177,14 +174,13 @@ class FieldMapping
     private function mapEntityFields(
         array $item,
         array $valueFields,
-        $entity,
+        string $entity,
         string $separator,
         array &$entityValues
-    ): void
-    {
+    ): void {
         foreach ($item as $key => $field) {
             if (array_key_exists($key, $valueFields) && !is_array($valueFields[$key])) {
-                $this->parseSingleField($entity, $valueFields, $key, $separator,$entityValues, $field);
+                $this->parseSingleField($entity, $valueFields, $key, $separator, $entityValues, $field);
             }
         }
     }
@@ -193,41 +189,54 @@ class FieldMapping
     {
         $formedJobData = [];
 
-        if(isset($valueFields['job'])) {
+        if (isset($valueFields['job'])) {
             foreach ($valueFields['job'] as $key => $jobValue) {
                 $formedJobData[$key]['job'] = $jobValue;
             }
         }
 
-        if(isset($valueFields['job_skills'])){
-            foreach ($valueFields['job_skills'] as $key => $skillValue){
+        if (isset($valueFields['job_skills'])) {
+            foreach ($valueFields['job_skills'] as $key => $skillValue) {
                 $formedJobData[$key]['job_skills'] = $skillValue;
             }
         }
 
-        if(isset($valueFields['job_urls'])){
-            foreach ($valueFields['job_urls'] as $key =>  $urlValue){
+        if (isset($valueFields['job_urls'])) {
+            foreach ($valueFields['job_urls'] as $key =>  $urlValue) {
                 $formedJobData[$key]['job_urls'] = $urlValue;
             }
+        }
+
+        //for handle situation when jobs has 1 value for job
+        $jobs = array_column($formedJobData, 'job');
+        arsort($jobs);
+
+        if (empty($jobs[0])) {
+            throw new ImportFileException(['job must have at least 1 value']);
         }
 
         return $formedJobData;
     }
 
     private function parseSingleField(
-        $entity,
+        string $entity,
         array $valueFields,
-        $key,
-        $separator,
+        string $key,
+        string $separator,
         array &$entityValues,
-        string $field): void
-    {
+        string $field
+    ): void {
         if (in_array($key, self::FIELDS_TRANSFORM, true)) {
             $entityValues[$entity][$field] = $this->getSplitString($valueFields[$key], $separator);
         } else {
-            $entityValues[$entity][$field] = trim($valueFields[$key]) ?: null;
-        }
+            if(is_string($valueFields[$key])) {
+                $val =  trim($valueFields[$key]);
+            }else{
+                $val = null;
+            }
 
+            $entityValues[$entity][$field] = $val;
+        }
     }
 
     private function validate(array $entityValues): void
@@ -244,7 +253,7 @@ class FieldMapping
         }
 
         if (!array_key_exists($separator, $this->separators)) {
-            return trim($str);
+            return [trim($str)];
         }
 
         $list = explode($this->separators[$separator], trim($str));

@@ -1,14 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Repositories\Company;
 
 use App\Models\BaseModel;
 use App\Models\Company\Company;
 use App\Models\Company\CompanySubsidiary;
-use App\Models\Contact\Contact;
-use App\Models\User\User;
 use App\Repositories\FilterRepository;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class CompanyRepository
@@ -28,18 +27,16 @@ class CompanyRepository
             ->leftJoin('company_subsidiaries', 'company_subsidiaries.parent_id', '=', 'companies.id');
     }
 
-    public function getCompanyList(array $search, array $sort, int $limit = 10, User $user = null): LengthAwarePaginator
+    public function getCompanyList(array $search, array $sort): Builder
     {
         $query = Company::query()
             ->with(['vacancies', 'industries', 'companySubsidiary'])->select(['companies.*']);
+
         $query = $this->getRelationTablesQuery($query);
-        if ($user) {
-            $query->where('companies.user_id', $user->getId());
-        }
         $query = $this->setParamsSearch($search, $query);
         $query = $this->setParamSort($sort, $query);
 
-        return $query->groupBy('companies.id')->paginate($limit);
+        return $query->groupBy('companies.id');
     }
 
     private function setParamSort(array $sort, Builder $query): Builder
@@ -84,6 +81,17 @@ class CompanyRepository
         return $query->first();
     }
 
+    public function getNotUniqueCompanyForDelete(string $name = null, int $id): array
+    {
+        if (empty($name)) {
+            return [];
+        }
+
+        $query = Company::query()->where('id', '!=', $id)->where('name', 'ILIKE', $name);
+
+        return $query->get()->all();
+    }
+
     public function deleteById(int $id): void
     {
         $company = Company::query()->find($id);
@@ -126,6 +134,8 @@ class CompanyRepository
 
     public function getCompanyForTransfer(): ?Company
     {
-        return Company::query()->select('*')->where('is_upload_collection', '=', false)->first();
+        return Company::query()->select('*')->where('is_upload_collection', '=', false)
+            ->orderBy('id')
+            ->first();
     }
 }

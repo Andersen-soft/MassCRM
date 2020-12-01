@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Models\Contact;
 
@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ContactNotes extends Model
 {
     public const MY_NOTES_FIELD = 'my_notes';
+    public const FIELD_MESSAGE = 'message';
 
     protected $fillable = [
         'id',

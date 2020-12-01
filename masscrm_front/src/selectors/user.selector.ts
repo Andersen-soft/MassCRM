@@ -30,3 +30,13 @@ export const getUser = createSelector(
   ({ users }: IStoreState): IUser => users.userData,
   users => users
 );
+
+export const getSearchUser = createSelector(
+  ({ users }: IStoreState) => users.searchUsers,
+  users => users
+);
+
+export const getUserFullName = createSelector(
+  ({ users }: IStoreState) => users.fullName,
+  users => users
+);

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace App\Services\Blacklist;
 
@@ -7,7 +7,7 @@ use App\Models\Contact\Contact;
 use App\Models\User\User;
 use App\Repositories\Blacklist\BlacklistRepository;
 use App\Repositories\Contact\ContactRepository;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class BlacklistService
 {
@@ -65,7 +65,7 @@ class BlacklistService
         return $result;
     }
 
-    public function deleteListDomains(array $ids,  User $user): void
+    public function deleteListDomains(array $ids, User $user): void
     {
         foreach ($ids as $id) {
             $result = $this->blacklistRepository->getDomain($id);
@@ -74,27 +74,27 @@ class BlacklistService
         }
     }
 
-    public function getListDomains(array $search, array $sort, int $limit): LengthAwarePaginator
+    public function getListDomains(array $search, array $sort): Builder
     {
-        return $this->blacklistRepository->getListDomains($search, $sort)->paginate($limit);
+        return $this->blacklistRepository->getListDomains($search, $sort);
     }
 
     public function checkEmailInBlackList(string $email): bool
     {
-        preg_match(Blacklist::REGEX_EMAIL, $email, $emailMatch);
-        preg_match(Blacklist::REGEX_GET_DOMAIN_NAME, $email, $domain);
-
-        if (!$emailMatch && !$domain) {
-            $emailMatch[] = $email;
+        $parts = [];
+        $parts[] = $email;
+        $domain = $this->getDomainFromEmail($email);
+        if (!empty($domain)) {
+            $parts[] = $domain;
         }
 
-        return $this->blacklistRepository->checkExistDomains(array_merge($emailMatch, $domain));
+        return $this->blacklistRepository->checkExistDomains($parts);
     }
 
-    public function validateDomain(string $domain): bool
+    public function isValidateDomain(string $domain): bool
     {
-        return preg_match(Blacklist::REGEX_EMAIL, $domain, $matches)
-            || preg_match(Blacklist::REGEX_DOMAIN, $domain, $matches);
+        return filter_var($domain, FILTER_VALIDATE_EMAIL) ||
+            filter_var($domain, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME);
     }
 
     public function getDomainFromEmail(string $email): string

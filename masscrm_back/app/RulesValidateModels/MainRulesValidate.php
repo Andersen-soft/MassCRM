@@ -1,27 +1,42 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\RulesValidateModels;
 
+use App\Models\BaseModel;
 use Illuminate\Support\Facades\Lang;
 use App\Http\Requests\AbstractRequest;
 
 class MainRulesValidate implements RulesValidateInterface
 {
+    private const VALIDATION_INDUSTRY = '/^[a-zA-Z& \\\,-\/]+$/';
+
+    public function rulesCreate(): array
+    {
+        return [];
+    }
+
+    public function rulesUpdate(BaseModel $model): array
+    {
+        return [];
+    }
+
     public function rules(): array
     {
         return [
             'companyVacancies' => 'array',
             'companyVacancies.vacancy' => 'array',
-            'companyVacancies.vacancy.*.job' => 'required|string',
+            'companyVacancies.vacancy.*.job' => 'nullable|string',
             'companyVacancies.vacancy.*.job_skills' => 'nullable|string',
             'companyVacancies.vacancy.*.job_urls' => 'nullable|string',
             'companyIndustries' => 'array',
             'companyIndustries.industry' => 'array|min:1',
-            'companyIndustries.industry.*' => 'string',
+            'companyIndustries.industry.*' => 'string|regex:' . self::VALIDATION_INDUSTRY,
             'contactEmail' => 'array',
             'contactEmail.email' => 'array|min:1',
             'contact.position' => 'string',
-            'contactEmail.email.*' => 'string|regex:' . AbstractRequest::REGEX_EMAIL,
+            'contactEmail.email.*' => 'string|email:filter',
             'contactEmail.requires_validation' => 'array',
             'contactEmail.requires_validation.*' => 'string',
             'contactPhone' => 'array',
@@ -54,7 +69,6 @@ class MainRulesValidate implements RulesValidateInterface
             .*.url' => Lang::get('validationModel.vacancy.url_invalid'),
             'contactEmail.email.*.regex' => Lang::get('validationModel.contactEmail.email_invalid'),
             'contactPhone.phone.*.regex' => Lang::get('validationModel.contactPhone.phone_invalid'),
-            'contactEmail.email.gte' => Lang::get('validationModel.contactEmail.email_invalid_count'),
         ];
     }
 }

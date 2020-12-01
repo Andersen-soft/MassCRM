@@ -19,4 +19,6 @@ export interface ISearchInputProps {
   onBlur?: () => void;
   onFocus?: () => void;
   multi?: boolean;
+  autoFocus?: string;
+  createNewIndustry?: Function;
 }
