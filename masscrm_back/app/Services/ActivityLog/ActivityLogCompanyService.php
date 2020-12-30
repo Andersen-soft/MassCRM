@@ -18,8 +18,8 @@ class ActivityLogCompanyService
         $this->activityLogCompanyRepository = $activityLogCompanyRepository;
     }
 
-    public function getActivityLogCompany(int $companyId): Builder
+    public function getActivityLogCompany(int $companyId, array $search = []): Builder
     {
-        return $this->activityLogCompanyRepository->getActivityLog($companyId);
+        return $this->activityLogCompanyRepository->getActivityLog($companyId, $search);
     }
 }

@@ -24,6 +24,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 abstract class AbstractActivityLog extends Model
 {
+    public const ID_FIELD = 'id';
+    public const USER_ID_FIELD = 'user_id';
+    public const ACTIVITY_TYPE_FIELD = 'activity_type';
+    public const MODEL_NAME_FIELD = 'model_name';
+    public const MODEL_FIELD_FIELD = 'model_field';
+    public const DATA_OLD_FIELD = 'data_old';
+    public const DATA_NEW_FIELD = 'data_new';
+    public const LOG_INFO_FIELD = 'log_info';
+    public const ADDITIONAL_INFO_FOR_DATA_FIELD = 'additional_info_for_data';
+
     public const STORE_ATTACHMENT_FILE_EVENT = 'storeAttachmentFile';
     public const UPDATE_ATTACHMENT_FILE_EVENT = 'updateAttachmentFile';
     public const DELETE_ATTACHMENT_FILE_EVENT = 'deleteAttachmentFile';

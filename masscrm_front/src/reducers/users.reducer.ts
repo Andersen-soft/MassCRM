@@ -7,13 +7,14 @@ import {
   getRolesAction,
   getLdapUserAction,
   onClearFilter,
-  getSearchUsers
+  getSearchUsers,
+  deleteInactiveUserAction
 } from 'src/actions/user.action';
 import { IUsersStore } from 'src/interfaces/store';
 
 const initialState: IUsersStore = {
   ldapUser: [],
-  users: {},
+  users: [],
   userData: {
     roles: {}
   },
@@ -25,6 +26,9 @@ const initialState: IUsersStore = {
 
 export const usersReducer = handleActions(
   {
+    [`${deleteInactiveUserAction}`]: (state, { payload }) => {
+      return { ...state, ...payload };
+    },
     [`${setUserDataAction}`]: (state, { payload }) => {
       let roles = { ...payload.userData.roles };
       if (roles.nc1 && roles.nc2 && roles.administrator && roles.manager) {

@@ -7,17 +7,11 @@ import { continueSession } from 'src/actions/continueSession';
 import { setPage } from 'src/actions';
 import { getUserRoles } from 'src/selectors';
 import { IStoreState } from 'src/interfaces/store';
-import { ErrorEmitterProvider } from 'src/context';
-import { ContactPage } from '../ContactPage';
+import { ErrorEmitterProvider, FilterProvider } from 'src/context';
+import { ROUTES, AUTH_ROUTES, HOME_PATH, SET_PASSWORD_PATH } from 'src/router';
 import { Loader } from '../common/Loader';
 
-const Contact = lazy(() => import('../Contact/Contact'));
-const UsersCRM = lazy(() => import('../UsersCRM/UsersCRM'));
-const CompanyPage = lazy(() => import('../CompanyPage/CompanyPage'));
-const SetPassword = lazy(() => import('../SetPassword/SetPassword'));
 const AuthPage = lazy(() => import('../AuthPage/AuthPage'));
-const Blacklist = lazy(() => import('../Blacklist/Blacklist'));
-const StatusPage = lazy(() => import('../StatusPage/StatusPage'));
 
 export const App = () => {
   const dispatch = useDispatch();
@@ -28,8 +22,8 @@ export const App = () => {
 
   useEffect(() => {
     if (
-      (!user && window.location.pathname !== '/') ||
-      (user && window.location.pathname !== '/set_password')
+      (!user && window.location.pathname !== HOME_PATH) ||
+      (user && window.location.pathname !== SET_PASSWORD_PATH)
     ) {
       dispatch(setPage());
     }
@@ -42,37 +36,37 @@ export const App = () => {
     <Suspense fallback={<Loader />}>
       <ErrorEmitterProvider>
         <Switch>
-          <Route exact path='/set_password'>
-            <SetPassword />
-          </Route>
-          <Route exact path='/company_page'>
-            <CompanyPage />
-          </Route>
+          {ROUTES.map(
+            ({ key, path, exact, component: Component, additionalProps }) => (
+              <Route
+                key={key}
+                path={path}
+                exact={exact}
+                render={props => <Component {...props} {...additionalProps} />}
+              />
+            )
+          )}
           <AuthPage token={token} userRole={userRole}>
-            <Route exact path='/users'>
-              <UsersCRM />
-            </Route>
-            <Route exact path='/add_contacts'>
-              <Contact addContactsPage />
-            </Route>
-            <Route exact path='/my_contacts'>
-              <Contact myContactPage />
-            </Route>
-            <Route exact path='/all_contacts'>
-              <Contact />
-            </Route>
-            <Route exact path='/blacklist'>
-              <Blacklist />
-            </Route>
-            <Route exact path='/contact'>
-              <ContactPage />
-            </Route>
-            <Route exact path='/export'>
-              <StatusPage />
-            </Route>
-            <Route exact path='/import'>
-              <StatusPage isImport />
-            </Route>
+            <FilterProvider>
+              {AUTH_ROUTES.map(
+                ({
+                  key,
+                  path,
+                  exact,
+                  component: Component,
+                  additionalProps
+                }) => (
+                  <Route
+                    key={key}
+                    path={path}
+                    exact={exact}
+                    render={props => (
+                      <Component {...props} {...additionalProps} />
+                    )}
+                  />
+                )
+              )}
+            </FilterProvider>
           </AuthPage>
         </Switch>
       </ErrorEmitterProvider>

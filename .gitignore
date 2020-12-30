@@ -9,7 +9,6 @@ masscrm_back/vendor
 masscrm_back/.env
 masscrm_back/.env.backup
 masscrm_back/.phpunit.result.cache
-masscrm_back/.php_cs.cache
 masscrm_back/Homestead.json
 masscrm_back/Homestead.yaml
 masscrm_back/npm-debug.log

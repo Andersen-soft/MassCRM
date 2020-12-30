@@ -21,4 +21,5 @@ export interface ISearchInputProps {
   multi?: boolean;
   autoFocus?: string;
   createNewIndustry?: Function;
+  isScrollForm?: boolean;
 }

@@ -13,11 +13,14 @@ import { ShowAllTD } from 'src/utils/table/cells';
 import copy from 'assets/svg/copy.svg';
 import { ITableCell, ITableRowProps, TOpen } from '../../interfaces';
 
+const INACTIVE_USER = 'Inactive';
+
 export const TableRowItem: FC<ITableRowProps> = ({
   row,
   config,
   data,
-  currentPage
+  currentPage,
+  fetchUsers
 }) => {
   const [open, setOpen] = useState<boolean>(false);
   const onSelectHandler = () =>
@@ -107,19 +110,23 @@ export const TableRowItem: FC<ITableRowProps> = ({
     []
   );
 
-  const canControl = useMemo(
-    () =>
+  const canControl = useMemo(() => {
+    const userActive = row.cells.map(item => Object.values(item));
+
+    return (
       config.hasControl && (
         <TableCell component='th' scope='row' key='edit' className='smallTD'>
           <Control
             id={row.id}
-            disableResetPassword={row.disableResetPassword}
             currentPage={currentPage}
+            fetchUsers={fetchUsers}
+            disableResetPassword={row.disableResetPassword}
+            hasDeleteButton={userActive.flat(1).includes(INACTIVE_USER)}
           />
         </TableCell>
-      ),
-    []
-  );
+      )
+    );
+  }, [row, currentPage, config]);
 
   const cellMapCallback = (
     {

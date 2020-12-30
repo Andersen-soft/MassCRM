@@ -80,6 +80,12 @@ class ReportFileService extends AbstractReport
 
         if ($isInWork) {
             $this->contact->updateIsInWorkAndDate($data);
+
+            CreateSocketUserNotificationEvent::dispatch(
+                UsersNotification::TYPE_IS_IN_WORK_UPDATED,
+                Lang::get('export.contacts.is_in_work_updated'),
+                [$user]
+            );
         }
 
         CreateSocketUserNotificationEvent::dispatch(

@@ -12,6 +12,7 @@ use App\Events\User\RegistrationUserToActiveDirectoryEvent;
 use App\Events\User\RegistrationUserToEmailEvent;
 use App\Exceptions\Custom\NotFoundException;
 use App\Exceptions\User\SetPasswordTokenException;
+use App\Exceptions\User\UserException;
 use App\Models\User\User;
 use App\Repositories\User\UserRepository;
 use App\Services\Token\FirebaseTokenManager;
@@ -96,15 +97,30 @@ class UserService
         return null;
     }
 
-    public function deleteUser(int $id): int
+    public function deleteUser(int $userId): int
     {
-        return $this->userRepository->deleteUserById($id);
+        $user = $this->userRepository->getUserById($userId);
+
+        if (!$user instanceof User) {
+            throw new NotFoundException('User value(' . $userId . ') not found');
+        }
+
+        if ($user->isActive()) {
+            throw new UserException(Lang::get('exception.delete_is_active'));
+        }
+
+        if ($user->responsible()->count()) {
+            throw new UserException(Lang::get('exception.is_responsible'));
+        }
+
+        return $this->userRepository->deleteUserById($userId);
     }
 
     public function getUserList(array $search, array $sort): Builder
     {
         return $this->userRepository->getUserList($search, $sort);
     }
+
     public function createUser(CreateUserCommand $command): User
     {
         $user = $this->user->createUser($command->toArray());
@@ -154,17 +170,28 @@ class UserService
 
     public function allowChangePassword(int $userId): array
     {
-        $user = $this->userRepository->getUserById($userId, false);
+        $user = User::query()->where('id', $userId)->first();
+
         if (!$user instanceof User) {
-            throw new NotFoundException('User value(' . $userId . ') not found');
+            throw new NotFoundException('User value(' . $userId . ') not found', 404);
         }
 
-        $user->allow_setting_password = true;
-        $user->save();
-
-        if ($user->active) {
-            ChangePasswordEvent::dispatch($user);
+        if (!$user->isActive()) {
+            throw new SetPasswordTokenException(Lang::get('exception.not_active'), 406);
         }
+
+        if ($user->fromActiveDirectory()) {
+            throw new SetPasswordTokenException(Lang::get('exception.is_ldap'), 406);
+        }
+
+        if ($user->isAllowSettingPassword()) {
+            $user->touch();
+        } else {
+            $user->setAllowSettingPassword(true);
+            $user->save();
+        }
+
+        ChangePasswordEvent::dispatch($user);
 
         return [
             'text' => Lang::get('user.successful_send_link_on_change_password')

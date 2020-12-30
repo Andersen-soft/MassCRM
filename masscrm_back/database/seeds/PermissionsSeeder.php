@@ -9,18 +9,15 @@ class PermissionsSeeder extends Seeder
 {
     public function run(): void
     {
-        RolesPermission::query()->truncate();
-        $permissions = $this->listPermission();
-
-        foreach ($permissions as $permission) {
+        foreach ($this->listPermission() as $permission) {
             /** @var $model Permission*/
-            $model = Permission::query()->updateOrCreate(
+            $model = Permission::query()->firstOrCreate(
                 ['slug' => $permission['slug']],
-                ['slug' =>  $permission['slug']]
+                ['slug' => $permission['slug']]
             );
 
             foreach ($permission['roles'] as $role) {
-                $model->rolesPermission()->create(['role' => $role]);
+                $model->rolesPermission()->firstOrCreate(['role' => $role], ['role' => $role]);
             }
         }
     }
@@ -34,6 +31,10 @@ class PermissionsSeeder extends Seeder
             ],
             [
                 'slug' => 'updateUser',
+                'roles' => [User::USER_ROLE_ADMINISTRATOR],
+            ],
+            [
+                'slug' => 'delete',
                 'roles' => [User::USER_ROLE_ADMINISTRATOR],
             ],
             [
@@ -117,6 +118,10 @@ class PermissionsSeeder extends Seeder
             [
                 'slug' => 'getListCompanies',
                 'roles' => [User::USER_ROLE_MANAGER, User::USER_ROLE_NC2, User::USER_ROLE_NC1],
+            ],
+            [
+                'slug' => 'addLocation',
+                'roles' => [User::USER_ROLE_MANAGER],
             ]
         ];
     }

@@ -7,12 +7,12 @@ import { getFilterSettings } from 'src/selectors';
 import { styleNames } from 'src/services';
 import { ICompany } from 'src/interfaces';
 import { ErrorEmitterContext } from 'src/context';
+import { DoubleClickError } from 'src/utils/errors';
 import style from '../cell.scss';
 import {
   ICompanyCell,
   ISubsidiaryHoldingEdit
 } from './interfaces/ICompanyCell';
-import { DoubleClickError } from '../../../errors';
 
 const sn = styleNames(style);
 

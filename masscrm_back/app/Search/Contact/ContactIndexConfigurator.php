@@ -21,9 +21,6 @@ class ContactIndexConfigurator extends DefaultIndexConfigurator
     public const COMPANY_PREFIX = 'company.';
 
     public const MAIN_FIELDS = [
-        Contact::ID_FIELD => [
-            'type' => 'integer',
-        ],
         Contact::EMAIL_COLLECTION_FIELD => [
             'type' => 'text',
             'boost' => 100

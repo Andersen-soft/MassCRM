@@ -52,4 +52,18 @@ class LocationRepository
             ->where('name', 'ILIKE', $name)
             ->first();
     }
+
+    public function hasRegionInCountry(int $countryId, int $regionId): bool
+    {
+        return Region::query()
+            ->where(['id' => $regionId, 'country_id' => $countryId])
+            ->exists();
+    }
+
+    public function hasCityByNameAndRegionId(string $cityName, int $regionId): bool
+    {
+        return City::query()
+            ->where(['name' => $cityName, 'region_id' => $regionId])
+            ->exists();
+    }
 }

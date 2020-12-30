@@ -11,13 +11,13 @@ export const getLdapUsers = createSelector(
   ldap => ldap
 );
 
-export const getUsers = createSelector(
-  ({ users }: IStoreState): { [key: string]: Array<IUser> } => users.users,
+export const getUsersSelector = createSelector(
+  ({ users: { users } }: IStoreState): IUser[] => users || [],
   users => users
 );
 
-export const getRoles = createSelector(
-  ({ users }: IStoreState) => users.roles,
+export const getRolesSelector = createSelector(
+  ({ users: { roles } }: IStoreState) => roles || {},
   roles => roles
 );
 
@@ -27,16 +27,21 @@ export const getErrors = createSelector(
 );
 
 export const getUser = createSelector(
-  ({ users }: IStoreState): IUser => users.userData,
+  ({ users: { userData } }: IStoreState): IUser => userData,
   users => users
 );
 
 export const getSearchUser = createSelector(
-  ({ users }: IStoreState) => users.searchUsers,
+  ({ users: { searchUsers } }: IStoreState) => searchUsers,
   users => users
 );
 
 export const getUserFullName = createSelector(
-  ({ users }: IStoreState) => users.fullName,
+  ({ users: { fullName } }: IStoreState) => fullName,
+  users => users
+);
+
+export const getTotalCount = createSelector(
+  ({ users: { total } }: IStoreState) => total,
   users => users
 );

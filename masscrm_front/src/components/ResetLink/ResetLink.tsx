@@ -1,7 +1,7 @@
 import React, { FC, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { CommonButton } from 'src/components/common';
-import { getUsers } from 'src/selectors/user.selector';
+import { getUsersSelector } from 'src/selectors/user.selector';
 import sendResetLink from 'src/services/sendResetLink';
 import { IUser } from 'src/interfaces';
 import styles from './ResetLink.scss';
@@ -11,13 +11,15 @@ interface IResetLinkProps {
   id: number;
   setUserLogin: (val?: string) => void;
   openAlert?: () => void;
-  currentPage: number;
 }
 
-export const ResetLink: FC<IResetLinkProps> = props => {
-  const { handleClose, id, openAlert, setUserLogin, currentPage } = props;
-
-  const currentUser: IUser[] = useSelector(getUsers)[currentPage].filter(
+export const ResetLink: FC<IResetLinkProps> = ({
+  handleClose,
+  id,
+  openAlert,
+  setUserLogin
+}) => {
+  const currentUser: IUser[] = useSelector(getUsersSelector).filter(
     (item: IUser) => item.id === id
   );
 

@@ -1,13 +1,26 @@
 import { createAction } from 'redux-actions';
 import { Dispatch } from 'redux';
 import qs from 'qs';
-import HTTP from '../utils/http';
+import HTTP, { HTTPFile } from '../utils/http';
 import { setNotification } from './notification.action';
-import { ICompany, ICompanyFilter, ICompanyUpdate } from '../interfaces';
+import { setLoaderAction } from './loader.action';
+import {
+  ICompany,
+  ICompanyFilter,
+  ICompanyUpdate,
+  IContactFilter
+} from '../interfaces';
 import { getCompanyForUpdate } from '../utils/map';
 import { store } from '../store/configureStore';
 
 export const getCompanyListAction = createAction('GET_COMPANY_LIST');
+export const getCompanyAction = createAction('GET_COMPANY');
+export const getCompanyAttachmentsAction = createAction(
+  'GET_COMPANY_ATTACHMENTS'
+);
+export const getCompanyActivityLogAction = createAction(
+  'GET_COMPANY_ACTIVITY_LOG'
+);
 
 export const getCompanyListRequest = (filter: ICompanyFilter) => {
   return HTTP.get(`companies`, {
@@ -36,6 +49,10 @@ export const createCompany = async (company: ICompanyUpdate) => {
   return id;
 };
 
+export const deleteCompany = async (id: number) => {
+  await HTTP.delete(`companies/${id}`);
+};
+
 export const updateCompany = async (
   idCompany: number,
   company: ICompanyUpdate,
@@ -49,4 +66,60 @@ export const updateCompany = async (
     ...currentCompany,
     ...company
   });
+};
+
+export const getOneCompanyRequest = (id: number) => (dispatch: Dispatch) => {
+  HTTP.get(`companies/${id}`).then(({ data }) => {
+    dispatch(getCompanyAction({ data }));
+  });
+};
+
+export const getCompanyAttachments = (id: number) => async (
+  dispatch: Dispatch
+) => {
+  const { data } = await HTTP.get(`attachment-files/company?id=${id}`);
+  dispatch(getCompanyAttachmentsAction({ attachments: data }));
+};
+
+export const getCompanyActivityLog = (
+  id: number,
+  page?: number,
+  limit?: number,
+  query?: string,
+  from?: string,
+  to?: string
+) => async (dispatch: Dispatch) => {
+  const data = await HTTP.get(`activity-log/company?id=${id}`, {
+    params: { page, limit, search: { query, from, to } },
+    paramsSerializer(params: IContactFilter) {
+      return qs.stringify(params, { arrayFormat: 'indices' });
+    }
+  });
+  dispatch(getCompanyActivityLogAction({ activity_log: { ...data } }));
+};
+
+export const uploadCompanyFile = (file: File, companyId: number) => async (
+  dispatch: Dispatch
+) => {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('id', `${companyId}`);
+    dispatch(setLoaderAction({ isLoading: true }));
+    await HTTPFile.post(`attachment-files/company`, formData);
+    await getCompanyAttachments(companyId)(dispatch);
+    await getCompanyActivityLog(companyId)(dispatch);
+    dispatch(setLoaderAction({ isLoading: false }));
+  } catch (e) {
+    dispatch(setLoaderAction({ isLoading: false }));
+  }
+};
+
+export const deleteCompanyAttachment = (
+  id: number,
+  companyId: number
+) => async (dispatch: Dispatch) => {
+  await HTTP.delete(`/attachment-files/company/${id}`);
+  await getCompanyAttachments(companyId)(dispatch);
+  await getCompanyActivityLog(companyId)(dispatch);
 };

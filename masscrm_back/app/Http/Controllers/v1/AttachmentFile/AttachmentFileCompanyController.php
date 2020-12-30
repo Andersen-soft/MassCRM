@@ -35,7 +35,7 @@ class AttachmentFileCompanyController extends BaseController
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"id", "file"},
-     *                 @OA\Property(property="id", type="int", example=13),
+     *                 @OA\Property(property="id", type="integer", example=13),
      *                 @OA\Property(property="file", type="string", format="binary"),
      *             )
      *         )
@@ -125,7 +125,8 @@ class AttachmentFileCompanyController extends BaseController
         GetAttachedFilesListRequest $request,
         Pagination $pagination
     ): JsonResponse {
-        $files = $this->attachmentFileCompanyService->getAttachedFilesCompany($request->get('id'))
+        $files = $this->attachmentFileCompanyService
+            ->getAttachedFilesCompany((int) $request->get('id'))
             ->paginate($request->get('limit', 50));
 
         return $this->success(AttachmentFileResources::collection($files), $pagination->getMeta($files));

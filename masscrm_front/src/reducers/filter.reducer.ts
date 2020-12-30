@@ -3,15 +3,19 @@ import { IFilterStore } from 'src/interfaces/store';
 import {
   getFiltersDataAction,
   setFilterSettingsAction,
+  setUsersFilterSettingsAction,
   setListFieldAction,
   setFilterValuesAction,
+  setUsersFilterValuesAction,
   setMultiFilterValuesAction,
   setSortValuesAction,
-  setSortAction
+  setSortAction,
+  setSelectedContactsAction
 } from 'src/actions/';
 import {
   initialFiltersState,
-  initialMultiFilterState
+  initialMultiFilterState,
+  initialUsersFilterState
 } from './tableFilters.reducer';
 import { initialSortingState } from './tableSorting.reducer';
 import history from '../store/history';
@@ -27,10 +31,13 @@ const filter = getDataByJson('filter');
 const initialState: IFilterStore = {
   data: {},
   settings: {},
+  usersSettings: {},
   values: { ...initialFiltersState, ...filter },
   multiValues: initialMultiFilterState,
+  usersValues: initialUsersFilterState,
   sort: sorting || initialSortingState,
-  sortBy: sortBy || {}
+  sortBy: sortBy || {},
+  selectedContacts: []
 };
 
 export const filterReducer = handleActions(
@@ -40,6 +47,10 @@ export const filterReducer = handleActions(
       ...payload
     }),
     [`${setFilterSettingsAction}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${setUsersFilterSettingsAction}`]: (state, { payload }) => ({
       ...state,
       ...payload
     }),
@@ -70,6 +81,16 @@ export const filterReducer = handleActions(
         ...payload
       }
     }),
+    [`${setUsersFilterValuesAction}`]: (
+      state: IFilterStore,
+      { payload }: Action<any>
+    ) => ({
+      ...state,
+      usersValues: {
+        ...state.usersValues,
+        ...payload
+      }
+    }),
     [`${setSortValuesAction}`]: (
       state: IFilterStore,
       { payload }: Action<any>
@@ -83,6 +104,13 @@ export const filterReducer = handleActions(
     [`${setSortAction}`]: (state: IFilterStore, { payload }: Action<any>) => ({
       ...state,
       sortBy: { ...payload }
+    }),
+    [`${setSelectedContactsAction}`]: (
+      state: IFilterStore,
+      { payload }: Action<any>
+    ) => ({
+      ...state,
+      ...payload
     })
   },
   initialState

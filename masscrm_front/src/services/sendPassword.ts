@@ -1,6 +1,5 @@
 import { setToken } from 'src/services/setTokenToCookies';
-import { instance } from '../utils/http';
-import history from '../store/history';
+import { instance } from '../utils/http/index';
 
 export default (id: number, password: string) => {
   return instance
@@ -13,6 +12,6 @@ export default (id: number, password: string) => {
     )
     .then(token => {
       setToken(String(token));
-      history.push({ pathname: '/' });
+      window.location.reload();
     });
 };

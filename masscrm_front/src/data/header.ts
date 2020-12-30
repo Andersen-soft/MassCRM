@@ -17,11 +17,19 @@ export const rolesConfig: IRolesConfig = {
       '/contact',
       '/blacklist',
       '/export',
-      '/import'
+      '/import',
+      '/company'
     ],
     administrator: ['/users'],
-    manager: ['/all_contacts', '/blacklist', '/contact', '/export', '/import'],
-    nc1: ['/add_contacts', '/my_contacts', '/contact', '/import'],
-    nc2: ['/add_contacts', '/my_contacts', '/contact', '/import']
+    manager: [
+      '/all_contacts',
+      '/blacklist',
+      '/contact',
+      '/export',
+      '/import',
+      '/company'
+    ],
+    nc1: ['/add_contacts', '/my_contacts', '/contact', '/import', '/company'],
+    nc2: ['/add_contacts', '/my_contacts', '/contact', '/import', '/company']
   }
 };

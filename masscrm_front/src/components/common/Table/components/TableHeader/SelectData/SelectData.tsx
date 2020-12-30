@@ -1,9 +1,11 @@
-import React, { FC, useCallback, useMemo, useState } from 'react';
+import React, { FC, useCallback, useMemo } from 'react';
 import { ArrowDropDown } from '@material-ui/icons';
 import { useHistory, useLocation } from 'react-router-dom';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import { styleNames } from 'src/services';
 import { MoreInformation, CustomCheckBox } from 'src/components/common';
+import { useDispatch } from 'react-redux';
+import { setSelectedContacts } from 'src/actions';
 import style from './SelectData.scss';
 import { ITableRow } from '../../../interfaces';
 
@@ -13,35 +15,45 @@ export const SelectData: FC<{
   isCheckedAll: boolean;
   onSelectAll: Function;
   data?: ITableRow[];
-}> = ({ isCheckedAll, onSelectAll, data }) => {
+  currentPage?: number;
+}> = ({ isCheckedAll, data, currentPage }) => {
   const location = useLocation();
   const history = useHistory();
-  const [selectData, setSelectData] = useState<'all' | 'page'>(() =>
-    new URLSearchParams(location.search).get('selectAll') ? 'all' : 'page'
-  );
+  const dispatch = useDispatch();
+  const param = new URLSearchParams(location.search);
 
   const onSelectHandler = useCallback(
-    (selection: 'page' | 'all') => (value: boolean): void => {
-      const param = new URLSearchParams(location.search);
-      if (selection === 'all') {
-        param.set('selectAll', value ? 'on' : 'off');
-      } else {
-        param.delete('selectAll');
-        onSelectAll(value);
+    (selection: 'page' | 'all' = 'page') => (value: boolean) => {
+      if (!value) {
+        dispatch(setSelectedContacts({}));
+        param.get('selectAllOnPage') && param.delete('selectAllOnPage');
+        param.get('selectAll') && param.delete('selectAll');
+      }
+      if (selection === 'page' && value) {
+        param.get('selectAll') && param.delete('selectAll');
+        // eslint-disable-next-line no-unused-expressions
+        param.get('selectAllOnPage')
+          ? param.delete('selectAllOnPage')
+          : param.set('selectAllOnPage', `${currentPage}`);
+      }
+      if (selection === 'all' && value) {
+        param.get('selectAllOnPage') && param.delete('selectAllOnPage');
+        param.set('selectAll', 'on');
       }
       history.push({
         search: param.toString()
       });
     },
-    [location, data]
+    [location]
   );
 
   const setDataOfSelection = useCallback(
     (type: 'page' | 'all') => () => {
-      setSelectData(type);
-      onSelectHandler(type)(true);
+      return type === 'page'
+        ? onSelectHandler(type)(!param.get('selectAllOnPage'))
+        : onSelectHandler(type)(!param.get('selectAll'));
     },
-    [selectData, setSelectData, data]
+    [location, data]
   );
 
   const selectList = useMemo(
@@ -50,7 +62,7 @@ export const SelectData: FC<{
         <ListItem
           button
           component='a'
-          selected={selectData === 'page'}
+          selected={param.get('selectAllOnPage') === String(currentPage)}
           onClick={setDataOfSelection('page')}
         >
           <ListItemText primary='All on the page' />
@@ -58,22 +70,19 @@ export const SelectData: FC<{
         <ListItem
           button
           component='a'
-          selected={selectData === 'all'}
+          selected={param.get('selectAll') === 'on'}
           onClick={setDataOfSelection('all')}
         >
           <ListItemText primary='All contacts' />
         </ListItem>
       </List>
     ),
-    [selectData, data]
+    [location, data]
   );
 
   return (
     <div className={sn('wrapper')}>
-      <CustomCheckBox
-        value={isCheckedAll}
-        onChange={onSelectHandler(selectData)}
-      />
+      <CustomCheckBox value={isCheckedAll} onChange={onSelectHandler()} />
       <MoreInformation icon={ArrowDropDown} popperInfo={selectList} autoClose />
     </div>
   );

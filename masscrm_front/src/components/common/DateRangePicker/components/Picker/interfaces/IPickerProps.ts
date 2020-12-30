@@ -32,4 +32,5 @@ export interface IPickerProps {
   onClean?: () => void;
   isCleaned?: boolean;
   open: boolean;
+  clearable?: boolean;
 }

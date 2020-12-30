@@ -13,11 +13,13 @@ class UniqueCompanyLinkedIn implements Rule
     private string $companyName;
     private string $regex;
     private ?bool $skipValidation;
+    private ?int $companyId;
 
-    public function __construct(string $regex, bool $skipValidation = null)
+    public function __construct(string $regex, bool $skipValidation = null, int $companyId = null)
     {
         $this->regex = $regex;
         $this->skipValidation = $skipValidation;
+        $this->companyId = $companyId;
     }
 
     public function passes($attribute, $value): bool
@@ -28,10 +30,13 @@ class UniqueCompanyLinkedIn implements Rule
 
         preg_match($this->regex, $value, $matches);
         $value = str_replace($matches[0], '', $value);
+        $company = Company::query()->where('linkedin', 'ILIKE', '%' . $value);
 
-        $company = Company::query()->where('linkedin', 'ILIKE', '%' . $value)->first();
+        if ($this->companyId) {
+            $company->where('id', '!=', $this->companyId);
+        }
 
-        if ($company) {
+        if ($company = $company->first()) {
             $this->companyName = $company->name;
 
             return false;

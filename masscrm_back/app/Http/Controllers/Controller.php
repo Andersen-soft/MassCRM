@@ -17,7 +17,7 @@ use Illuminate\Routing\Controller as BaseController;
  * )
  * @OA\Server(
  *     description="Development server",
- *     url="/api"
+ *     url="/api/v1/"
  * )
  * @OA\SecurityScheme(
  *      securityScheme="bearerAuth",

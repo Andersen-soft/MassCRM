@@ -1,46 +1,63 @@
 import { ITableConfig, ITableRow } from '../../common/Table/interfaces';
 import { IUser } from '../../../interfaces';
 
+interface IStatuses {
+  [key: string]: number;
+  Active: number;
+  Inactive: number;
+}
+
+interface IAutocompleteMap {
+  [key: string]: (item: IUser) => string | undefined;
+}
+
 export const tableConfig: ITableConfig = {
   rows: [
     {
       name: 'full name',
+      code: 'fullName',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
     },
     {
       name: 'e-mail',
+      code: 'email',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
     },
     {
       name: 'login',
+      code: 'login',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
     },
     {
       name: 'roles',
+      code: 'roles',
       hasFilter: true,
       isFiltered: false,
       hasCheckboxFilter: true
     },
     {
       name: 'skype',
+      code: 'skype',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
     },
     {
       name: 'position',
+      code: 'position',
       hasFilter: true,
       isFiltered: false,
       hasInputFilter: true
     },
     {
       name: 'status',
+      code: 'status',
       hasFilter: true,
       isFiltered: true,
       hasRadioFilter: true
@@ -99,28 +116,29 @@ export const userTableMap = ({
       data: active ? 'Active' : 'Inactive'
     },
     {
-      data: comment,
+      data: comment || '',
       isComment: true
     }
   ]
 });
 
-export const USERS_AUTOCOMPLETE_VALUES_MAP: any = {
-  'full name': (item: any) => `${item.name} ${item.surname}`,
-  'e-mail': (item: any) => item.email,
-  login: (item: any) => item.login,
-  skype: (item: any) => item.skype,
-  position: (item: any) => {
-    if (!item.position) return '';
-    return item.position;
-  }
+export const getRolesValuesForRequest = (rolesArray: string[]) => {
+  return rolesArray?.map(item => {
+    if (item === 'Admin') return 'administrator';
+    return item.toLocaleLowerCase();
+  });
 };
 
-interface IStatuses {
-  [key: string]: number;
-  Active: number;
-  Inactive: number;
-}
+export const USERS_AUTOCOMPLETE_VALUES_MAP: IAutocompleteMap = {
+  'full name': ({ name, surname }: IUser) => `${name} ${surname}`,
+  'e-mail': ({ email }: IUser) => email,
+  login: ({ login }: IUser) => login,
+  skype: ({ skype }: IUser) => skype,
+  position: ({ position }: IUser) => {
+    if (!position) return '';
+    return position;
+  }
+};
 
 export const STATUSES: IStatuses = {
   Active: 1,

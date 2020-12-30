@@ -6,7 +6,7 @@ import { setNotification } from './notification.action';
 import HTTP, { HTTPFile } from '../utils/http';
 import { setLoaderAction } from './loader.action';
 import { store } from '../store/configureStore';
-import { getContactForUpdate } from '../utils/map';
+import { transformContactForUpdate } from '../utils/map';
 import { deleteEmptyFields } from '../utils/form/objectHelpers';
 
 export const getContactListAction = createAction('GET_CONTACT_DATA');
@@ -17,6 +17,7 @@ export const getActivityLogAction = createAction('GET_ACTIVITY_LOG');
 export const getPreviousCompaniesAction = createAction(
   'GET_PREVIOUS_COMPANIES'
 );
+export const getRelatedContacts = createAction('GET_RELATED_CONTACTS');
 
 export const getContactListRequest = (filter?: IContactFilter) => {
   return HTTP.get(`contacts`, {
@@ -63,10 +64,18 @@ export const deleteAttachment = (id: number, contactId: number) => async (
   await getActivityLog(contactId)(dispatch);
 };
 
+const convertBytesToMegabytes = (bytes: number): string =>
+  (bytes / 1e6).toFixed(1);
+
 export const uploadContactFile = (file: File, contactId: number) => async (
   dispatch: Dispatch
 ) => {
   try {
+    const fileSizeInMegabytes = convertBytesToMegabytes(file.size);
+    if (Number(fileSizeInMegabytes) > 100) {
+      setNotification('File is too big. Max file size: 100MB')(dispatch);
+      return;
+    }
     const formData = new FormData();
     formData.append('file', file);
     formData.append('id', `${contactId}`);
@@ -176,10 +185,14 @@ export const changeContactsResponsible = async (
 
 export const updateContact = async (contact: IContact, contactID: number) => {
   try {
-    const currentContact = getContactForUpdate(
-      store.getState()?.contacts?.data?.find(({ id }) => id === contactID) ||
-        ({} as IContactResult)
-    );
+    const contactToUpdate = store
+      .getState()
+      ?.contacts?.data?.find(({ id }) => id === contactID);
+
+    const currentContact = contactToUpdate
+      ? transformContactForUpdate(contactToUpdate)
+      : ({} as IContactResult);
+
     await HTTP.put(`contacts/${contactID}`, {
       ...currentContact,
       ...contact

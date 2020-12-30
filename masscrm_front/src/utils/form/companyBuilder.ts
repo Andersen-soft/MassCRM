@@ -27,6 +27,8 @@ export class CompanyBuilder {
 
   public skip_validation?: number;
 
+  public comment?: string;
+
   setName(company?: string) {
     this.name = company;
     return this;
@@ -80,9 +82,7 @@ export class CompanyBuilder {
 
   setVacancies(formForVacancies: boolean, vacancies?: Array<IJob>) {
     if (formForVacancies) {
-      this.vacancies = vacancies?.length
-        ? vacancies.map(checkJobUrl)
-        : undefined;
+      this.vacancies = vacancies?.map(checkJobUrl) ?? [];
     }
     return this;
   }
@@ -99,6 +99,11 @@ export class CompanyBuilder {
 
   setSkipValidation(skip_validation: boolean) {
     this.skip_validation = skip_validation ? 1 : 0;
+    return this;
+  }
+
+  setComment(comment?: string) {
+    this.comment = comment;
     return this;
   }
 }

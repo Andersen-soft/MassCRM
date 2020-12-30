@@ -1,1 +1,1 @@
-export * from './ContagePage';
+export * from './ContactPage';

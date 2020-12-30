@@ -35,8 +35,18 @@ class UpdateCompanyRequest extends AbstractRequest
 
         return [
             'name' => ['string', 'max:150', new UniqueCompanyNameRule((int) $this->company)],
-            'website' => 'nullable|string|url',
-            'linkedin' => 'nullable|string|regex:' . static::REGEX_LINK_LINKEDIN,
+            'website' => [
+                'nullable',
+                'string',
+                'url',
+                new UniqueCompanyWebsite(self::REGEX_GET_URL, (bool) $this->skip_validation, (int) $this->company)
+            ],
+            'linkedin' => [
+                'nullable',
+                'string',
+                'regex:' . static::REGEX_LINK_LINKEDIN,
+                new UniqueCompanyLinkedIn(self::REGEX_GET_URL, (bool) $this->skip_validation, (int) $this->company)
+            ],
             'sto_full_name' => 'nullable|string|max:150',
             'type' => 'required_with:subsidiaries|nullable|string|max:50|in:'. $type,
             'founded' => 'nullable|date',
@@ -57,6 +67,7 @@ class UpdateCompanyRequest extends AbstractRequest
                 'exists:companies,id',
                 new CheckTypeSubsidiariesCompany($this->type)
             ],
+            'skip_validation' => 'nullable|boolean',
         ];
     }
 }

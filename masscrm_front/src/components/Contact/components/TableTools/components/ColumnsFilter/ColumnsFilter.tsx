@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { FC, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { MoreInformation } from 'src/components/common';
 import { Tune } from '@material-ui/icons';
@@ -31,12 +31,6 @@ export const ColumnsFilter: FC<{ isFullTable: boolean }> = ({
   );
   const currentParam = new URLSearchParams(location.search);
 
-  listField && currentParam.set('fields', listField?.join(',') || '');
-
-  history.push({
-    search: currentParam.toString()
-  });
-
   const onChangeFilter = (code: string) => {
     const list = listField || [];
     const codeArray: Array<string> = list.includes(code)
@@ -51,6 +45,14 @@ export const ColumnsFilter: FC<{ isFullTable: boolean }> = ({
       : contactColumns.map(item => item.code).filter(item => !!item);
     dispatch(setListField(newListField));
   };
+
+  useEffect(() => {
+    listField && currentParam.set('fields', listField?.join(',') || '');
+
+    history.push({
+      search: currentParam.toString()
+    });
+  }, [listField]);
 
   return (
     <span className={sn('table-tools__icon')}>

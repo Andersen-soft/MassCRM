@@ -40,9 +40,9 @@ services:
     volumes:
       - redis:/data
 
-  mailcatcher_test:
+  mailcatcher:
     image: schickling/mailcatcher
-    container_name: mailcatcher-masscrm
+    container_name: mailcatcher
     restart: always
     ports:
       - 1080:1080

@@ -1,0 +1,28 @@
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.spanLeft {
+  font-size: 14px;
+  color: #939BB2;
+  margin-right: 10px;
+}
+
+.spanRight {
+  display: flex;
+  align-items: center;
+  text-align: right;
+}
+
+.link {
+  color: #13639D;
+  text-decoration: none;
+}

@@ -47,7 +47,8 @@ export const TableHeader: FC<ITableHeaderProps> = ({
   filtersValues,
   clearAutocompleteList,
   isFullTable,
-  data
+  data,
+  currentPage
 }) => {
   const dispatch = useDispatch();
   const sortingState = useSelector(getFilterSorting);
@@ -164,6 +165,7 @@ export const TableHeader: FC<ITableHeaderProps> = ({
               data={data}
               isCheckedAll={isCheckedAll || false}
               onSelectAll={onSelectAll}
+              currentPage={currentPage}
             />
           </StyledTableCell>
         )}

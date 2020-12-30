@@ -3,9 +3,9 @@
 namespace App\Models\ActivityLog;
 
 use App\Models\User\User;
-use App\Search\ActivityLogContact\ActivityLogContactIndexConfigurator;
-use App\Search\ActivityLogContact\Transformers\ActivityLogContactTransformer;
-use App\Search\ActivityLogContact\Rules\ActivityLogContactSearchRule;
+use App\Search\ActivityLog\Contact\ActivityLogContactIndexConfigurator;
+use App\Search\ActivityLog\Contact\Transformers\ActivityLogContactTransformer;
+use App\Search\ActivityLog\Contact\Rules\ActivityLogContactSearchRule;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use ScoutElastic\Searchable;
 
@@ -18,16 +18,7 @@ class ActivityLogContact extends AbstractActivityLog
 {
     use Searchable;
 
-    public const ID_FIELD = 'id';
-    public const USER_ID_FIELD = 'user_id';
-    public const ACTIVITY_TYPE_FIELD = 'activity_type';
     public const CONTACT_ID_FIELD = 'contact_id';
-    public const MODEL_NAME_FIELD = 'model_name';
-    public const MODEL_FIELD_FIELD = 'model_field';
-    public const DATA_OLD_FIELD = 'data_old';
-    public const DATA_NEW_FIELD = 'data_new';
-    public const LOG_INFO_FIELD = 'log_info';
-    public const ADDITIONAL_INFO_FOR_DATA_FIELD = 'additional_info_for_data';
 
     protected $fillable = [
         self::ID_FIELD,

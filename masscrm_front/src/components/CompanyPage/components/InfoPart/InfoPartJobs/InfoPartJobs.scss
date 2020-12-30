@@ -1,0 +1,19 @@
+.wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &-jobs {
+    width: 100%;
+    display: flex;
+    align-content: baseline;
+    flex-wrap: wrap;
+    max-height: 307px;
+    overflow: auto;
+    margin-bottom: 16px;
+  }
+}
+
+.addJob {
+  margin: 0 0 0 auto;
+}

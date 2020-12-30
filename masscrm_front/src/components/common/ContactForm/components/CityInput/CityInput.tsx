@@ -1,4 +1,4 @@
-import React, { FC, useEffect } from 'react';
+import React, { FC, useCallback, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCitiesListByRegion } from 'src/actions';
 import { getCity } from 'src/selectors';
@@ -14,6 +14,13 @@ export const CityInput: FC<{
   const cities = useSelector(getCity);
   const cityItems = cities.map(({ name }) => name);
 
+  const onChangeCity = useCallback(
+    (val: string) => {
+      onChange('city', val);
+    },
+    [value]
+  );
+
   useEffect(() => {
     regionCode && dispatch(getCitiesListByRegion(regionCode));
   }, [regionCode]);
@@ -25,7 +32,7 @@ export const CityInput: FC<{
         value={value}
         placeholder='City'
         items={cityItems}
-        onChange={onChange}
+        onChange={onChangeCity}
         disabled={!regionCode}
       />
     </div>

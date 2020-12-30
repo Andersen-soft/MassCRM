@@ -1,0 +1,40 @@
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+
+  .column {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 67%;
+
+    &_small {
+      width: 33%;
+    }
+
+    .icon {
+      width: 16px;
+      height: 16px
+    }
+
+    .spanLeft {
+      font-size: 14px;
+      color: #939BB2;
+      margin-right: 10px;
+    }
+
+    .spanRight {
+      word-break: break-all;
+      text-align: right;
+
+      .logo {
+        width: 16px;
+        height: 16px
+      }
+    }
+  }
+}
+
+.list {
+  padding: 10px 20px;
+}

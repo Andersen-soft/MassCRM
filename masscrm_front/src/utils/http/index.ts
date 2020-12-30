@@ -2,15 +2,10 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { backendUrl } from 'src/constants';
 
-const redirectOnTokenExpiration = (error: string[]) => {
+const redirectOnTokenExpiration = (error: { [key: string]: string[] }) => {
   const token = Cookies.get('token');
-  const tokenError = [
-    'Token has expired',
-    'Invalid token.',
-    'Wrong number of segments'
-  ];
-  if (token && tokenError.includes(error.join(''))) {
-    Cookies.remove('token');
+  if (error.token) {
+    token && Cookies.remove('token');
     window.location.href = '/';
   }
 };
@@ -55,9 +50,18 @@ const onFullfiled = (response: any) => {
   return response.data;
 };
 
+const onRejectedServerError = () => {
+  window.location.href = '/error';
+};
+
 const onRejected = (reject: any) => {
-  redirectOnTokenExpiration(reject.response.data.errors);
-  return Promise.reject(reject.response.data.errors);
+  const { errors, statusCode } = reject.response.data;
+
+  redirectOnTokenExpiration(errors);
+  if (statusCode === 502 || statusCode === 503 || statusCode === 504) {
+    onRejectedServerError();
+  }
+  return Promise.reject(errors);
 };
 
 const HTTP = axios.create({

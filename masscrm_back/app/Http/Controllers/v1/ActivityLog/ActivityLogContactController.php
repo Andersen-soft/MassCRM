@@ -48,9 +48,10 @@ class ActivityLogContactController extends BaseController
         ShowActivityLogListRequest $request,
         ActivityLogContactService $activityLogContactService,
         Pagination $pagination
-    ): JsonResponse {
+    ): JsonResponse
+    {
         $activityLogsContact = $activityLogContactService
-            ->getActivityLogContact((int) $request->get('id'),  $request->get('search', []))
+            ->getActivityLogContact((int)$request->get('id'), $request->get('search', []))
             ->paginate($request->get('limit', 50));
 
         return $this->success(ActivityLog::collection($activityLogsContact), $pagination->getMeta($activityLogsContact));

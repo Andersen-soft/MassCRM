@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useDispatch, useSelector } from 'react-redux';
@@ -21,9 +21,11 @@ import {
   setSelectedTabAction,
   getExportFile,
   logout,
-  setPage
+  setPage,
+  getAddContactList
 } from 'src/actions';
 import { INotification, INotificationPayload } from 'src/interfaces';
+import { FilterContext } from 'src/context';
 import { Logo } from '../Logo';
 import style from './Header.scss';
 import { ExitIcon } from '../ExitIcon';
@@ -40,7 +42,10 @@ function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant='filled' {...props} />;
 }
 
-export const Header: FC = () => {
+export const Header: FC<{ daily?: boolean; myContact?: boolean }> = ({
+  daily,
+  myContact
+}) => {
   const [open, setOpen] = useState(false);
   const [openModal, setOpenModal] = useState<boolean>(false);
   const onClose = () => setOpenModal(false);
@@ -49,8 +54,9 @@ export const Header: FC = () => {
   const roles = Object.keys(userRole);
   const classes = useStyles();
   const dispatch = useDispatch();
+  const { requestValues } = useContext(FilterContext);
 
-  const RESULT: any = {
+  const RESULT: { [key: string]: Function } = {
     export_blacklist_finished: (id: number, data: INotificationPayload) => {
       getExportFile(data.file_path, 'Blacklist').then(() => {
         if (data.new) {
@@ -72,6 +78,12 @@ export const Header: FC = () => {
         changeViewed(id).then(() => dispatch(getNotification()));
       }
       setOpenModal(true);
+    },
+    is_in_work_updated: (id: number, data: INotificationPayload) => {
+      dispatch(getAddContactList(requestValues({ daily, myContact })));
+      if (data.new) {
+        changeViewed(id).then(() => dispatch(getNotification()));
+      }
     }
   };
 

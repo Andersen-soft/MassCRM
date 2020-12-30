@@ -30,6 +30,7 @@ const DatePickerBody: FC<IPickerProps> = ({
   onClean,
   autoOk,
   isCleaned,
+  clearable,
   ...props
 }: IPickerProps) => {
   const pickerClasses = pickerStyle();
@@ -164,7 +165,7 @@ const DatePickerBody: FC<IPickerProps> = ({
       onChange={onChangeHandle}
       views={['year', 'month', 'date']}
       labelFunc={labelFuncHandle}
-      clearable
+      clearable={clearable}
       autoOk={autoOk}
       InputProps={{
         classes: {

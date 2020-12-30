@@ -1,5 +1,10 @@
 import { handleActions } from 'redux-actions';
-import { getCompanyListAction } from 'src/actions';
+import {
+  getCompanyListAction,
+  getCompanyAction,
+  getCompanyAttachmentsAction,
+  getCompanyActivityLogAction
+} from 'src/actions';
 import { ICompanyStore } from 'src/interfaces/store';
 
 type S = ICompanyStore;
@@ -11,6 +16,18 @@ const initialState: ICompanyStore = {
 export const companyReducer = handleActions(
   {
     [`${getCompanyListAction}`]: (state: S, { payload }): S => ({
+      ...state,
+      ...payload
+    }),
+    [`${getCompanyAction}`]: (state: S, { payload }): S => ({
+      ...state,
+      ...payload
+    }),
+    [`${getCompanyAttachmentsAction}`]: (state: S, { payload }): S => ({
+      ...state,
+      ...payload
+    }),
+    [`${getCompanyActivityLogAction}`]: (state: S, { payload }): S => ({
       ...state,
       ...payload
     })

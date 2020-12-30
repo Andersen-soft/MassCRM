@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v1\Country;
 
 use App\Http\Controllers\BaseController;
+use App\Http\Requests\Location\CityRequest;
 use App\Http\Resources\Location\CityCollection;
 use App\Http\Resources\Location\RegionCollection;
 use App\Http\Resources\Location\CountryCollection;
@@ -15,6 +16,8 @@ class CountryController extends BaseController
 
     public function __construct(LocationService $locationService)
     {
+        $this->middleware('permission:addLocation', ['only' => ['addCities']]);
+
         $this->locationService = $locationService;
     }
 
@@ -72,7 +75,7 @@ class CountryController extends BaseController
      */
     public function regions(string $code): JsonResponse
     {
-        $regions =  $this->locationService->getRegions($code);
+        $regions = $this->locationService->getRegions($code);
 
         return $this->success(new RegionCollection($regions));
     }
@@ -104,6 +107,48 @@ class CountryController extends BaseController
     public function cities(string $code): JsonResponse
     {
         $cities = $this->locationService->getCities($code);
+
+        return $this->success(new CityCollection($cities));
+    }
+
+    /**
+     * @OA\Post(
+     *      path="/countries/cities",
+     *      tags={"Location"},
+     *      description="Add new cities",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\RequestBody(
+     *          required=true,
+     *          @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"location"},
+     *                  @OA\Property(property="location", type="array",
+     *                     @OA\Items(type="object", required={"country", "region", "city"},
+     *                          @OA\Property(property="country", type="integer", example=123),
+     *                          @OA\Property(property="region", type="integer", example=123),
+     *                          @OA\Property(property="city", type="string", example="City name"),
+     *                      ),
+     *                  ),
+     *              ),
+     *          )
+     *      ),
+     *      @OA\Response(
+     *          response="200",
+     *          description="Successfully",
+     *          @OA\JsonContent(
+     *              @OA\Property(property="success", type="boolean", example=true)
+     *          )
+     *      ),
+     *      @OA\Response(response="400", ref="#/components/responses/400"),
+     *      @OA\Response(response="401", ref="#/components/responses/401")
+     * )
+     * @param CityRequest $request
+     * @return JsonResponse
+     */
+    public function addCities(CityRequest $request): JsonResponse
+    {
+        $cities = $this->locationService->addCities($request);
 
         return $this->success(new CityCollection($cities));
     }

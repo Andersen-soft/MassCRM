@@ -20,8 +20,8 @@ import { CommonAlert } from 'src/components/common/CommonAlert';
 import { CloseModal } from 'src/components/UsersCRM/AddUserForm/CloseModal';
 import {
   getLdapUsers,
-  getUsers,
-  getRoles,
+  getUsersSelector,
+  getRolesSelector,
   getErrors
 } from 'src/selectors/user.selector';
 import {
@@ -35,6 +35,7 @@ import { getRolesText } from 'src/utils/roles/getRolesText';
 import { useStyles } from 'src/components/UsersCRM/AddUserForm/AddUserForm.styles';
 import { RolesInfo } from './RolesInfo';
 import { addUserFormSchema } from '../../../utils/form/validate';
+import { getCurrentPage } from '../../../selectors';
 
 interface IAddUserFormProps {
   id?: number;
@@ -84,10 +85,9 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
 
   const { id, handleClose } = props;
 
-  const allUsers = useSelector(getUsers);
-
   const ldapUsers = useSelector(getLdapUsers);
-  const roles = useSelector(getRoles);
+  const roles = useSelector(getRolesSelector);
+  const currentPage = useSelector(getCurrentPage);
   const errorsText = useSelector(getErrors);
 
   const [open, setOpen] = useState(false);
@@ -117,9 +117,9 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
     setOpen(false);
   }, []);
 
-  const currentUser = useSelector(getUsers)[
-    Object.keys(allUsers).join()
-  ].filter((item: IUser) => item.id === id);
+  const currentUser = useSelector(getUsersSelector).filter(
+    (item: IUser) => item.id === id
+  );
 
   const emailLdap = useMemo(
     () => (ldapUsers ? ldapUsers?.map((item: IUser) => item?.email || '') : []),
@@ -133,22 +133,11 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
     const data = { ...formState, roles: userRoles };
     if (id) {
       dispatch(
-        patchUser(
-          data,
-          id,
-          Number(Object.keys(allUsers).join()),
-          handleClickAlert,
-          handleClose
-        )
+        patchUser(data, id, Number(currentPage), handleClickAlert, handleClose)
       );
     } else {
       dispatch(
-        postAddUser(
-          data,
-          Number(Object.keys(allUsers).join()),
-          handleClickAlert,
-          handleClose
-        )
+        postAddUser(data, Number(currentPage), handleClickAlert, handleClose)
       );
     }
   }, []);

@@ -105,6 +105,8 @@ export const CustomMultiInput = connect<ICustomMultiInput>(
     const onKeyHandler = useCallback(
       (key: string, value: string) => {
         if (key === 'Enter' && !errorMessage && value) {
+          setTipOpen(false);
+
           if (items.includes(value)) {
             setDuplicatedMess('Already exist');
             setShowError(true);

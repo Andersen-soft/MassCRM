@@ -10,12 +10,14 @@ export const deleteEmptyFields = (newSearch: { [key: string]: any }) => {
     if (Array.isArray(newSearch[item])) {
       if (newSearch[item].length > 0) noEmptyField[item] = newSearch[item];
     } else if (typeof newSearch[item] === 'object') {
-      if (!isEmptyObject(newSearch[item])) {
+      if (newSearch[item] && !isEmptyObject(newSearch[item])) {
         const child = deleteEmptyFields(newSearch[item]);
         noEmptyField[item] = !isEmptyObject(child) ? child : undefined;
       }
     } else if (typeof newSearch[item] !== 'undefined') {
-      noEmptyField[item] = newSearch[item];
+      if (newSearch[item]) {
+        noEmptyField[item] = newSearch[item];
+      }
     }
   });
   return noEmptyField;

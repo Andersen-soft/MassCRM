@@ -2,21 +2,34 @@ import { createAction } from 'redux-actions';
 import { Dispatch } from 'redux';
 import HTTP from '../utils/http';
 import { setNotification } from './notification.action';
-import { FiltersTypes, IContactFilter, ISortingObject } from '../interfaces';
+import {
+  FiltersTypes,
+  IContactFilter,
+  IFilter,
+  ISelectedContacts,
+  ISortingObject,
+  IStoreState
+} from '../interfaces';
 import history from '../store/history';
-import { initialFiltersState } from '../reducers/tableFilters.reducer';
 import { initialSortingState } from '../reducers/tableSorting.reducer';
 import { deleteEmptyFields } from '../utils/form/objectHelpers';
 
 export const getFiltersDataAction = createAction('GET_FILTER_DATA');
 export const setFilterSettingsAction = createAction('SET_FILTER_DATA');
+export const setUsersFilterSettingsAction = createAction(
+  'SET_USERS_FILTER_DATA'
+);
 export const setListFieldAction = createAction('SET_LIST_FIELD');
 export const setFilterValuesAction = createAction('SET_FILTER_VALUES');
 export const setMultiFilterValuesAction = createAction(
   'SET_MULTI_FILTER_VALUES'
 );
+export const setUsersFilterValuesAction = createAction(
+  'SET_USERS_FILTER_VALUES'
+);
 export const setSortValuesAction = createAction('SET_SORT_VALUE');
 export const setSortAction = createAction('SET_SORT');
+export const setSelectedContactsAction = createAction('SET_SELECTED_CONTACTS');
 
 export const getFiltersData = () => async (dispatch: Dispatch) => {
   try {
@@ -39,13 +52,22 @@ export const setListField = (field: (string | undefined)[]) => (
   dispatch(setListFieldAction(field));
 };
 
-export const setFilterValues = (obj?: FiltersTypes) => (dispatch: Dispatch) => {
+export const setFilterValues = (obj?: FiltersTypes) => (
+  dispatch: Dispatch,
+  state: () => IStoreState
+) => {
+  const {
+    filter: { values }
+  } = state();
+  const initialStateValue = values && deleteEmptyFields(values);
   const currentParam = new URLSearchParams(history.location.search);
+
   const currentValues =
     obj ||
     JSON.parse(currentParam.get('filter') as string) ||
-    initialFiltersState;
-  if (obj) {
+    initialStateValue;
+
+  if (obj && !!Object.keys(obj).length) {
     currentParam.set(
       'filter',
       JSON.stringify(
@@ -55,12 +77,36 @@ export const setFilterValues = (obj?: FiltersTypes) => (dispatch: Dispatch) => {
         })
       )
     );
-    history.push({
-      search: currentParam.toString()
-    });
+  } else {
+    currentParam.set('filter', JSON.stringify(currentValues));
   }
-  dispatch(setFilterValuesAction(currentValues));
+  history.push({
+    search: currentParam.toString()
+  });
+  const isBlacklistParams =
+    currentParam.get('filter') &&
+    Object.keys(JSON.parse(currentParam.get('filter') as string)).includes(
+      'blacklist'
+    );
+
+  dispatch(
+    setFilterValuesAction(
+      isBlacklistParams || obj
+        ? currentValues
+        : { ...currentValues, blacklist: [] }
+    )
+  );
 };
+
+export const setUsersFilterSettings = (usersSettings: IFilter) => (
+  dispatch: Dispatch
+) => {
+  dispatch(setUsersFilterSettingsAction({ usersSettings }));
+};
+
+export const setUsersFilterValues = (obj: FiltersTypes) => (
+  dispatch: Dispatch
+) => dispatch(setUsersFilterValuesAction(obj));
 
 export const setMultiFilterValues = (obj: FiltersTypes) => (
   dispatch: Dispatch
@@ -96,4 +142,26 @@ export const setSort = (obj?: ISortingObject) => (dispatch: Dispatch) => {
     });
   }
   dispatch(setSortAction(currentValues));
+};
+
+export const setSelectedContacts = ({ data = [], id }: ISelectedContacts) => (
+  dispatch: Dispatch,
+  state: () => IStoreState
+) => {
+  if (data.length) {
+    const selectedContacts = data.map(item => item.id);
+    return dispatch(setSelectedContactsAction({ selectedContacts }));
+  }
+  if (id) {
+    const {
+      filter: { selectedContacts }
+    } = state();
+    const contactsIds = selectedContacts.includes(id)
+      ? selectedContacts.filter((item: number) => item !== id)
+      : [...selectedContacts, id];
+    return dispatch(
+      setSelectedContactsAction({ selectedContacts: contactsIds })
+    );
+  }
+  return dispatch(setSelectedContactsAction({ selectedContacts: [] }));
 };

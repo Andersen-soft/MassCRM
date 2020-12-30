@@ -7,3 +7,15 @@ export const PHONE_REG_EXP = /^(\s*)?(\+)?([- _():=+]?\d[- _():=+]?){10,14}(\s*)
 export const SOCIALS_REG_EXP = /(?:http:\/\/)?(?:www\.)?(vk|facebook)\.com\/(?:(?:\w)*#!\/)?(?:pages\/)?(?:[\w\\-]*\/)*([\w\\-]*)/;
 export const LINKEDIN_REG_EXP = /^.*\b(linkedin\.com)\b.*$/;
 export const REGEX_INDUSTRY_NAME = /^[a-zA-Z& \\,-/]+$/;
+export const LOCATION_REG_EXP = /^[a-z]+((?:[- ][a-z]+)*)+$/i;
+export const SOCIAL_NETWORKS = [
+  'linkedin.com',
+  'vk.com',
+  'facebook.com',
+  'instagram.com',
+  'tiktok.com',
+  'im.qq.com',
+  'youtube.com',
+  'wechat.com',
+  'telegram.org'
+];

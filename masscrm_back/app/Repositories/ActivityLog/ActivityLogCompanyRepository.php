@@ -9,10 +9,21 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ActivityLogCompanyRepository
 {
-    public function getActivityLog(int $companyId): Builder
+    public function getActivityLog(int $companyId, array $search): Builder
     {
-        return ActivityLogCompany::query()
-            ->where('company_id', '=', $companyId)
-            ->orderBy('id', 'desc');
+        $query = ActivityLogCompany::query();
+
+        if (!empty($search)) {
+            $data = ActivityLogCompany::search(json_encode($search))
+                ->select([ActivityLogCompany::ID_FIELD])
+                ->where(ActivityLogCompany::COMPANY_ID_FIELD, '=', $companyId)
+                ->take(1000)->keys();
+
+            $query->whereIn(ActivityLogCompany::ID_FIELD, $data);
+        } else {
+            $query->where(ActivityLogCompany::COMPANY_ID_FIELD, '=', $companyId);
+        }
+
+        return $query->orderBy(ActivityLogCompany::ID_FIELD, 'desc');
     }
 }

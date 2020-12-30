@@ -17,7 +17,7 @@ class LdapService
      */
     private function ldapConnect()
     {
-        $ldapConnect = ldap_connect(config('ldap.host'), config('ldap.port'));
+        $ldapConnect = ldap_connect(config('ldap.host'), (int) config('ldap.port'));
 
         ldap_set_option($ldapConnect, LDAP_OPT_REFERRALS, 0);
         ldap_set_option($ldapConnect, LDAP_OPT_PROTOCOL_VERSION, 3);

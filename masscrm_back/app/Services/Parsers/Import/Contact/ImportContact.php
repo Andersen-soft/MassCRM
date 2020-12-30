@@ -333,7 +333,7 @@ class ImportContact
                 continue;
             }
 
-            if (in_array($key, self::CHECK_DATE_FIELDS) && strtotime($item)) {
+            if (in_array($key, self::CHECK_DATE_FIELDS) && !is_null($item) && strtotime($item)) {
                 $contact->{$key} = 1;
 
                 continue;
@@ -344,18 +344,20 @@ class ImportContact
                 continue;
             }
 
-            $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
-            $time = strtotime($item);
+            if(!is_null($item)){
+                $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
+                $time = strtotime($item);
 
-            /** @phpstan-ignore-next-line */
-            if ($date || is_int($time) && Carbon::parse((int) $time)) {
-                $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int) $item)->format('d-m-Y H:i');
-                $contact->{$key} = $date;
+                /** @phpstan-ignore-next-line */
+                if ($date || is_int($time) && Carbon::parse((int) $time)) {
+                    $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int) $item)->format('d-m-Y H:i');
+                    $contact->{$key} = $date;
 
-                continue;
+                    continue;
+                }
+
+                $contact->{$key} = $item;
             }
-
-            $contact->{$key} = $item;
         }
 
         $contact->origin = implode(';', $origin);

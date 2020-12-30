@@ -20,7 +20,7 @@ import { ICompany, IContact, ILocation } from 'src/interfaces';
 import { OccupiedMessage, DefaultPopUp } from 'src/components/common/PopUp';
 import { contactFormSchema } from 'src/utils/form/validate';
 import { createErrorsObject, getErrorsList } from 'src/utils/errors';
-
+import { deleteEmptyFields } from 'src/utils/form/objectHelpers';
 import { CompanyBuilder } from 'src/utils/form/companyBuilder';
 import { ContactBuilder } from 'src/utils/form/contactBuilder';
 import { ErrorEmitterContext } from 'src/context';
@@ -147,7 +147,7 @@ export const ContactForm: FC<{
     resetCallback: (val: object) => void,
     val: IContactFormInputs
   ) => {
-    createContact(data)
+    createContact(deleteEmptyFields(data))
       .then(() => {
         successCallback(resetCallback);
       })
@@ -160,7 +160,7 @@ export const ContactForm: FC<{
     id: number,
     val: IContactFormInputs
   ) => {
-    updateContact(data, id)
+    updateContact(deleteEmptyFields(data), id)
       .then(() => {
         successCallback(resetCallback);
       })
@@ -321,15 +321,16 @@ export const ContactForm: FC<{
     };
 
     if (company_id) {
-      updateCompany(company_id, newCompany)
+      updateCompany(company_id, deleteEmptyFields(newCompany))
         .then(() => {
           sendData(data);
         })
         .catch(errorCallbackCompany);
     } else {
-      createCompany(newCompany)
+      createCompany(deleteEmptyFields(newCompany))
         .then((value: string | number | undefined) => {
           data.company_id = value as number;
+          formikHelpers.setFieldValue('company_id', Number(value));
           sendData(data);
         })
         .catch(errorCallbackCompany);

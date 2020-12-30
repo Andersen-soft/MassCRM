@@ -1,23 +1,23 @@
-import React from 'react';
+import React, { FC } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Header, ToggleBlock } from 'src/components/common';
+import { InfoPart, CompanyAttachments, CompanyActivityLog } from './components';
 
-import { styleNames } from 'src/services';
-import { Header } from '../common/Header';
-import { LeftColumn } from './components/LeftColumn';
-import { RightColumn } from './components/RightColumn';
-import { Footer } from './components/Footer';
+export const CompanyPage: FC = () => {
+  const location = useLocation();
+  const companyId = Number(new URLSearchParams(location.search).get('id'));
 
-import style from './CompanyPage.scss';
-
-const sn = styleNames(style);
-
-export const CompanyPage = () => {
   return (
     <>
       <Header />
-      <div className={sn('mainContainer')}>
-        <LeftColumn />
-        <RightColumn />
-        <Footer />
+      <div className='container'>
+        <InfoPart id={companyId} />
+        <ToggleBlock label='Attachments'>
+          <CompanyAttachments id={companyId} />
+        </ToggleBlock>
+        <ToggleBlock label='Activity log'>
+          <CompanyActivityLog id={companyId} />
+        </ToggleBlock>
       </div>
     </>
   );

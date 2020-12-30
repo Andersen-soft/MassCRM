@@ -6,7 +6,8 @@ import {
   PHONE_REG_EXP,
   LINKEDIN_REG_EXP,
   REGEX_INDUSTRY_NAME,
-  SOCIALS_REG_EXP
+  SOCIALS_REG_EXP,
+  SOCIAL_NETWORKS
 } from 'src/constants/form';
 
 const countreisForGender = [
@@ -17,6 +18,25 @@ const countreisForGender = [
   'Belgium',
   'France'
 ];
+
+export const companyFormSchema = (roles: IRoles) =>
+  object().shape({
+    formCondition: boolean(),
+    name: string().required('Required field'),
+    website: string()
+      .lowercase()
+      .test('website', "social networks can't be a company website", value =>
+        SOCIAL_NETWORKS.every(item => !value?.includes(item))
+      )
+      .matches(URL_REGEX, 'Invalid format')
+      .nullable(),
+    linkedin: string()
+      .matches(LINKEDIN_REG_EXP, 'Invalid format')
+      .nullable(),
+    industry: array().min(1, 'Required field'),
+    companySize: string().nullable(),
+    vacancies: roles?.nc2 ? array().required('Required field') : array()
+  });
 
 export const contactFormSchema = (roles: IRoles) =>
   object().shape({
@@ -34,12 +54,18 @@ export const contactFormSchema = (roles: IRoles) =>
       .nullable(),
     company: string().required('Required field'),
     companyWebSite: string()
+      .lowercase()
+      .test(
+        'companyWebSite',
+        "social networks can't be a company website",
+        value => SOCIAL_NETWORKS.every(item => !value?.includes(item))
+      )
       .matches(URL_REGEX, 'Invalid format')
       .nullable(),
     companyLinkedIn: string()
       .matches(LINKEDIN_REG_EXP, 'Invalid format')
       .nullable(),
-    companySize: string(),
+    companySize: string().nullable(),
     industry: array().min(1, 'Required field'),
     emails: array().required('Required field'),
     email: string().email('Invalid email'),

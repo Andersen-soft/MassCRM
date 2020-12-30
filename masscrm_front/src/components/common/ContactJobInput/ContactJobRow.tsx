@@ -21,19 +21,19 @@ export const ContactJobRow: FC<IContactJobRow> = ({
 
   return (
     <ul className={style.jobList}>
-      {jobs.map((jobItem, index) => (
-        <li className={style.jobListEl} key={jobItem.link}>
+      {jobs.map(({ link, job, skills }, index) => (
+        <li className={style.jobListEl} key={index}>
           <span>
             <a
-              href={jobItem.link}
+              href={link}
               className={style.jobListLink}
               target='_blank'
               rel='noreferrer'
             >
-              {jobItem.job}
+              {job}
             </a>
           </span>
-          <span> - {jobItem.skills}</span>
+          <span> - {skills}</span>
           <span>
             <CommonIcon
               IconComponent={Close}

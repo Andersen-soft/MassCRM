@@ -1,9 +1,11 @@
 export interface ICountry {
+  id?: number;
   code: string;
   name: string;
 }
 
 export interface IRegion {
+  id?: number;
   code: string;
   name: string;
 }

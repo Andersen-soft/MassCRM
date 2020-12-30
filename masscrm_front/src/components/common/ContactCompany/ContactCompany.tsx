@@ -1,13 +1,12 @@
-import React, { FC, useCallback, useEffect, useState } from 'react';
+import React, { FC, useCallback, useState } from 'react';
 import debounce from 'lodash.debounce';
-import { useDispatch } from 'react-redux';
 import { SearchInput } from 'src/components/common/SearchInput';
 import {
   getNamesOfCompanies,
   getCompanyByName,
   getCompanyNameByID
 } from 'src/utils/map/company.map';
-import { getCompanyList, getCompanyListRequest } from 'src/actions';
+import { getCompanyListRequest } from 'src/actions';
 import { ICompany } from 'src/interfaces';
 
 export const ContactCompany: FC<{
@@ -23,7 +22,6 @@ export const ContactCompany: FC<{
   onSelect: (value?: ICompany) => void;
   autoFocus?: string;
 }> = ({ id, value, onSelect, type, ...props }) => {
-  const dispatch = useDispatch();
   const [companies, setCompanies] = useState<ICompany[]>([]);
   const items = getNamesOfCompanies(companies) || [];
   const inputValue = Number.isInteger(value)
@@ -42,13 +40,10 @@ export const ContactCompany: FC<{
   }, 500);
 
   const onSelectHandler = useCallback(
-    (val: string) => onSelect(getCompanyByName(val, companies)),
+    (val: string) =>
+      onSelect(val ? getCompanyByName(val, companies) : { id: 0, name: '' }),
     [onSelect, companies]
   );
-
-  useEffect(() => {
-    dispatch(getCompanyList({ search: { type }, mode: 'all' }));
-  }, [type]);
 
   return (
     <SearchInput

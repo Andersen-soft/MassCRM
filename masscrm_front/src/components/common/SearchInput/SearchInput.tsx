@@ -32,7 +32,8 @@ export const SearchInput: FC<ISearchInputProps> = ({
   onFocus,
   multi,
   inputValue,
-  autoFocus
+  autoFocus,
+  isScrollForm
 }) => {
   const style = inputStyle();
   const classes = searchStyle();
@@ -138,7 +139,10 @@ export const SearchInput: FC<ISearchInputProps> = ({
           size='small'
           freeSolo={freeSolo}
           value={Array.isArray(value) && value.length ? value : valueState}
-          inputValue={inputValue || (inputValueState as string)}
+          inputValue={
+            inputValue ||
+            (Array.isArray(value) ? '' : (inputValueState as string))
+          }
           onInputChange={handleChange}
           onChange={handleSelect}
           getOptionSelected={handleGetOptionSelected}
@@ -160,6 +164,7 @@ export const SearchInput: FC<ISearchInputProps> = ({
                 label={placeholder}
                 variant='outlined'
                 error={!!errorMessage}
+                helperText={isScrollForm && errorMessage}
                 onChange={handleChangeInput}
                 autoFocus={Boolean(autoFocus && autoFocus === name)}
               />
@@ -192,7 +197,9 @@ export const SearchInput: FC<ISearchInputProps> = ({
           />
         )}
       </FormControl>
-      {errorMessage && <Box className={style.error}>{errorMessage}</Box>}
+      {errorMessage && !isScrollForm && (
+        <Box className={style.error}>{errorMessage}</Box>
+      )}
     </>
   );
 };

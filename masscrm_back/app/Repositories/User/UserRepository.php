@@ -79,13 +79,9 @@ class UserRepository
         return User::query()->where('active', '=', 1)->cursor();
     }
 
-    public function getUserById(int $id, bool $fromActiveDirectory = null): ?User
+    public function getUserById(int $id): ?User
     {
         $query = User::query()->where('id', '=', $id);
-
-        if (isset($fromActiveDirectory)) {
-            $query->where('from_active_directory', '=', false);
-        }
 
         return $query->first();
     }

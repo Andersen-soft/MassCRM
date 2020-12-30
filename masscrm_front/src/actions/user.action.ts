@@ -7,10 +7,11 @@ import getRolesReq from 'src/services/getRolesReq';
 import { setToken } from 'src/services/setTokenToCookies';
 import qs from 'qs';
 import HTTP from '../utils/http';
-import { IFilter, IUser } from '../interfaces';
+import { IFilter, IStoreState, IUser } from '../interfaces';
 import { IAddUserFormInputs } from '../components/UsersCRM/AddUserForm';
 import { setLoaderAction } from './loader.action';
 import { SnackErrorBarData } from '../utils/errors';
+import { BACKEND_COMMON_ERROR } from '../constants/errors';
 
 export const setUserDataAction = createAction('SET_USER_DATA');
 export const setError = createAction('SET_ERROR');
@@ -20,6 +21,7 @@ export const getLdapUserAction = createAction('GET_LDAP_USER');
 export const onClearFilter = createAction('CLEAR_FILTER_USERS');
 export const getRolesAction = createAction('GET_ROLES');
 export const getSearchUsers = createAction('GET_SEARCH_USERS');
+export const deleteInactiveUserAction = createAction('DELETE_INACTIVE_USER');
 
 export const getUserData = (payload: {
   login: string;
@@ -40,10 +42,10 @@ export const getUserData = (payload: {
     } = await HTTP.get('auth/user');
     dispatch(setUserDataAction({ userData }));
   } catch (errors) {
-    const error: string[] = Object.values(errors);
+    const { login } = errors;
     payload.handle();
     payload.errorsEventEmitter.emit('snackBarErrors', {
-      errorsArray: SnackErrorBarData([...new Set(error.flat())])
+      errorsArray: SnackErrorBarData(login || BACKEND_COMMON_ERROR)
     });
   }
 };
@@ -68,9 +70,32 @@ export const getUsers = (filter: IFilter) => async (dispatch: Dispatch) => {
       return qs.stringify(params, { arrayFormat: 'indices' });
     }
   });
-  const name: number = filter.page || 1;
-  dispatch(getUsersAction({ users: { [name]: data }, total: meta.total }));
+  dispatch(getUsersAction({ users: data, total: meta.total }));
   dispatch(setLoaderAction({ isLoading: false }));
+};
+
+export const deleteInactiveUser = (
+  id: number,
+  errorsEventEmitter: any
+) => async (dispatch: Dispatch, getState: () => IStoreState) => {
+  try {
+    const {
+      filter: { usersSettings }
+    } = getState();
+    dispatch(setLoaderAction({ isLoading: true }));
+    await HTTP.delete('users/delete', {
+      params: {
+        id
+      }
+    }).then(() => getUsers(usersSettings)(dispatch));
+  } catch (error) {
+    const { user } = error;
+    errorsEventEmitter.emit('snackBarErrors', {
+      errorsArray: SnackErrorBarData(user || BACKEND_COMMON_ERROR)
+    });
+  } finally {
+    dispatch(setLoaderAction({ isLoading: false }));
+  }
 };
 
 export const searchUsers = (filter: IFilter) => async (dispatch: Dispatch) => {

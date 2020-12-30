@@ -72,7 +72,10 @@ export const InfoPartCareer: FC<{
                 position,
                 updated_at
               }: IPreviousCompany) => (
-                <div className={sn('column')} key={company_id}>
+                <div
+                  className={sn('previous-column')}
+                  key={`${company_id} ${position} ${updated_at}`}
+                >
                   {columnItem('Date of change', updated_at)}
                   {columnItem('Company', company_name)}
                   {columnItem('Position', position)}

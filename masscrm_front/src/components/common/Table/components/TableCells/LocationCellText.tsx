@@ -52,7 +52,7 @@ export const LocationCellText: FC<{
 
   const getCode = (
     val = '',
-    list: Array<{ name: string; code?: string; id?: string }>
+    list: Array<{ name: string; code?: string; id?: number }>
   ) => list.filter(({ name }) => name === val)[0]?.code || val;
 
   const handleClose = () => {

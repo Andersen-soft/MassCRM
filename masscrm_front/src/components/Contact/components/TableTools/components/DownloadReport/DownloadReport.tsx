@@ -1,13 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import { Publish } from '@material-ui/icons';
 import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { styleNames } from 'src/services';
 import {
   CommonIcon,
   CustomCheckBox,
   DefaultPopUp
 } from 'src/components/common';
-import { getContactsLength, getFilterSettings } from 'src/selectors';
+import {
+  getContactsLength,
+  getFilterSettings,
+  getSelectedContacts
+} from 'src/selectors';
 import { IContactFilter, IContactSearchDownload } from 'src/interfaces';
 import { downLoadReport } from 'src/actions';
 import { Dialog } from '@material-ui/core';
@@ -19,11 +24,14 @@ const sn = styleNames(style);
 
 export const DownloadReport = () => {
   const filterSettings = useSelector(getFilterSettings);
+  const location = useLocation();
   const [disabled, setDisabled] = useState<boolean>(false);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [showPreReportModal, setShowPreReportModal] = useState<boolean>(false);
   const [inWork, setInWork] = useState<boolean>(false);
   const total = useSelector(getContactsLength);
+  const selectedContacts = useSelector(getSelectedContacts);
+  const urlParams = new URLSearchParams(location.search);
 
   const closePopup = useCallback(() => setShowReportModal(false), []);
 
@@ -99,6 +107,7 @@ export const DownloadReport = () => {
     setShowReportModal(true);
     await downLoadReport({
       ...filterSettings,
+      ids: urlParams.get('selectAll') ? [] : selectedContacts,
       limit: total,
       sort: {
         fieldName: 'created',

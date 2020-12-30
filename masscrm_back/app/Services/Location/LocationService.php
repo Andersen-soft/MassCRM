@@ -6,6 +6,7 @@ use App\Commands\Location\GetCitiesCommand;
 use App\Commands\Location\GetCountriesCommand;
 use App\Commands\Location\GetRegionsCommand;
 use App\Exceptions\Custom\NotFoundException;
+use App\Http\Requests\Location\CityRequest;
 use App\Models\Location\City;
 use App\Models\Location\Country;
 use App\Models\Location\Location;
@@ -104,5 +105,54 @@ class LocationService
         }
 
         throw new NotFoundException('Region code(' . $regionCode . ') not found');
+    }
+
+    public function addCities(CityRequest $request): Collection
+    {
+        $regions = [];
+        $validRegions = [];
+        foreach ($request->get('location') as $location) {
+            if (!isset($validRegions[$location['country']])) {
+                $validRegions[$location['country']] = [];
+            }
+
+            // Check if country has region
+            if (!in_array($location['region'], $validRegions[$location['country']], true)) {
+                if (!$this->locationRepository->hasRegionInCountry($location['country'], $location['region'])) {
+                    throw new NotFoundException(
+                        "Region with ID #{$location['region']} not found in the Country with ID #{$location['country']}"
+                    );
+                }
+
+                $validRegions[$location['country']][] = $location['region'];
+            }
+
+            if (!isset($regions[$location['region']])) {
+                $regions[$location['region']] = [];
+            }
+
+            $city = ucfirst(strtolower(trim($location['city'])));
+            if (!in_array($city, $regions[$location['region']], true)) {
+                $regions[$location['region']][] = $city;
+            }
+        }
+
+        $savedCities = collect();
+        foreach ($regions as $regionId => $items) {
+            /** @var Region $region */
+            $region = Region::query()->find($regionId);
+
+            // Check and remove from array if the city exist in DB
+            $cities = collect($items)->map(function ($city) {
+                return ['name' => $city];
+            })->reject(function ($city) use ($region) {
+                return $this->locationRepository->hasCityByNameAndRegionId($city['name'], $region->getId());
+            });
+
+            // Save cities
+            $savedCities->add($region->cities()->createMany($cities));
+        }
+
+        return $savedCities;
     }
 }

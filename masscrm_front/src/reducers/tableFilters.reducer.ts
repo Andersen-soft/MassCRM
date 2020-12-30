@@ -1,4 +1,4 @@
-import { IContactFiltersState } from '../interfaces';
+import { IContactFiltersState, IFilterValuesUsers } from '../interfaces';
 
 export const initialFiltersState: IContactFiltersState = {
   Responsible: [],
@@ -70,6 +70,16 @@ export const initialMultiFilterState = {
   Company: [],
   Industry: [],
   Source: []
+};
+
+export const initialUsersFilterState: IFilterValuesUsers = {
+  'full name': '',
+  'e-mail': '',
+  login: '',
+  roles: [],
+  skype: '',
+  position: '',
+  status: ''
 };
 
 export const filtersReducer = (

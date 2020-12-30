@@ -8,7 +8,7 @@ export const jobCell = ({ fieldName, value, ...props }: IJobCell) => (
   tdProps: PropsWithChildren<TableCellBaseProps>
 ) => {
   const ContentTD = () => (
-    <ShowAllTD value={value?.map(item => item[fieldName])} />
+    <ShowAllTD value={value?.map(item => item[fieldName] as string)} />
   );
 
   return (

@@ -35,7 +35,7 @@ class AttachmentFileContactController extends BaseController
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
      *                 required={"id", "file"},
-     *                 @OA\Property(property="id", type="int", example=13),
+     *                 @OA\Property(property="id", type="integer", example=13),
      *                 @OA\Property(property="file", type="string", format="binary"),
      *             )
      *         )

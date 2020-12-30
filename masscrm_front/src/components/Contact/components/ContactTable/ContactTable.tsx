@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useEffect, useState, useMemo } from 'react';
+import React, {
+  FC,
+  useCallback,
+  useEffect,
+  useState,
+  useMemo,
+  useContext
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { styleNames } from 'src/services';
 import {
@@ -15,7 +22,6 @@ import {
 import {
   getContacts,
   getCurrentPage,
-  getUser,
   getOriginsFilter,
   getFilterSettings,
   getMultiFilterValues,
@@ -27,17 +33,14 @@ import {
 } from 'src/selectors';
 import {
   addContactMapCallback,
-  VALIDATION_VALUE,
   MAP_AUTOCOMPLETE_RESPONSE,
   MAP_AUTOCOMPLETE_VALUES,
   ROWS_COUNT,
   deleteItemFilter,
-  addItemFilter,
-  getBouncesValue
+  addItemFilter
 } from 'src/utils/table/add.table';
 import { TableBase, Loader, ContactEdit } from 'src/components/common';
 import {
-  IContactFilter,
   IContactResult,
   IStoreState,
   IAutocomlete,
@@ -56,7 +59,7 @@ import {
   initialMultiFilterState
 } from 'src/reducers/tableFilters.reducer';
 import { getOtherHeight, INITIAL_IS_BIG_SCREEN } from 'src/utils/table';
-import { getCompanySize } from 'src/utils/map/company.map';
+import { FilterContext } from 'src/context';
 import { TableConfigCallBack } from './configs/AddContactTable.config';
 import style from '../../Contact.scss';
 import { TableTools } from '../TableTools';
@@ -84,7 +87,8 @@ export const ContactTable: FC<{
   const multiFiltersState = useSelector(getMultiFilterValues);
   const filtersSettings = useSelector(getFilterSettings);
   const sortBy = useSelector(getSortBy);
-
+  const { requestValues } = useContext(FilterContext);
+  const filtersObject = requestValues({ daily, myContact });
   const { listField } = filtersSettings;
   const [isBigScreen, setIsBigScreen] = useState<boolean>(
     INITIAL_IS_BIG_SCREEN
@@ -103,22 +107,8 @@ export const ContactTable: FC<{
 
   const dispatch = useDispatch();
 
-  const currentUser = useSelector(getUser);
-
-  const getGenderForRequest = useCallback(() => {
-    return filtersState?.Gender?.map((item: string) => {
-      if (item === 'Male') {
-        return 'm';
-      }
-      return 'f';
-    });
-  }, [filtersState?.Gender]);
-
   const getFormatDateForRequest = (value: Date, view: string) =>
     format(value, view);
-
-  const getValidationForRequest = (validation: string) =>
-    VALIDATION_VALUE[validation];
 
   const CreatedAtContact = () => {
     if (daily) {
@@ -143,210 +133,7 @@ export const ContactTable: FC<{
     };
   };
 
-  const getEmailValue = () =>
-    filtersState.noEmail && filtersState.noEmail !== 'Include'
-      ? filtersState.noEmail.toLowerCase()
-      : undefined;
-
   const paramURL = new URLSearchParams(window.location.search);
-
-  const requestValues: IContactFilter = useMemo(
-    () => ({
-      page: currentPage,
-      limit: ROWS_COUNT,
-      search: {
-        skip_responsibility: daily || myContact ? 0 : undefined,
-        global: filtersState.global,
-        created_at: CreatedAtContact(),
-        updated_at: {
-          min: filtersState['Contact updated']?.length
-            ? getFormatDateForRequest(
-                min(filtersState['Contact updated']),
-                'yyyy-MM-dd'
-              )
-            : undefined,
-          max: filtersState['Contact updated']?.length
-            ? getFormatDateForRequest(
-                max(filtersState['Contact updated']),
-                'yyyy-MM-dd'
-              )
-            : undefined
-        },
-        responsible_id:
-          (daily || myContact) && currentUser.id
-            ? [currentUser.id]
-            : filtersState.Responsible,
-        first_name: filtersState['First name'] || undefined,
-        last_name: filtersState['Last name'] || undefined,
-        full_name: filtersState['Full name'] || undefined,
-        gender: getGenderForRequest(),
-        birthday: {
-          min: filtersState['Date of birth']?.length
-            ? getFormatDateForRequest(
-                min(filtersState['Date of birth']),
-                'MM-dd'
-              )
-            : undefined,
-          max: filtersState['Date of birth']?.length
-            ? getFormatDateForRequest(
-                max(filtersState['Date of birth']),
-                'MM-dd'
-              )
-            : undefined
-        },
-        country: filtersState.Country,
-        city: filtersState.City,
-        region: filtersState.Region,
-        position: filtersState.Title,
-        linkedin: filtersState.Li || undefined,
-        no_email: getEmailValue(),
-        email: filtersState.Email || undefined,
-        phone: filtersState.Phone || undefined,
-        skype: filtersState.Skype || undefined,
-        origin: filtersState.Origin,
-        colleague_name: filtersState.Collegue || undefined,
-        service_id: Number(filtersState.ID) || undefined,
-        added_to_mailing: {
-          min: filtersState['Added to mailing']?.length
-            ? getFormatDateForRequest(
-                min(filtersState['Added to mailing']),
-                'yyyy-MM-dd'
-              )
-            : undefined,
-          max: filtersState['Added to mailing']?.length
-            ? getFormatDateForRequest(
-                max(filtersState['Added to mailing']),
-                'yyyy-MM-dd'
-              )
-            : undefined
-        },
-        social_networks: filtersState['Social Networks'] || undefined,
-        confidence: {
-          min: filtersState?.Confidence[0],
-          max: filtersState?.Confidence[1]
-        },
-        last_touch: {
-          min: filtersState['Last touch']?.length
-            ? getFormatDateForRequest(
-                min(filtersState['Last touch']),
-                'yyyy-MM-dd'
-              )
-            : undefined,
-          max: filtersState['Last touch']?.length
-            ? getFormatDateForRequest(
-                max(filtersState['Last touch']),
-                'yyyy-MM-dd'
-              )
-            : undefined
-        },
-        sequence: filtersState.Sequence || undefined,
-        status: filtersState.Status,
-        opens: {
-          min: filtersState.Opens[0],
-          max: filtersState.Opens[1]
-        },
-        views: {
-          min: filtersState.Views[0],
-          max: filtersState.Views[1]
-        },
-        deliveries: {
-          min: filtersState.Deliveries[0],
-          max: filtersState.Deliveries[1]
-        },
-        replies: {
-          min: filtersState.Replies[0],
-          max: filtersState.Replies[1]
-        },
-        bounces: getBouncesValue(filtersState.Bounces),
-        mails: filtersState.Mails || undefined,
-        my_notes: filtersState['My notes'] || undefined,
-        in_blacklist: filtersState.blacklist.map(item =>
-          item === 'Yes' ? 1 : 0
-        ),
-        comment: filtersState.Comment || undefined,
-        sale: {
-          id: filtersState['Sale ID'] || undefined,
-          status: filtersState['Sale status'],
-          created_at: {
-            min: filtersState['Sale created']?.length
-              ? getFormatDateForRequest(
-                  min(filtersState['Sale created']),
-                  'yyyy-MM-dd'
-                )
-              : undefined,
-            max: filtersState['Sale created']?.length
-              ? getFormatDateForRequest(
-                  max(filtersState['Sale created']),
-                  'yyyy-MM-dd'
-                )
-              : undefined
-          },
-          source: filtersState.Source,
-          project_c1: getValidationForRequest(filtersState['1C Project'])
-        },
-        company: {
-          created_at: {
-            min: filtersState['Company created']?.length
-              ? getFormatDateForRequest(
-                  min(filtersState['Company created']),
-                  'yyyy-MM-dd'
-                )
-              : undefined,
-            max: filtersState['Company created']?.length
-              ? getFormatDateForRequest(
-                  max(filtersState['Company created']),
-                  'yyyy-MM-dd'
-                )
-              : undefined
-          },
-          subsidiary: filtersState['Subsidiary companies'] || undefined,
-          holding: filtersState['Holding company'] || undefined,
-          name: filtersState.Company || undefined,
-          website: filtersState['Company website'] || undefined,
-          linkedin: filtersState['Company LinkedIn'] || undefined,
-          founded: {
-            min: filtersState.Founded?.length
-              ? getFormatDateForRequest(min(filtersState.Founded), 'yyyy-MM-dd')
-              : undefined,
-            max: filtersState.Founded?.length
-              ? getFormatDateForRequest(max(filtersState.Founded), 'yyyy-MM-dd')
-              : undefined
-          },
-          industry: filtersState.Industry,
-          company_size: getCompanySize(filtersState['Company size']),
-          sto_full_name: filtersState.CTO || undefined,
-          type: filtersState['Type of company'],
-          jobs: filtersState.Job ? [filtersState.Job] : undefined,
-          skills: filtersState['Job Skills']
-            ? [filtersState['Job Skills']]
-            : undefined
-        },
-        requires_validation: getValidationForRequest(filtersState.Validation),
-        is_in_work: filtersState['In work'].map(item =>
-          item === 'Yes' ? 1 : 0
-        ),
-        date_of_use: {
-          min: filtersState['Date of use']?.length
-            ? getFormatDateForRequest(
-                min(filtersState['Date of use']),
-                'yyyy-MM-dd'
-              )
-            : undefined,
-          max: filtersState['Date of use']?.length
-            ? getFormatDateForRequest(
-                max(filtersState['Date of use']),
-                'yyyy-MM-dd'
-              )
-            : undefined
-        }
-      },
-      sort: sortBy,
-      listField:
-        listField ||
-        (paramURL.get('fields') ? paramURL.get('fields')?.split(',') : [])
-    }),
-    [filtersState, filtersSettings, sortBy]
-  );
 
   const contact: Array<IContactResult> = useSelector(getContacts) || [];
   const [open, setOpen] = useState<TOpen>(false);
@@ -372,13 +159,13 @@ export const ContactTable: FC<{
   const onChangeData = () => false;
 
   const getData = useCallback(
-    () => dispatch(getAddContactList(requestValues)),
+    () => dispatch(getAddContactList(filtersObject)),
     [requestValues]
   );
 
   const deleteData = (ids: Array<number>) => {
     if (new URLSearchParams(window.location.search).get('selectAll') === 'on') {
-      deleteContactList([], requestValues).then(getData);
+      deleteContactList([], filtersObject).then(getData);
     } else {
       deleteContactList(ids).then(getData);
     }
@@ -571,11 +358,14 @@ export const ContactTable: FC<{
   const count = TOTAL_COUNT && Math.ceil(TOTAL_COUNT / ROWS_COUNT);
 
   useEffect(() => {
-    dispatch(setFilterSettings(requestValues));
+    dispatch(setFilterSettings(requestValues({ daily, myContact })));
   }, [currentPage, filtersState, sortBy]);
 
   useEffect(() => {
-    if (JSON.stringify(requestValues) !== JSON.stringify(filtersSettings)) {
+    if (
+      JSON.stringify(requestValues({ daily, myContact })) !==
+      JSON.stringify(filtersSettings)
+    ) {
       getData();
     }
   }, [requestValues]);
@@ -655,6 +445,7 @@ export const ContactTable: FC<{
             changeFilter={onChangeFilter}
             resetFilter={resetFilter}
             data={dataTable}
+            requestValues={filtersObject}
             changeInput={handleChangeInput}
             onChangeData={onChangeData}
             onDeleteData={deleteData}

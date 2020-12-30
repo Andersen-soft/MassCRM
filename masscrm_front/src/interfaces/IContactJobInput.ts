@@ -1,5 +1,6 @@
 export interface IContactJobValues {
-  [index: string]: string;
+  [index: string]: string | number | undefined;
+  id?: number;
   job: string;
   skills: string;
   link: string;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Exceptions;
 
+use App\Exceptions\User\UserException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ use Throwable;
 
 class Handler extends ExceptionHandler
 {
-    private CONST ROUTE_NOT_FOUND = 'Route not found';
+    private const ROUTE_NOT_FOUND = 'Route not found';
     /**
      * A list of the exception types that are not reported.
      *
@@ -48,8 +49,8 @@ class Handler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  Request  $request
-     * @param  \Throwable  $exception
+     * @param Request $request
+     * @param \Throwable $exception
      * @return Response
      *
      * @throws \Throwable
@@ -60,14 +61,16 @@ class Handler extends ExceptionHandler
             case ($exception instanceof ValidationRequestException):
                 return $this->renderException($exception->getErrors(), $exception->getCode());
             case ($exception instanceof BaseException):
-                return $this->renderException([$exception->getMessage()], $exception->getCode());
+                return $this->renderException(['login' => [$exception->getMessage()]], $exception->getCode());
             case ($exception instanceof UnauthorizedHttpException):
+            case ($exception instanceof UserException):
+                return $this->renderException(['user' => [$exception->getMessage()]], $exception->getCode());
             case ($exception instanceof JWTException):
-                return $this->renderException([$exception->getMessage()], JsonResponse::HTTP_UNAUTHORIZED);
+                return $this->renderException(['token' => [$exception->getMessage()]], JsonResponse::HTTP_UNAUTHORIZED);
             case ($exception instanceof NotFoundHttpException):
-                return $this->renderException([self::ROUTE_NOT_FOUND], JsonResponse::HTTP_NOT_FOUND);
+                return $this->renderException(['not_found' => [self::ROUTE_NOT_FOUND]], JsonResponse::HTTP_NOT_FOUND);
             default:
-                return $this->renderException([$exception->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+                return $this->renderException(['error' => [$exception->getMessage()]], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 

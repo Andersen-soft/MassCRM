@@ -1,5 +1,4 @@
 export * from './InfoPart';
-export * from './ShowMoreInformation';
 export * from './InfoPartCareer';
 export * from './InfoPartCampaigns';
 export * from './InfoPartSale';

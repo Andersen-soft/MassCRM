@@ -12,6 +12,7 @@ return [
     ],
     'contacts' => [
         'export_finished' => 'Export contacts has been finished.',
+        'is_in_work_updated' => 'Field `is_in_work` was updated please keep data up-to-date',
         'export_contacts' => 'Export contacts :params'
     ],
     'statuses' => [

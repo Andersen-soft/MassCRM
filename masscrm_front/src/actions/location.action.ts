@@ -2,6 +2,8 @@ import { createAction } from 'redux-actions';
 import { Dispatch } from 'redux';
 import { setNotification } from './notification.action';
 import HTTP from '../utils/http';
+import { SnackErrorBarData } from '../utils/errors';
+import { BACKEND_COMMON_ERROR } from '../constants/errors';
 
 export const getCountryListAction = createAction('GET_COUNTRY_LIST');
 export const getRegionListByCountryAction = createAction('GET_REGION_LIST');
@@ -35,5 +37,20 @@ export const getCitiesListByRegion = (code: string) => async (
     dispatch(getCitiesListByRegionAction({ city: data }));
   } catch (error) {
     setNotification(error);
+  }
+};
+
+export const addNewCity = async (
+  value: { city: string; region: number; country: number }[],
+  errorsEventEmitter: any
+) => {
+  try {
+    await HTTP.post('/countries/cities', {
+      location: value
+    });
+  } catch (e) {
+    errorsEventEmitter.emit('snackBarErrors', {
+      errorsArray: SnackErrorBarData(BACKEND_COMMON_ERROR)
+    });
   }
 };

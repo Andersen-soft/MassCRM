@@ -6,11 +6,14 @@ import {
   IContactFiltersState,
   ISortingState,
   IMultiFilterState,
-  ISort
+  ISort,
+  IFilter,
+  IUserFiltersValues
 } from 'src/interfaces';
 import {
   initialFiltersState,
-  initialMultiFilterState
+  initialMultiFilterState,
+  initialUsersFilterState
 } from '../reducers/tableFilters.reducer';
 import { initialSortingState } from '../reducers/tableSorting.reducer';
 
@@ -68,5 +71,22 @@ export const getFilterExportData = createSelector(
 export const getFilter = createSelector(
   ({ filter: { data } }: IStoreState): { [key: string]: string } =>
     data?.export_status || {},
+  data => data
+);
+
+export const getUsersFiltersSettings = createSelector(
+  ({ filter }: IStoreState): IFilter => filter?.usersSettings || {},
+  data => data
+);
+
+export const getUsersFiltersValues = createSelector(
+  ({ filter: { usersValues } }: IStoreState): IUserFiltersValues =>
+    usersValues || initialUsersFilterState,
+  data => data
+);
+
+export const getSelectedContacts = createSelector(
+  ({ filter: { selectedContacts } }: IStoreState): number[] =>
+    selectedContacts || [],
   data => data
 );

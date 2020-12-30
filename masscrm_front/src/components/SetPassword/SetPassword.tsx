@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useMemo } from 'react';
+import React, { FC, useContext, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useFormik } from 'formik';
 import { CommonInput, CommonButton } from 'src/components/common';
@@ -9,6 +9,7 @@ import { checkPassword } from 'src/services/checkPassword';
 import { ISetPasswordFormInputs } from 'src/components/SetPassword/interfaces';
 import { getUser } from 'src/selectors';
 import { styleNames } from 'src/services';
+import { ErrorEmitterContext } from 'src/context';
 import styles from './SetPassword.scss';
 
 const sn = styleNames(styles);
@@ -18,6 +19,8 @@ export const SetPassword: FC = () => {
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlToken = urlParams.get('token');
+
+  const { errorsEventEmitter } = useContext(ErrorEmitterContext);
 
   const [background, logoBackground] = useMemo(
     () => [
@@ -31,7 +34,7 @@ export const SetPassword: FC = () => {
 
   useEffect(() => {
     if (urlToken) {
-      dispatch(sendTokenGetUser(urlToken));
+      dispatch(sendTokenGetUser(urlToken, errorsEventEmitter));
     }
   }, []);
 

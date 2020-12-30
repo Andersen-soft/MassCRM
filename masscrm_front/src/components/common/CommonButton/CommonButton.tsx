@@ -66,6 +66,9 @@ const useStyles = makeStyles(() => ({
       color: '#C1C3C6',
       border: 'none'
     }
+  },
+  alignRight: {
+    margin: '0 0 0 auto'
   }
 }));
 
@@ -77,6 +80,7 @@ export const CommonButton: FC<ICommonButtonProps> = ({
   disabled,
   type,
   children,
+  align,
   className = ''
 }) => {
   const classes = useStyles();
@@ -84,8 +88,8 @@ export const CommonButton: FC<ICommonButtonProps> = ({
   return (
     <DefaultButton
       disableRipple
-      className={`${classes[color || 'white']} ${
-        classes[size || 'small']
+      className={`${classes[color || 'white']} ${classes[size || 'small']} ${
+        align ? classes[align] : ''
       } ${className}`}
       onClick={onClickHandler}
       disabled={disabled}

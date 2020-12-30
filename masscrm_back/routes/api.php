@@ -73,6 +73,7 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
             Route::get('/', 'Country\CountryController@countries')->name('country');
             Route::get('{code}/regions', 'Country\CountryController@regions')->name('region');
             Route::get('regions/{code}', 'Country\CountryController@cities')->name('city');
+            Route::post('cities', 'Country\CountryController@addCities')->name('location');
         });
 
         Route::group(['prefix' => 'auth'], function () {
@@ -84,35 +85,35 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
             Route::get('get', 'File\FileController@getFile');
         });
 
-    Route::group(['middleware' => 'managerPermission'],function() {
-        Route::resource('blacklists', 'Blacklist\BlacklistController')
-            ->only('store', 'update', 'index');
+        Route::group(['middleware' => 'managerPermission'], function () {
+            Route::resource('blacklists', 'Blacklist\BlacklistController')
+                ->only('store', 'update', 'index');
 
-        Route::group(['prefix' => 'blacklists'], static function () {
-            Route::get('export', 'Blacklist\BlacklistController@export');
-            Route::post('delete', 'Blacklist\BlacklistController@destroy');
+            Route::group(['prefix' => 'blacklists'], static function () {
+                Route::get('export', 'Blacklist\BlacklistController@export');
+                Route::post('delete', 'Blacklist\BlacklistController@destroy');
+            });
+
         });
 
-    });
+        Route::group(['prefix' => 'users'], static function () {
+            Route::get('getUsersByIds', 'User\UserController@getUsersByIds');
+            Route::get('ldap_user', 'User\LdapUserController');
+            Route::get('roles', 'User\UserController@getRoles');
+            Route::get('change-password/{id}', 'User\UserController@changePassword');
+            Route::get('notifications', 'User\UserNotificationController@index');
+            Route::put('notifications/{id}', 'User\UserNotificationController@update');
+            Route::delete('delete', 'User\UserController@delete');
+        });
 
-    Route::group(['prefix' => 'users'], static function () {
-        Route::get('getUsersByIds', 'User\UserController@getUsersByIds');
-        Route::get('ldap_user', 'User\LdapUserController');
-        Route::get('roles', 'User\UserController@getRoles');
-        Route::get('change-password/{id}', 'User\UserController@changePassword');
-        Route::get('notifications', 'User\UserNotificationController@index');
-        Route::put('notifications/{id}', 'User\UserNotificationController@update');
-        Route::delete('delete', 'User\UserController@delete');
-    });
-
-    Route::resource('users', 'User\UserController')
-        ->only('store', 'update', 'show', 'index');
+        Route::resource('users', 'User\UserController')
+            ->only('store', 'update', 'show', 'index');
 
 
-    Route::group(['prefix' => 'processes'], static function () {
-        Route::get('export', 'Process\ProcessExportController');
-        Route::get('import', 'Process\ProcessImportController');
-    });
+        Route::group(['prefix' => 'processes'], static function () {
+            Route::get('export', 'Process\ProcessExportController');
+            Route::get('import', 'Process\ProcessImportController');
+        });
 
         Route::resource('industries', 'Company\IndustryController')
             ->only('store');

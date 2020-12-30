@@ -1,86 +1,8 @@
-.mainContainer {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  grid-gap: 16px;
-  background-color: rgba(0, 0, 0, 0.04);
-}
-
-.leftContainer {
-  height: 604px;
+.data {
+  position: relative;
+  overflow: hidden;
   margin-top: 16px;
-
   background: #fff;
   border: 1px solid rgba(205, 214, 225, 0.3);
   border-radius: 8px;
-}
-
-.rightContainer {
-  height: 604px;
-  margin-top: 16px;
-
-  background: #fff;
-  border: 1px solid rgba(205, 214, 225, 0.3);
-  border-radius: 8px;
-
-  .tabLinksContainer {
-    height: 56px;
-
-    button {
-      &:disabled {
-        border-bottom: 2px solid #feda00;
-      }
-    }
-
-    .tabLinksLeft {
-      font-family: Roboto, Arial, serif;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 18px;
-      line-height: 22px;
-
-      color: #212121;
-      background-color: transparent;
-
-      border: none;
-      padding: 16px;
-
-      outline: none;
-      cursor: pointer;
-    }
-
-
-    .tabLinksRight {
-      margin-left: 8px;
-      font-family: Roboto, Arial, serif;
-      font-style: normal;
-      font-weight: normal;
-      font-size: 18px;
-      line-height: 22px;
-      padding: 16px 16px 16px 16px;
-
-      color: #212121;
-      background-color: transparent;
-      border: none;
-
-      outline: none;
-      cursor: pointer;
-    }
-
-  }
-
-  .breakline {
-    height: 0;
-    border: 1px solid #e5e9f0;
-  }
-}
-
-
-.footContainer {
-  min-height: 150px;
-
-  background: #fff;
-  border: 1px solid rgba(205, 214, 225, 0.3);
-  border-radius: 8px;
-
-  grid-column-end: span 2;
 }

@@ -26,7 +26,9 @@ import {
   IPreviousCompany,
   IAttachment,
   IActivityLog,
-  IImportDataStore
+  IImportDataStore,
+  IFilter,
+  IFilterValuesUsers
 } from '.';
 
 export type ILocationStore = ILocations;
@@ -64,7 +66,7 @@ export interface IContactStore {
 
 export interface IUsersStore {
   ldapUser: Array<IUser>;
-  users: { [key: string]: Array<IUser> };
+  users: IUser[];
   userData: IUser;
   roles: IRoles;
   filteredUsers?: Array<{ [key: string]: string }> | null;
@@ -76,6 +78,8 @@ export interface IUsersStore {
 
 export interface ICompanyStore {
   data: Array<ICompany>;
+  attachments?: Array<IAttachment>;
+  activity_log?: IActivityLog;
 }
 export interface IIndustryStore {
   data: Array<IIndustry>;
@@ -101,10 +105,13 @@ export interface IImportStore {
 export interface IFilterStore {
   data?: IFilterData;
   settings?: IContactFilter;
+  usersSettings: IFilter;
   values?: IContactFiltersState;
   multiValues?: IMultiFilterState;
+  usersValues?: IFilterValuesUsers;
   sort?: ISortingState;
   sortBy?: ISortingObject;
+  selectedContacts: number[];
 }
 
 export interface IPageStore {

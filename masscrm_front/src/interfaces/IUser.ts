@@ -26,7 +26,7 @@ export interface ISearch {
   fullName?: string;
   login?: string;
   position?: string;
-  roles?: string[] | void[];
+  roles?: string[];
   skype?: string;
 }
 
@@ -38,11 +38,12 @@ export interface IFilter {
 }
 
 export interface IUserFiltersValues {
-  'full name'?: string;
-  'e-mail'?: string;
-  login?: string;
-  roles?: string[];
-  skype?: string;
-  position?: string;
-  status?: string | number;
+  [index: string]: string | string[];
+  'full name': string;
+  'e-mail': string;
+  login: string;
+  roles: string[];
+  skype: string;
+  position: string;
+  status: string;
 }

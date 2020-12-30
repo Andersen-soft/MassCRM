@@ -13,6 +13,8 @@ const useStyles = makeStyles({
       border: 'solid 1px #E1E5ED',
       height: '104px',
       overflow: 'hidden',
+      alignItems: 'baseline',
+      padding: 0,
       '&:hover': {
         borderColor: '#B6BECF'
       }
@@ -21,7 +23,7 @@ const useStyles = makeStyles({
       borderColor: '#B6BECF'
     },
     '& .MuiOutlinedInput-input': {
-      padding: '5px',
+      padding: '10px',
       fontSize: '14px',
       lineHeight: '20px'
     },
@@ -83,7 +85,7 @@ export const CustomTextarea: FC<Props> = ({
       variant='outlined'
       label='Comment'
       name={name}
-      value={value}
+      value={value || ''}
       onChange={onChange}
       placeholder={placeholder}
       className={classes.root}

@@ -4,15 +4,18 @@ import {
   IContactFiltersState,
   IExportInputFilterValues,
   IFilterValuesUsers,
-  IMinMax
+  IMinMax,
+  IUserFiltersValues
 } from './index';
 import { IGlobalContactSearch } from './IContact';
+import { ITableRow } from '../components/common/Table/interfaces';
 
 export type FiltersStateType =
   | IFilterValuesUsers
   | IContactFiltersState
   | IBlacklistFiltersState
-  | IExportInputFilterValues;
+  | IExportInputFilterValues
+  | IUserFiltersValues;
 
 export type FiltersTypes = {
   [x: string]:
@@ -38,4 +41,10 @@ export interface IFilterData {
   origin?: Array<string>;
   company_type?: Array<string>;
   export_status?: { [key: string]: string };
+}
+
+export interface ISelectedContacts {
+  [key: string]: ITableRow[] | undefined | number;
+  data?: ITableRow[];
+  id?: number;
 }

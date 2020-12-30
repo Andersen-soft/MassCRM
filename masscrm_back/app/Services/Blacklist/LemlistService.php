@@ -66,7 +66,7 @@ class LemlistService
 
         foreach ($this->mapPasswords() as $password){
             $data[] = Http::withBasicAuth(
-                trim(config('app.lemlist_username_second')),
+                trim(config('app.lemlist_username')),
                 $password
             )->get(
                 config('app.lemlist_blacklist_api_url'),

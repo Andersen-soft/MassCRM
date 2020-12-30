@@ -5,6 +5,7 @@ export interface ICompanyCell {
   contactID: number;
   value?: Array<ICompany>;
   type?: string;
+  href?: string;
 }
 
 export interface ISubsidiaryHoldingEdit {

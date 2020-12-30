@@ -53,6 +53,15 @@ export const websocketReducer = handleActions(
         ...state,
         ...payload
       };
+    },
+    [websocketActionTypes.WEBSOCKET_IS_IN_WORK_UPDATED]: (
+      state: S,
+      { payload }: Action<any>
+    ): S => {
+      return {
+        ...state,
+        wsData: payload
+      };
     }
   },
   initialState

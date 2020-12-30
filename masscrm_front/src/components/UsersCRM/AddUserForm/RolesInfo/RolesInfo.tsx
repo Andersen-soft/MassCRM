@@ -9,7 +9,7 @@ import {
   TableRow,
   Table
 } from '@material-ui/core';
-import { getRoles } from 'src/selectors/user.selector';
+import { getRolesSelector } from 'src/selectors/user.selector';
 import { InfoOutlined } from '@material-ui/icons';
 import { rolesInfoStyles } from './RolesInfo.style';
 import styles from './RolesInfo.scss';
@@ -27,7 +27,7 @@ const transformOriginValue: PopoverOrigin = {
 export const RolesInfo: FC = () => {
   const style = rolesInfoStyles();
 
-  const roles = useSelector(getRoles);
+  const roles = useSelector(getRolesSelector);
 
   const rolesArray = Object.values(roles);
 

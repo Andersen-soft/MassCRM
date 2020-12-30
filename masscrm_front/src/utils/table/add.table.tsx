@@ -19,7 +19,7 @@ import {
 } from './cells';
 import { industryCell } from './cells/ItemsCell/industryCell';
 import { getCompanySize } from '../map';
-import { LINKEDIN_REG_EXP, URL_REGEX } from '../../constants';
+import { LINKEDIN_REG_EXP, SOCIAL_NETWORKS, URL_REGEX } from '../../constants';
 import { checkUrl } from '../form/chekUrl';
 
 type FormatterType = (
@@ -115,7 +115,8 @@ export const addContactMapCallback = (
 
   const isLinkedin = (val: string) => LINKEDIN_REG_EXP.test(val);
 
-  const isWebsite = (val: string) => URL_REGEX.test(val);
+  const isWebsite = (val: string) =>
+    URL_REGEX.test(val) && SOCIAL_NETWORKS.every(item => !val.includes(item));
 
   const textContactTD = (
     name: string,
@@ -253,7 +254,8 @@ export const addContactMapCallback = (
         value: [company],
         id: companyId,
         contactID: id,
-        type: 'name'
+        type: 'name',
+        href: `/company?id=${companyId}`
       })
     },
     {

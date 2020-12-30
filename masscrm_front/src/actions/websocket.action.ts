@@ -15,7 +15,8 @@ export const websocketActionTypes = {
   WEBSOCKET_IMPORT_FINISHED: 'WEBSOCKET_IMPORT_FINISHED',
   WEBSOCKET_EXPORT_BLACKLIST_FINISHED: 'WEBSOCKET_EXPORT_BLACKLIST_FINISHED',
   WEBSOCKET_EXPORT_CONTACT_FINISHED: 'WEBSOCKET_EXPORT_CONTACT_FINISHED',
-  WEBSOCKET_CLEAR_WS_DATA: 'WEBSOCKET_CLEAR_WS_DATA'
+  WEBSOCKET_CLEAR_WS_DATA: 'WEBSOCKET_CLEAR_WS_DATA',
+  WEBSOCKET_IS_IN_WORK_UPDATED: 'WEBSOCKET_IS_IN_WORK_UPDATED'
 };
 
 // TODO: make correct types
@@ -26,6 +27,7 @@ export const websocketPagckageTypes: {
   import_finished: 'importFinished',
   export_contacts_finished: 'exportContactFinished',
   export_blacklist_finished: 'exportBlacklistFinished',
+  is_in_work_updated: 'isInWorkUpdated',
   initResult: 'initResult'
 };
 
@@ -46,6 +48,9 @@ export const websocketActions: IWebsocketActions = {
   ),
   exportBlacklistFinished: createAction(
     websocketActionTypes.WEBSOCKET_EXPORT_BLACKLIST_FINISHED
+  ),
+  isInWorkUpdated: createAction(
+    websocketActionTypes.WEBSOCKET_IS_IN_WORK_UPDATED
   )
 };
 

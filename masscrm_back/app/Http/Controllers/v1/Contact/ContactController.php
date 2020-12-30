@@ -353,7 +353,7 @@ class ContactController extends BaseController
      *             @OA\Property(property="success", type="boolean", example=true),
      *                 @OA\Property(property="data", type="object",
      *                     required={"count", "expected"},
-     *                     @OA\Property(property="count", type="int", example="10"),
+     *                     @OA\Property(property="count", type="integer", example="10"),
      *                     @OA\Property(property="expected", type="integer", example="25")
      *                )
      *         )

@@ -1,13 +1,24 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useMemo } from 'react';
 import { TableCellBaseProps } from '@material-ui/core';
 import { EditPopup } from '..';
 import { CompanyEdit } from '.';
 import { ICompanyCell } from './interfaces/ICompanyCell';
 
-export const companyCell = ({ value, type, ...props }: ICompanyCell) => (
+export const companyCell = ({ value, type, href, ...props }: ICompanyCell) => (
   tdProps: PropsWithChildren<TableCellBaseProps>
 ) => {
-  const contentTD = () => <div>{value?.map(({ name }) => name).join(',')}</div>;
+  const companies = useMemo(() => {
+    return value?.map(({ name }) => name).join(',');
+  }, [value]);
+
+  const contentTD = () =>
+    type === 'name' ? (
+      <a href={href} rel='noreferrer' target='_blank'>
+        {companies}
+      </a>
+    ) : (
+      <div>{companies}</div>
+    );
 
   return (
     <EditPopup

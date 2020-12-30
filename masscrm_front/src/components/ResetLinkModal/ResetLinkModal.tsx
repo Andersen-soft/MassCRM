@@ -9,13 +9,16 @@ interface IModalProps {
   id: number;
   setUserLogin: (val?: string) => void;
   openAlert?: () => void;
-  currentPage?: number;
 }
 
-export const ResetLinkModal: FC<IModalProps> = props => {
+export const ResetLinkModal: FC<IModalProps> = ({
+  open,
+  onClose,
+  id,
+  openAlert,
+  setUserLogin
+}) => {
   const style = dialogStyle();
-
-  const { open, onClose, id, openAlert, setUserLogin, currentPage } = props;
 
   const handleClose = useCallback(() => {
     onClose(false);
@@ -24,7 +27,6 @@ export const ResetLinkModal: FC<IModalProps> = props => {
   return (
     <Dialog classes={{ root: style.dialog }} open={open}>
       <ResetLink
-        currentPage={currentPage || 1}
         handleClose={handleClose}
         id={id}
         openAlert={openAlert}

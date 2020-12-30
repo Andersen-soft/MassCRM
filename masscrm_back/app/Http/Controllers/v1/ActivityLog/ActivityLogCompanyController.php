@@ -39,13 +39,18 @@ class ActivityLogCompanyController extends BaseController
      *     @OA\Response(response="400", ref="#/components/responses/400"),
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
+     * @param ShowActivityLogListRequest $request
+     * @param ActivityLogCompanyService $activityLogCompanyService
+     * @param Pagination $pagination
+     * @return JsonResponse
      */
     public function show(
         ShowActivityLogListRequest $request,
         ActivityLogCompanyService $activityLogCompanyService,
         Pagination $pagination
     ): JsonResponse {
-        $activityLogsCompany = $activityLogCompanyService->getActivityLogCompany($request->get('id'))
+        $activityLogsCompany = $activityLogCompanyService
+            ->getActivityLogCompany((int)$request->get('id'), $request->get('search', []))
             ->paginate($request->get('limit', 50));
 
         return $this->success(

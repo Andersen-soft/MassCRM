@@ -27,4 +27,5 @@ export interface ITableHeaderProps {
   data?: Array<ITableRow>;
   clearAutocompleteList?: () => void;
   isFullTable?: boolean;
+  currentPage?: number;
 }

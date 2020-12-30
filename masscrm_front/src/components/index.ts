@@ -10,3 +10,4 @@ export * from './Demo';
 export * from './Blacklist';
 export * from './StatusPage';
 export * from './DisplayErrors';
+export * from './ErrorPage';

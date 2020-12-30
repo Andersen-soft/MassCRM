@@ -2,10 +2,9 @@ import React, { FC, useCallback, useMemo } from 'react';
 import { styleNames } from 'src/services';
 import { IContactResult } from 'src/interfaces';
 import { GENDER_MAP } from 'src/utils/map';
-import { SocialIcon } from 'src/components/common/SocialIcon';
+import { SocialIcon, ShowMoreInformation } from 'src/components/common';
 import { socialNetworks } from 'src/data/socialNetworks';
 import style from './InfoPartContactInfo.scss';
-import { ShowMoreInformation } from '../ShowMoreInformation';
 
 const sn = styleNames(style);
 

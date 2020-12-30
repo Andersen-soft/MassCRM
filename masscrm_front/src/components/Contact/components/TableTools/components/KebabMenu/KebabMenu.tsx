@@ -2,6 +2,7 @@ import React, { FC, useMemo } from 'react';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import { MoreInformation } from 'src/components/common/MoreInformation';
 import { AddContactModal } from '../AddContactModal';
+import { AddCityModal } from '../AddCityModal/AddCityModal';
 
 export const KebabMenu: FC<{ isFullFunctionality: boolean }> = ({
   isFullFunctionality
@@ -13,6 +14,9 @@ export const KebabMenu: FC<{ isFullFunctionality: boolean }> = ({
           <>
             <ListItem button>
               <AddContactModal />
+            </ListItem>
+            <ListItem button>
+              <AddCityModal />
             </ListItem>
             <ListItem href='/export' button component='a'>
               <ListItemText primary='Export details' />

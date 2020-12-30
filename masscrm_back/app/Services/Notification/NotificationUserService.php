@@ -93,6 +93,28 @@ class NotificationUserService
         $client->close();
     }
 
+    public function sendNotificationUserToSocketWithoutSavingInDatabase(
+        string $typeNotification,
+        string $message
+    ): void {
+        $token = $this->userService->loginUserSuperAdmin();
+        $client = new Client(config('socket.host') . '?token=' . $token);
+        $data = [
+            'info' => [
+                'type' => $typeNotification,
+                'data' => [
+                    'created_at' => Carbon::now(),
+                    'message' => $message,
+                ]
+            ]
+        ];
+        if ($token) {
+            $this->sendNotificationToSocket($data, $client);
+        }
+
+        $client->close();
+    }
+
     private function sendNotificationToSocket(array $data, Client $client): void
     {
         try {

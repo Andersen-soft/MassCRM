@@ -193,6 +193,7 @@ export const ImportModal: React.FC<Props> = props => {
   const handleClose = React.useCallback(() => {
     if (onClose) {
       onClose();
+      form.resetForm({});
       dispatch(clearFormState());
       tabsState.onChangeTab(DEFAULT_SELECTED_TAB);
 

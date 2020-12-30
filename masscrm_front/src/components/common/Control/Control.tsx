@@ -9,6 +9,7 @@ import { Edit, VpnKeyRounded } from '@material-ui/icons';
 import { Tooltip } from '@material-ui/core';
 import { Modal } from 'src/components/common/Modal';
 import { CommonAlert } from 'src/components/common/CommonAlert';
+import { DeleteUser } from 'src/components/common/DeleteUser';
 import { ResetLinkModal } from 'src/components/ResetLinkModal/ResetLinkModal';
 import { styleNames } from '../../../services';
 import style from './Control.scss';
@@ -20,8 +21,9 @@ const sn = styleNames(style);
 export const Control: FC<IControlProps> = ({
   icon,
   id,
-  currentPage,
-  disableResetPassword
+  disableResetPassword,
+  hasDeleteButton,
+  fetchUsers
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -90,6 +92,7 @@ export const Control: FC<IControlProps> = ({
 
   return (
     <div className={sn('control')}>
+      {hasDeleteButton && <DeleteUser id={id} fetchUsers={fetchUsers} />}
       {resetPasswordButton}
       <button
         className={sn('control-btn')}
@@ -107,7 +110,6 @@ export const Control: FC<IControlProps> = ({
         id={id || 0}
         openAlert={handleClickAlert}
         setUserLogin={setUserLogin}
-        currentPage={currentPage}
       />
 
       <CommonAlert

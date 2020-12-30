@@ -28,3 +28,5 @@ export * from './IActivityLog';
 export * from './IImport';
 export * from './IMinMax';
 export * from './ISort';
+export * from './IInfoItem';
+export * from './ILinkedinField';

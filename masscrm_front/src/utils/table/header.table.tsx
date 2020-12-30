@@ -84,20 +84,20 @@ interface ITableHeight {
 
 export const OTHER_HEIGHT: ITableHeight = {
   userTable: '201px',
-  dailyTable: '375px',
+  dailyTable: '365px',
   contactTable: '280px',
   myContactTable: '280px',
   blacklistTable: '520px',
-  exportTable: '465px'
+  exportTable: '250px'
 };
 
 export const OTHER_HEIGHT_SMALL_SCREEN: ITableHeight = {
   userTable: '201px',
-  dailyTable: '375px',
+  dailyTable: '365px',
   contactTable: '330px',
   myContactTable: '330px',
   blacklistTable: '520px',
-  exportTable: '465px'
+  exportTable: '250px'
 };
 
 export const INITIAL_IS_BIG_SCREEN = window.innerWidth > 1493;

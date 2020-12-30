@@ -50,23 +50,23 @@ class DeleteDuplicateCompanyCommand extends Command
     public function handle(): void
     {
         do {
-            /** @var Company $company*/
             $company = $this->companyRepository->getCompanyForTransfer();
-            var_dump($company->id);
-            $oldCompanies = $this->companyRepository->getNotUniqueCompanyForDelete($company->name, $company->id);
-            /** @var Company $oldCompany */
-            foreach ($oldCompanies as $oldCompany) {
-                if ($oldCompany->contacts()->exists()) {
-                    $oldCompany->contacts()->update([
-                        'company_id' => $company->id
-                    ]);
+            if(!is_null($company)){
+                $oldCompanies = $this->companyRepository->getNotUniqueCompanyForDelete($company->name, $company->id);
+
+                /** @var Company $oldCompany */
+                foreach ($oldCompanies as $oldCompany) {
+
+                    if ($oldCompany->contacts()->exists()) {
+                        $oldCompany->contacts()->update([
+                            'company_id' => $company->id
+                        ]);
+                    }
+                    Company::destroy($oldCompany->id);
                 }
-
-                Company::destroy($oldCompany->id);
+                $company->is_upload_collection = true;
+                $company->save();
             }
-
-            $company->is_upload_collection = true;
-            $company->save();
         } while ($company);
     }
 }

@@ -379,9 +379,9 @@ class UserController extends BaseController
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function changePassword(SpecifyUserIdRequest $request): JsonResponse
+    public function changePassword(SpecifyUserIdRequest $request, int $id): JsonResponse
     {
-        return $this->success($this->userService->allowChangePassword($request->get('id')));
+        return $this->success([$this->userService->allowChangePassword($id)]);
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\User;
 
 use App\Models\Blacklist;
+use App\Models\Contact\Contact;
 use App\Models\InformationImport;
 use App\Models\Process;
 use Carbon\Carbon;
@@ -304,6 +305,10 @@ class User extends Authenticatable implements JWTSubject
     public function informationImport(): HasMany
     {
         return $this->hasMany(InformationImport::class, 'user_id');
+    }
+
+    public function responsible(): HasMany {
+        return $this->hasMany(Contact::class, 'responsible_id');
     }
 
     public function getJWTIdentifier()

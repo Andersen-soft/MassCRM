@@ -10,10 +10,16 @@ import { useStyles } from './CustomList.styles';
 import { IListProps } from './interfaces';
 import { INotification, INotificationPayload } from '../../../interfaces';
 
-const DOWNLOAD_TYPES = [
-  'export_contacts_finished',
-  'export_blacklist_finished'
-];
+interface INotificationTypes {
+  [key: string]: string;
+}
+
+const NOTIFICATION_TYPES: INotificationTypes = {
+  export_contacts_finished: 'Download',
+  export_blacklist_finished: 'Download',
+  import_finished: 'View result',
+  is_in_work_updated: 'Update table'
+};
 
 export const CustomList = ({ list, getResult }: IListProps) => {
   const classes = useStyles();
@@ -56,7 +62,7 @@ export const CustomList = ({ list, getResult }: IListProps) => {
                     type='button'
                     onClick={handleClick(type, id, payload)}
                   >
-                    {DOWNLOAD_TYPES.includes(type) ? 'Download' : 'View result'}
+                    {NOTIFICATION_TYPES[type]}
                   </button>
                 </Typography>
               }

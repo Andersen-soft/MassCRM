@@ -65,7 +65,7 @@ export const Contact: FC<{
 
   return (
     <>
-      <Header />
+      <Header daily={addContactsPage} myContact={myContactPage} />
       <div className='container'>
         <div className={sn('add-contact')}>
           {tools}

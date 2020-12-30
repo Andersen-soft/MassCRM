@@ -212,6 +212,7 @@ export interface IContactSearchDownload {
 }
 
 export interface IContactDownload {
+  ids?: number[];
   typeFile?: string;
   listField?: Array<string>;
   limit?: number;
@@ -255,17 +256,17 @@ export interface IContactFiltersState {
   Skype: string;
   Email: string;
   Validation: string;
-  Confidence: string[];
+  Confidence: number[];
   Collegue: string;
   ID: string;
   'Added to mailing': Array<Date | number>;
   'Last touch': Array<Date | number>;
   Sequence: string;
   Status: string[];
-  Opens: string[];
-  Views: string[];
-  Deliveries: string[];
-  Replies: string[];
+  Opens: number[];
+  Views: number[];
+  Deliveries: number[];
+  Replies: number[];
   Bounces: string[];
   Mails: string;
   'My notes': string;

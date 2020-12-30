@@ -5,7 +5,8 @@ import {
   getContactAction,
   getPreviousCompaniesAction,
   getAttachmentsAction,
-  getActivityLogAction
+  getActivityLogAction,
+  getRelatedContacts
 } from 'src/actions';
 import { IContactStore } from 'src/interfaces/store';
 
@@ -42,6 +43,10 @@ export const contactReducer = handleActions(
       ...payload
     }),
     [`${getActivityLogAction}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${getRelatedContacts}`]: (state, { payload }) => ({
       ...state,
       ...payload
     })

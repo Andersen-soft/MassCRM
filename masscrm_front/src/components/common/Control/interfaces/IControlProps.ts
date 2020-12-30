@@ -6,4 +6,6 @@ export interface IControlProps {
   id?: number;
   currentPage?: number;
   disableResetPassword?: boolean;
+  hasDeleteButton?: boolean;
+  fetchUsers?: () => void;
 }

@@ -2,7 +2,7 @@
 
 exports[`CommonButton whiteBtn should render correctly 1`] = `
 <WithStyles(WithStyles(ForwardRef(Button)))
-  className="makeStyles-yellow-1 makeStyles-small-3 "
+  className="makeStyles-yellow-1 makeStyles-small-3  "
   disableRipple={true}
   disabled={true}
   onClick={

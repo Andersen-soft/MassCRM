@@ -16,4 +16,6 @@ return [
     'failed' => 'These credentials do not match our records.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
     'user_inactive' => 'User is inactive.',
+    'token_invalid' => 'This token is invalid. Please Login.',
+    'token_error_refresh' => 'Token cannot be refreshed, please Login again.',
 ];

@@ -36,7 +36,7 @@ export const CompanyInput: FC<{
           company_subsidiary: company?.subsidiary?.[0]?.id || '',
           company_holding: company?.holding?.[0]?.id || '',
           company_founded: company?.founded || '',
-          vacancies: company?.vacancies || '',
+          vacancies: company?.vacancies || [],
           industry:
             companyIndustry?.map(({ name }: { name: string }) => name) || [],
           industries:
