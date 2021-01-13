@@ -2,6 +2,7 @@ import React, { FC, useMemo } from 'react';
 import { useFormik } from 'formik';
 import { Check, Close } from '@material-ui/icons';
 import { styleNames } from 'src/services';
+import { createProperty } from 'src/utils/companySize';
 import { format, parse } from 'date-fns';
 import {
   CommonInput,
@@ -66,50 +67,50 @@ export const SingleInputForm: FC<ISingleInputFormProps> = ({
   };
 
   const input = useMemo(() => {
-    switch (true) {
-      case !!items:
-        return (
-          <SearchInput
-            name='editInput'
-            value={editInput}
-            placeholder={placeholder || ''}
-            items={items || []}
-            onChange={onChangeHandler}
-            errorMessage={errors.editInput as string}
-          />
-        );
-      case type === 'switch':
-        return (
-          <CustomSwitch
-            name='editInput'
-            value={editInput}
-            onChangeHandler={handleChange}
-            label='Requires validation'
-          />
-        );
-      case isDate:
-        return (
-          <DateRange
-            name='editInput'
-            onChange={onChangeDate}
-            placeholder='Date'
-            singular
-            date={editInput ? [parse(editInput, 'd.MM.yyyy', new Date())] : []}
-          />
-        );
-      default:
-        return (
-          <CommonInput
-            required={required}
-            value={editInput}
-            name='editInput'
-            placeholder={placeholder}
-            onChangeValue={handleChange}
-            errorMessage={errors.editInput as string}
-          />
-        );
-    }
-  }, [editInput, errors]);
+    const COMPONENTS: { [index: string]: JSX.Element } = {
+      [createProperty('items', !!items)]: (
+        <SearchInput
+          name='editInput'
+          value={editInput}
+          placeholder={placeholder || ''}
+          items={items || []}
+          onChange={onChangeHandler}
+          errorMessage={errors.editInput as string}
+        />
+      ),
+      [createProperty('switch', type === 'switch')]: (
+        <CustomSwitch
+          name='editInput'
+          value={editInput}
+          onChangeHandler={handleChange}
+          label='Requires validation'
+        />
+      ),
+      [createProperty('items', !!isDate)]: (
+        <DateRange
+          name='editInput'
+          onChange={onChangeDate}
+          placeholder='Date'
+          singular
+          date={editInput ? [parse(editInput, 'd.MM.yyyy', new Date())] : []}
+        />
+      ),
+      default: (
+        <CommonInput
+          required={required}
+          value={editInput}
+          name='editInput'
+          placeholder={placeholder}
+          onChangeValue={handleChange}
+          errorMessage={errors.editInput as string}
+        />
+      )
+    };
+
+    return COMPONENTS[
+      Object.keys(COMPONENTS).find(component => component) || 'default'
+    ];
+  }, [editInput, errors, items]);
 
   return (
     <form onSubmit={handleSubmit}>

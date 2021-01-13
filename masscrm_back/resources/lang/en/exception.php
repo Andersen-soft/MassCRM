@@ -7,4 +7,6 @@ return [
     'delete_is_active' => 'You cannot delete a user with active status.',
     'is_ldap' => 'The password change link can only be sent to a user who is not registered by corporate e-mail',
     'is_responsible' => "You can't delete this user. This user is responsible for the contacts.",
+    'vacancies_does_not_exist' => "Vacancies does not exist. Missing ID: :ids",
+    'company_does_not_exist' => "Company with :id does not exist.",
 ];

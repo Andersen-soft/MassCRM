@@ -21,6 +21,8 @@ class ImportService
 {
     protected const PREVIEW_LINES = 3;
 
+    protected const IMPORT_CONTACT_QUEUE = 'import_contact';
+
     private string $storagePath;
 
     public function __construct()
@@ -107,18 +109,23 @@ class ImportService
 
     public function startParse(ImportStartParseCommand $command): void
     {
-        $filePath = $this->checkFileExist($command->getUser()->getId());
+        try {
+            $filePath = $this->checkFileExist($command->getUser()->getId());
 
-        /** @var Process $process */
-        $process = $command->getUser()->processes()->create([
-            'name' => Lang::get('import.name_import', ['file' => basename($filePath)]),
-            'status' => Process::TYPE_STATUS_PROCESS_WAIT,
-            'type' => Process::TYPE_PROCESS_IMPORT_CONTACT
-        ]);
+            /** @var Process $process */
+            $process = $command->getUser()->processes()->create([
+                'name' => Lang::get('import.name_import', ['file' => basename($filePath)]),
+                'status' => Process::TYPE_STATUS_PROCESS_WAIT,
+                'type' => Process::TYPE_PROCESS_IMPORT_CONTACT
+            ]);
 
-        ImportContactsJob::dispatch(
-            new ImportContactsDto($command, $filePath, $process)
-        );
+            ImportContactsJob::dispatch(
+                new ImportContactsDto($command, $filePath, $process)
+            );
+
+        } catch (ImportException $e) {
+            logger($e->getMessage());
+        }
     }
 
     private function checkFileExist(int $userId): string

@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useRef } from 'react';
+import React, { FC, useCallback } from 'react';
 import {
   Button,
   Table,
@@ -89,29 +89,23 @@ export const Attachments: FC<{
 }> = ({ attachments, uploadHandler, deleteHandler }) => {
   const classes = useStyles();
   const load = useSelector(getLoader);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const buttonClickHandler = useCallback(() => {
-    if (inputRef.current) {
-      inputRef.current.click();
-    }
-  }, [inputRef]);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      uploadHandler(acceptedFiles[0]);
+      const [file] = acceptedFiles;
+      file && uploadHandler(file);
     },
     [uploadHandler]
   );
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, open } = useDropzone({ onDrop });
 
   return (
     <div
       className={sn('attachment')}
       {...getRootProps({ onClick: event => event.stopPropagation() })}
     >
-      <input {...getInputProps()} style={{ display: 'none' }} ref={inputRef} />
+      <input {...getInputProps()} />
       <TableContainer component='div' className={classes.root}>
         <Table>
           <TableHead className={classes.tableHead}>
@@ -145,7 +139,7 @@ export const Attachments: FC<{
         <Button
           variant='contained'
           component='label'
-          onClick={buttonClickHandler}
+          onClick={open}
           className={classes.uploadButton}
           disableRipple
         >

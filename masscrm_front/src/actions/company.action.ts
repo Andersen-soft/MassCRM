@@ -69,9 +69,12 @@ export const updateCompany = async (
 };
 
 export const getOneCompanyRequest = (id: number) => (dispatch: Dispatch) => {
-  HTTP.get(`companies/${id}`).then(({ data }) => {
-    dispatch(getCompanyAction({ data }));
-  });
+  HTTP.get(`companies/${id}`)
+    .then(({ data }) => {
+      dispatch(setLoaderAction({ isLoading: true }));
+      dispatch(getCompanyAction({ data }));
+    })
+    .finally(() => dispatch(setLoaderAction({ isLoading: false })));
 };
 
 export const getCompanyAttachments = (id: number) => async (

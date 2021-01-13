@@ -1,8 +1,7 @@
 import React, { FC, useCallback, useMemo, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { IContactJobValues } from 'src/interfaces';
 import { styleNames } from 'src/services';
-import { getCompany, getContacts } from 'src/selectors';
+import { getCompany, getContacts, getLoader } from 'src/selectors';
 import {
   updateCompany,
   getOneCompanyRequest,
@@ -15,8 +14,10 @@ import {
   CommonButton,
   CompanyDelete,
   CompanyEdit,
-  CompanyRelatedContactsModal
+  CompanyRelatedContactsModal,
+  Loader
 } from 'src/components/common';
+import { IContactJobValues } from 'src/interfaces';
 import { InfoPartCompanyInfo, InfoPartJobs, InfoPartRelatedContacts } from '.';
 
 import style from './InfoPart.scss';
@@ -33,12 +34,15 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
   const companyData = useSelector(getCompany);
   const contactsData = useSelector(getContacts);
   const dispatch = useDispatch();
+  const load = useSelector(getLoader);
 
   const [isActiveTab, setToActiveTab] = useState<string>('companyInfo');
-  const [updatedJobs, setUpdatedJobs] = useState<Array<IContactJobValues>>([]);
   const [openEditForm, setOpenEditForm] = useState<boolean>(false);
   const [openDeleteForm, setOpenDeleteForm] = useState<boolean>(false);
   const [openMessage, setOpenMessage] = useState<boolean>(false);
+  const [vacancyToEdit, setVacancyToEdit] = useState<IContactJobValues>(
+    {} as IContactJobValues
+  );
 
   const handleSetOpenMessage = useCallback(() => {
     setOpenMessage((prevState: boolean) => !prevState);
@@ -59,8 +63,17 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
     const updatedVacancies =
       companyData.vacancies?.filter(vacancy => vacancy.id !== jobId) || [];
 
-    setUpdatedJobs(updatedVacancies);
-    updateCompany(companyData.id, { vacancies: [...updatedVacancies] });
+    updateCompany(companyData.id, {
+      vacancies: [...updatedVacancies]
+    }).then(() => dispatch(getOneCompanyRequest(id)));
+  };
+
+  const getVacancyToEdit = (jobId: number) => {
+    const jobToEdit =
+      companyData.vacancies?.find(
+        ({ id: vacancyId }: IContactJobValues) => vacancyId === jobId
+      ) || ({} as IContactJobValues);
+    setVacancyToEdit(jobToEdit);
   };
 
   const fetchRelatedContacts = async () => {
@@ -78,8 +91,9 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
           <InfoPartJobs
             vacancies={companyData.vacancies}
             getDeleteJob={getDeleteJob}
-            companyData={companyData}
-            handleToggleEditForm={handleToggleForm(setOpenEditForm)}
+            getVacancyToEdit={getVacancyToEdit}
+            companyId={companyData.id}
+            vacancyToEdit={vacancyToEdit}
           />
         ),
         relatedContacts: (
@@ -92,7 +106,7 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
       };
       return COMPONENTS[tabName] || null;
     },
-    [companyData, contactsData]
+    [companyData, contactsData, vacancyToEdit]
   );
 
   const clickHandler = useCallback(
@@ -119,7 +133,7 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
 
   useEffect(() => {
     id && dispatch(getOneCompanyRequest(id));
-  }, [updatedJobs, id]);
+  }, [id]);
 
   useEffect(() => {
     dispatch(getIndustriesList());
@@ -131,46 +145,49 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
   }, [companyData]);
 
   return (
-    <div className={sn('info-body')}>
-      <div className={sn('info-header')}>
-        <div className={sn('info-tabs')}>{tabs}</div>
-        <div className={sn('info-tools')}>
-          <CommonButton
-            text='Edit page'
-            onClickHandler={handleToggleForm(setOpenEditForm)}
-          />
-          <CommonButton
-            text='Delete page'
-            onClickHandler={handleToggleForm(setOpenDeleteForm)}
-          />
+    <>
+      <div className={sn('info-body')}>
+        <div className={sn('info-header')}>
+          <div className={sn('info-tabs')}>{tabs}</div>
+          <div className={sn('info-tools')}>
+            <CommonButton
+              text='Edit page'
+              onClickHandler={handleToggleForm(setOpenEditForm)}
+            />
+            <CommonButton
+              text='Delete page'
+              onClickHandler={handleToggleForm(setOpenDeleteForm)}
+            />
+          </div>
         </div>
+        <div className={sn('info-content')}>
+          {companyData.id && infoPartBody(isActiveTab)}
+        </div>
+        {openEditForm && (
+          <CompanyEdit
+            company={companyData}
+            handleClose={handleToggleForm(setOpenEditForm)}
+            open={openEditForm}
+            onSubmitSuccess={onSubmitSuccess}
+          />
+        )}
+        {openDeleteForm && (
+          <CompanyDelete
+            handleClose={handleToggleForm(setOpenDeleteForm)}
+            open={openDeleteForm}
+            relatedContacts={contactsData}
+            handleSetOpenMessage={handleSetOpenMessage}
+            id={companyData.id}
+          />
+        )}
+        {openMessage && (
+          <CompanyRelatedContactsModal
+            open={openMessage}
+            onClose={handleSetOpenMessage}
+          />
+        )}
       </div>
-      <div className={sn('info-content')}>
-        {companyData.id && infoPartBody(isActiveTab)}
-      </div>
-      {openEditForm && (
-        <CompanyEdit
-          company={companyData}
-          handleClose={handleToggleForm(setOpenEditForm)}
-          open={openEditForm}
-          onSubmitSuccess={onSubmitSuccess}
-        />
-      )}
-      {openDeleteForm && (
-        <CompanyDelete
-          handleClose={handleToggleForm(setOpenDeleteForm)}
-          open={openDeleteForm}
-          relatedContacts={contactsData}
-          handleSetOpenMessage={handleSetOpenMessage}
-          id={companyData.id}
-        />
-      )}
-      {openMessage && (
-        <CompanyRelatedContactsModal
-          open={openMessage}
-          onClose={handleSetOpenMessage}
-        />
-      )}
-    </div>
+      {load && <Loader />}
+    </>
   );
 };

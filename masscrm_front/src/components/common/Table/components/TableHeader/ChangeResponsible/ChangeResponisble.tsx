@@ -1,14 +1,15 @@
-import React, { FC, useCallback } from 'react';
+import React, { FC, useCallback, useContext } from 'react';
 import {
   changeContactsResponsible,
   getAddContactList,
   searchUsers
 } from 'src/actions';
 import { useDispatch, useSelector } from 'react-redux';
-import { getFilterSettings, getUser } from 'src/selectors';
+import { getUser } from 'src/selectors';
 import { inputStyle } from 'src/styles/CommonInput.style';
 import debounce from 'lodash.debounce';
 import { useLocation } from 'react-router';
+import { FilterContext } from 'src/context';
 import { MoreInformation, SearchInput } from '../../../../index';
 import { IChangeResponsibleProps } from './interfaces';
 import { ChangeResponsibleIcon } from './ChangeResponsibleIcon';
@@ -22,7 +23,7 @@ export const ChangeResponsible: FC<IChangeResponsibleProps> = ({
   const dispatch = useDispatch();
   const location = useLocation();
   const selectedContacts: number[] = config.body.selectedRows || [];
-  const filterSettings = useSelector(getFilterSettings);
+  const { requestValues } = useContext(FilterContext);
   const currentUser = useSelector(getUser);
   const isManager = Object.keys(currentUser.roles).includes('manager');
   const styleInput = inputStyle();
@@ -44,7 +45,7 @@ export const ChangeResponsible: FC<IChangeResponsibleProps> = ({
     []
   );
 
-  const successCallback = () => dispatch(getAddContactList(filterSettings));
+  const successCallback = () => dispatch(getAddContactList(requestValues({})));
 
   const handleChangeResponsible = (value: string) => {
     if (selectedContacts.length && searchUserList) {
@@ -52,9 +53,11 @@ export const ChangeResponsible: FC<IChangeResponsibleProps> = ({
         ({ name, surname }) => `${name} ${surname}` === value
       );
       if (location.search.includes('selectAll=on')) {
-        changeContactsResponsible([], newResponsible?.id, filterSettings).then(
-          successCallback
-        );
+        changeContactsResponsible(
+          [],
+          newResponsible?.id,
+          requestValues({})
+        ).then(successCallback);
       } else {
         changeContactsResponsible(selectedContacts, newResponsible?.id).then(
           successCallback

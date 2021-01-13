@@ -153,6 +153,7 @@ export const SearchInput: FC<ISearchInputProps> = ({
           onClose={handleSetOpen}
           onOpen={handleSetOpen}
           blurOnSelect={!multi}
+          filterOptions={options => options}
           openOnFocus={!multi}
           disableCloseOnSelect={multi}
           renderInput={params => (

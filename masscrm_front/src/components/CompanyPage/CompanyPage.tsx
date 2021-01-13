@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Header, ToggleBlock } from 'src/components/common';
-import { InfoPart, CompanyAttachments, CompanyActivityLog } from './components';
+import { Header, PageAttachments, ToggleBlock } from 'src/components/common';
+import { InfoPart, CompanyActivityLog } from './components';
 
 export const CompanyPage: FC = () => {
   const location = useLocation();
@@ -13,7 +13,7 @@ export const CompanyPage: FC = () => {
       <div className='container'>
         <InfoPart id={companyId} />
         <ToggleBlock label='Attachments'>
-          <CompanyAttachments id={companyId} />
+          <PageAttachments id={companyId} name='company' />
         </ToggleBlock>
         <ToggleBlock label='Activity log'>
           <CompanyActivityLog id={companyId} />

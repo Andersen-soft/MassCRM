@@ -13,9 +13,15 @@ import {
   updateCompany,
   updateContact,
   getContact,
-  getAddContactList
+  getAddContactList,
+  setPage
 } from 'src/actions';
-import { getUser, getFilterSettings, getIndustries } from 'src/selectors';
+import {
+  getUser,
+  getFilterSettings,
+  getIndustries,
+  getCurrentPage
+} from 'src/selectors';
 import { ICompany, IContact, ILocation } from 'src/interfaces';
 import { OccupiedMessage, DefaultPopUp } from 'src/components/common/PopUp';
 import { contactFormSchema } from 'src/utils/form/validate';
@@ -59,13 +65,14 @@ export const ContactForm: FC<{
   const [errorsList, setErrorsList] = useState<IErrorsContact>({ open: false });
   const { name: nameUser, surname: surnameUser, roles } = useSelector(getUser);
   const isFullForm = Boolean(roles?.manager || roles?.superAdmin);
+  const filter = useSelector(getFilterSettings);
+  const currentPage: number = useSelector(getCurrentPage);
   const { errorsEventEmitter, handleClearErrors } = useContext(
     ErrorEmitterContext
   );
   const formForVacancies = Boolean(
     roles?.nc2 || roles?.manager || roles?.superAdmin
   );
-  const filter = useSelector(getFilterSettings);
 
   const closePopup = useCallback(() => {
     setErrorsList({ open: false });
@@ -80,8 +87,8 @@ export const ContactForm: FC<{
     resetCallback({});
 
     if (onSubmitSuccess) onSubmitSuccess();
-    else dispatch(getAddContactList(filter));
-
+    if (currentPage !== 1) dispatch(setPage(1));
+    else dispatch(getAddContactList({ ...filter, page: currentPage }));
     onCloseModal && onCloseModal();
     closePopup();
   };

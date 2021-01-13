@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
-use App\Services\Parsers\ParserReplayCsvService;
+use App\Imports\Contact\Parsers\ParserReplayCsvService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 

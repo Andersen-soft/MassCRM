@@ -1,8 +1,10 @@
-import React, { FC, useCallback, useEffect } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCitiesListByRegion } from 'src/actions';
 import { getCity } from 'src/selectors';
 import { SearchInput } from 'src/components/common/SearchInput';
+import { ICity } from 'src/interfaces';
+import { findSubstr } from 'src/utils/string';
 
 export const CityInput: FC<{
   className: string;
@@ -10,20 +12,39 @@ export const CityInput: FC<{
   regionCode: string;
   onChange: Function;
 }> = ({ className, value, regionCode, onChange }) => {
-  const dispatch = useDispatch();
   const cities = useSelector(getCity);
-  const cityItems = cities.map(({ name }) => name);
+  const [matchedCities, setMatchedCities] = useState<ICity[]>(cities);
+  const cityItems = matchedCities.map(({ name }: ICity) => name);
 
-  const onChangeCity = useCallback(
+  const dispatch = useDispatch();
+
+  const onChangeHandler = useCallback(
     (val: string) => {
-      onChange('city', val);
+      const trimmedValue = val && val.trim();
+
+      const foundedCities = trimmedValue
+        ? cities.filter(({ name }: ICity) => findSubstr(name, trimmedValue))
+        : cities;
+
+      setMatchedCities(foundedCities);
     },
-    [value]
+    [cities]
+  );
+
+  const onSelectHandler = useCallback(
+    (val: string) => {
+      onChange('city', val ? val.trim() : '');
+    },
+    [cities]
   );
 
   useEffect(() => {
     regionCode && dispatch(getCitiesListByRegion(regionCode));
   }, [regionCode]);
+
+  useEffect(() => {
+    setMatchedCities(cities);
+  }, [cities]);
 
   return (
     <div className={className}>
@@ -32,7 +53,8 @@ export const CityInput: FC<{
         value={value}
         placeholder='City'
         items={cityItems}
-        onChange={onChangeCity}
+        onChange={onChangeHandler}
+        onSelect={onSelectHandler}
         disabled={!regionCode}
       />
     </div>

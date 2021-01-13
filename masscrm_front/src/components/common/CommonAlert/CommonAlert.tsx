@@ -3,11 +3,13 @@ import Snackbar from '@material-ui/core/Snackbar';
 import { ClickAwayListenerProps as MaterialClickAwayListenerProps } from '@material-ui/core/ClickAwayListener';
 import MuiAlert from '@material-ui/lab/Alert';
 
+export type TAlertType = 'success' | 'info' | 'warning' | 'error';
+
 interface ICommonAlert {
   open: boolean;
   onClose: (event: SyntheticEvent<Element, Event>) => void;
   errorMessage: string | JSX.Element[];
-  type?: 'success' | 'info' | 'warning' | 'error' | undefined;
+  type?: TAlertType;
   ClickAwayListenerProps?: Partial<MaterialClickAwayListenerProps>;
 }
 

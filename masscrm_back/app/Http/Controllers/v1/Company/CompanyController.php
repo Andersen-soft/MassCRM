@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\v1\Company;
 
 use App\Commands\Company\CreateCompanyCommand;
-use App\Commands\Company\DestroyCompanyCommand;
 use App\Commands\Company\DestroyManyCompanyCommand;
 use App\Commands\Company\GetCompanyCommand;
 use App\Commands\Company\UpdateCompanyCommand;
@@ -19,6 +18,7 @@ use App\Models\Company\Company;
 use App\Services\Company\CompanyService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\Company\Company as CompanyResources;
+use Illuminate\Support\Facades\Lang;
 
 class CompanyController extends BaseController
 {
@@ -109,11 +109,11 @@ class CompanyController extends BaseController
      *     @OA\Response(response="401", ref="#/components/responses/401"),
      * )
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Company $company)
     {
-        $isDelete = $this->companyService->deleteCompany((new DestroyCompanyCommand((int)$id))->getCompanyId());
+        $company->delete();
 
-        return $this->success([$isDelete]);
+        return $this->success([]);
     }
 
     /**
@@ -178,7 +178,7 @@ class CompanyController extends BaseController
      */
     public function show(int $id): JsonResponse
     {
-        $company =$this->companyService->getCompany((new getcompanycommand((int)$id))->getContactId());
+        $company = $this->companyService->getCompany((new getcompanycommand((int)$id))->getContactId());
 
         return $this->success([new CompanyResources($company)]);
     }

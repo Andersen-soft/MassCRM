@@ -1,8 +1,9 @@
-import React, { FC, useCallback, useEffect } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCitiesListByRegion } from 'src/actions';
 import { getCity } from 'src/selectors';
 import { SearchInput } from 'src/components/common/SearchInput';
+import { findSubstr } from 'src/utils/string';
 import { IFormItem } from '../../interfaces';
 
 export const CityInput: FC<{
@@ -24,9 +25,18 @@ export const CityInput: FC<{
   const cities = useSelector(getCity);
 
   const cityItems = cities.map(({ name }) => name);
+  const [matchedItems, setMatchedItems] = useState<string[]>([]);
 
   const onChangeCity = useCallback(
     (city: string) => {
+      const trimmedValue = city && city.trim();
+
+      const foundedItems = trimmedValue
+        ? cityItems.filter((name: string) => findSubstr(name, trimmedValue))
+        : cityItems;
+
+      setMatchedItems(foundedItems);
+
       onChange({
         city,
         cities,
@@ -45,6 +55,10 @@ export const CityInput: FC<{
     regionCode && dispatch(getCitiesListByRegion(regionCode));
   }, [regionCode]);
 
+  useEffect(() => {
+    setMatchedItems(cityItems);
+  }, [cities]);
+
   return (
     <>
       <SearchInput
@@ -53,7 +67,7 @@ export const CityInput: FC<{
         isScrollForm
         value={value}
         placeholder='City'
-        items={cityItems}
+        items={matchedItems}
         onChange={onChangeCity}
         disabled={!regionCode}
         errorMessage={errorMessage}

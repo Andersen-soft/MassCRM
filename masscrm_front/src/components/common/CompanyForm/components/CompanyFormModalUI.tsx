@@ -12,12 +12,7 @@ import {
 } from 'src/components/common';
 import { format, parse } from 'date-fns';
 import { ICompanyForm } from '../interfaces';
-import {
-  CompanyInput,
-  CompanySizeInput,
-  IndustryInput,
-  CompanyTypeInput
-} from '.';
+import { CompanySizeInput, IndustryInput, CompanyTypeInput } from '.';
 
 import style from '../CompanyForm.scss';
 
@@ -82,12 +77,16 @@ export const CompanyFormModalUI = connect<ICompanyForm & any>(
       <form>
         <div className={sn('wrap')}>
           <div className={sn('create-company')}>
-            <CompanyInput
-              className={sn('create-company__item')}
-              value={name}
-              onChange={setFieldValues}
-              errorMessage={errors.name}
-            />
+            <div className={sn('create-company__item')}>
+              <CommonInput
+                name='company'
+                value={name}
+                onChangeValue={handleChange('company')}
+                placeholder='Company'
+                required
+                disabled
+              />
+            </div>
             <div className={sn('create-company__item')}>
               <CommonInput
                 name='website'

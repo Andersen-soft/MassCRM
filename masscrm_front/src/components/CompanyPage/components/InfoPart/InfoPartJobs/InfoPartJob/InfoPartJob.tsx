@@ -18,8 +18,16 @@ const jobDataMap: { [key: string]: string } = {
 export const InfoPartJob: FC<{
   vacancy: IContactJobValues;
   getDeleteJob: () => void;
+  getVacancyToEdit: () => void;
   handleToggleEditForm: Function;
-}> = ({ vacancy, getDeleteJob, handleToggleEditForm }) => {
+  open: boolean;
+}> = ({
+  vacancy,
+  getDeleteJob,
+  handleToggleEditForm,
+  open,
+  getVacancyToEdit
+}) => {
   const info = useMemo(
     () =>
       Object.keys(jobDataMap).map(item => (
@@ -33,9 +41,10 @@ export const InfoPartJob: FC<{
     [vacancy]
   );
 
-  const onToggleEditForm = useCallback(() => handleToggleEditForm(), [
-    handleToggleEditForm
-  ]);
+  const onToggleEditForm = useCallback(() => {
+    handleToggleEditForm(open ? '' : 'edit')();
+    !open && getVacancyToEdit();
+  }, [vacancy]);
 
   return (
     <>

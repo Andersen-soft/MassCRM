@@ -1,6 +1,6 @@
-import React, { FC, useCallback } from 'react';
-import { CommonButton } from 'src/components/common';
-import { ICompany, IContactJobValues } from 'src/interfaces';
+import React, { FC, useCallback, useState } from 'react';
+import { CommonButton, AddOrEditJobModal } from 'src/components/common';
+import { IContactsJobs, IContactJobValues } from 'src/interfaces';
 import { styleNames } from 'src/services';
 import { InfoPartJob, InfoPartNoItems } from '..';
 
@@ -9,21 +9,55 @@ import style from './InfoPartJobs.scss';
 const sn = styleNames(style);
 
 export const InfoPartJobs: FC<{
-  vacancies?: IContactJobValues[];
+  vacancies?: IContactsJobs;
   getDeleteJob: (jobId: number) => void;
-  companyData: ICompany;
-  handleToggleEditForm: Function;
-}> = ({ vacancies, getDeleteJob, handleToggleEditForm }) => {
+  getVacancyToEdit: (jobId: number) => void;
+  companyId: number;
+  vacancyToEdit: IContactJobValues;
+}> = ({
+  vacancies,
+  getDeleteJob,
+  getVacancyToEdit,
+  companyId,
+  vacancyToEdit
+}) => {
+  const [openAddOrEditForm, setOpenAddOrEditForm] = useState<boolean>(false);
+  const [modalType, setModalType] = useState<string>('');
+
   const handleGetDeleteJob = useCallback(
     (id: number) => () => {
       getDeleteJob(id);
     },
-    []
+    [vacancies]
   );
 
-  const onToggleEditForm = useCallback(() => handleToggleEditForm(), [
-    handleToggleEditForm
-  ]);
+  const handleGetVacancyToEdit = useCallback(
+    (id: number) => () => {
+      getVacancyToEdit(id);
+    },
+    [vacancies]
+  );
+
+  const handleModalType = useCallback(
+    (val: string) => {
+      setModalType(val);
+    },
+    [modalType]
+  );
+
+  const onToggleAddOrEditForm = useCallback(
+    (val?: string) => () => {
+      if (val && val !== 'edit') {
+        handleModalType(openAddOrEditForm ? '' : 'add');
+      } else {
+        handleModalType(openAddOrEditForm ? '' : 'edit');
+      }
+
+      openAddOrEditForm && handleGetVacancyToEdit(0)();
+      setOpenAddOrEditForm(prev => !prev);
+    },
+    [openAddOrEditForm]
+  );
 
   return (
     <>
@@ -35,7 +69,9 @@ export const InfoPartJobs: FC<{
                 key={vacancy.id}
                 vacancy={vacancy}
                 getDeleteJob={handleGetDeleteJob(vacancy.id as number)}
-                handleToggleEditForm={handleToggleEditForm}
+                getVacancyToEdit={handleGetVacancyToEdit(vacancy.id as number)}
+                handleToggleEditForm={onToggleAddOrEditForm}
+                open={openAddOrEditForm}
               />
             ))}
           </div>
@@ -45,9 +81,19 @@ export const InfoPartJobs: FC<{
       </div>
       <CommonButton
         text='Add new job'
-        onClickHandler={onToggleEditForm}
+        onClickHandler={onToggleAddOrEditForm('add')}
         align='alignRight'
       />
+      {openAddOrEditForm && (
+        <AddOrEditJobModal
+          vacancies={vacancies}
+          handleClose={onToggleAddOrEditForm}
+          open={openAddOrEditForm}
+          modalType={modalType}
+          companyId={companyId}
+          vacancyToEdit={vacancyToEdit}
+        />
+      )}
     </>
   );
 };

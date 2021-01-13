@@ -51,3 +51,6 @@ export * from './CompanyForm';
 export * from './CompanyModal';
 export * from './ContactByEmail';
 export * from './CompanyDelete';
+export * from './AddOrEditJobModal';
+export * from './AddOrEditJobForm';
+export * from './PageAttachments';

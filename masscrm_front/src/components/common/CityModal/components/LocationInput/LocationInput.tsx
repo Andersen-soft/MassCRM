@@ -1,9 +1,10 @@
-import React, { FC, useCallback, useEffect } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getCountries, getRegion } from 'src/selectors';
 import { SearchInput } from 'src/components/common/SearchInput';
 import { ICountry, IRegion } from 'src/interfaces';
 import { getCitiesListByRegion, getRegionListByCountry } from 'src/actions';
+import { findSubstr } from 'src/utils/string';
 import { IFormItem } from '../../interfaces';
 
 export const LocationInput: FC<{
@@ -29,7 +30,9 @@ export const LocationInput: FC<{
   const countries = useSelector(getCountries);
   const regions = useSelector(getRegion);
   const isCountry = fieldName.includes('country');
-  const getAutoComplete = () =>
+  const [matchedItems, setMatchedItems] = useState<string[]>([]);
+
+  const getAllList = () =>
     isCountry
       ? countries.map(({ name }) => name)
       : regions.map(({ name }) => name);
@@ -38,6 +41,14 @@ export const LocationInput: FC<{
     (val: string) => {
       const countryItem = countries?.find(({ name }: ICountry) => name === val);
       const regionItem = regions?.find(({ name }: IRegion) => name === val);
+
+      const trimmedValue = val && val.trim();
+
+      const foundedItems = trimmedValue
+        ? getAllList().filter((name: string) => findSubstr(name, trimmedValue))
+        : getAllList();
+
+      setMatchedItems(foundedItems);
 
       onChange({
         country: isCountry ? val : locationValue?.country,
@@ -50,12 +61,16 @@ export const LocationInput: FC<{
       });
       regionItem?.code && dispatch(getCitiesListByRegion(regionItem.code));
     },
-    [countries, regions]
+    [countries, regions, value]
   );
 
   useEffect(() => {
     countryCode && dispatch(getRegionListByCountry(countryCode));
   }, [countryCode]);
+
+  useEffect(() => {
+    setMatchedItems(getAllList());
+  }, [countries, regions]);
 
   return (
     <div>
@@ -66,7 +81,7 @@ export const LocationInput: FC<{
         value={value}
         required={required}
         placeholder={placeholder}
-        items={getAutoComplete()}
+        items={matchedItems}
         disabled={!countryCode && !isCountry}
         onChange={onChangeCountry}
         errorMessage={errorMessage}

@@ -25,11 +25,11 @@ class ContactService
     private const PREVIOUS_COMPANY_WITH_POSITION = [
         [
             'model_field' => self::COMPANY_ID,
-            'model_name' =>'Contact'
+            'model_name' => 'Contact'
         ],
         [
             'model_field' => 'position',
-            'model_name' =>'Contact'
+            'model_name' => 'Contact'
         ]
     ];
 
@@ -87,25 +87,9 @@ class ContactService
 
     public function deleteContacts(DestroyContactsCommand $command): bool
     {
-        if (!$command->getUser()->hasRole(User::USER_ROLE_MANAGER)) {
-
-            if(empty($command->getSearch())){
-               $destroyResult = Contact::destroy($command->getContactsId());
-            }else {
-                $formSearchParams = $this->formSearchParams($command->getSearch());
-                $destroyResult = $this->deleteContactListBySearchParams(
-                    $formSearchParams,
-                    $command->getUser(),
-                    $command->getExceptIds()
-                );
-            }
-
-            return (bool) $destroyResult;
-        }
-
-        if(empty($command->getSearch())){
+        if (empty($command->getSearch())) {
             $destroyResult = Contact::destroy($command->getContactsId());
-        }else {
+        } else {
             $formSearchParams = $this->formSearchParams($command->getSearch());
             $destroyResult = $this->deleteContactListBySearchParams(
                 $formSearchParams,
@@ -114,7 +98,7 @@ class ContactService
             );
         }
 
-        return (bool) $destroyResult;
+        return (bool)$destroyResult;
     }
 
     public function getContactListBySearchParams(GetContactListCommand $command): Builder
@@ -122,11 +106,11 @@ class ContactService
         $formedSearchParams = $this->formSearchParams($command->getSearch());
 
         return $this->baseContactService->contactRepository->getContactList(
-                $formedSearchParams,
-                $command->getUser(),
-                [],
-                $command->getSort(),
-            );
+            $formedSearchParams,
+            $command->getUser(),
+            [],
+            $command->getSort(),
+        );
     }
 
     private function formSearchParams(array $searchParams): array

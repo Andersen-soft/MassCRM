@@ -3,15 +3,17 @@
 namespace App\Jobs;
 
 use App\Commands\Import\ImportContactsDto;
+use App\Imports\Contact\ContactsImport;
+use App\Imports\Contact\Parsers\ParserImportFileService;
 use App\Models\Process;
 use App\Services\Process\ProcessService;
 use Exception;
-use App\Services\Parsers\ParserImportFileService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Throwable;
 
 class ImportContactsJob implements ShouldQueue
 {
@@ -24,6 +26,11 @@ class ImportContactsJob implements ShouldQueue
 
     protected ImportContactsDto $importContacts;
 
+    /**
+     * @var ProcessService
+     */
+    private ProcessService $processService;
+
     public function __construct(ImportContactsDto $importContacts)
     {
         $this->queue = self::IMPORT_CONTACT_QUEUE;
@@ -35,31 +42,43 @@ class ImportContactsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        /** @var ProcessService $processService */
-        $processService = app()->make(ProcessService::class);
-        /** @var ParserImportFileService $parserImportFileService */
-        $parserImportFileService = app()->make(ParserImportFileService::class);
-
         try {
-            $processService->updateStatusProcess(
-                $this->importContacts->getProcess(),
-                Process::TYPE_STATUS_PROCESS_IN_PROGRESS
-            );
+            /** @var ProcessService $this->processService */
+            $this->processService = app()->make(ProcessService::class);
+            /** @var ParserImportFileService $parserImportFileService */
+            $parserImportFileService = app()->make(ParserImportFileService::class);
+
+            $this->setProcessStatus(Process::TYPE_STATUS_PROCESS_IN_PROGRESS);
 
             $parserImportFileService->setParamsImport($this->importContacts);
-            $infoImport = $parserImportFileService->parse($this->importContacts->getFullPath());
-            $this->importContacts->getProcess()->informationImport()->associate($infoImport);
-        } catch (Exception $exception) {
-            $processService->updateStatusProcess(
-                $this->importContacts->getProcess(),
-                Process::TYPE_STATUS_PROCESS_FAILED
+
+            $import = new ContactsImport($this->importContacts, $parserImportFileService);
+            $import->import($this->importContacts->getFullPath());
+
+            $import->importContacts->getProcess()->informationImport()->associate(
+                $import->parserImportFileService
+                    ->getImportResult()
+                    ->save($this->importContacts->getCommand()->getUser())
             );
+
+        } catch (Exception $exception) {
             logger($exception->getMessage());
+            $this->setProcessStatus(Process::TYPE_STATUS_PROCESS_FAILED);
         }
 
-        $processService->updateStatusProcess(
+        $this->setProcessStatus(Process::TYPE_STATUS_PROCESS_DONE);
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        logger($exception->getMessage());
+        $this->setProcessStatus(Process::TYPE_STATUS_PROCESS_FAILED);
+    }
+
+    public function setProcessStatus(string $status): void {
+        $this->processService->updateStatusProcess(
             $this->importContacts->getProcess(),
-            Process::TYPE_STATUS_PROCESS_DONE,
+            $status
         );
     }
 }

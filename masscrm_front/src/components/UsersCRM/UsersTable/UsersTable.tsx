@@ -1,6 +1,6 @@
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { TableBase } from 'src/components/common/Table';
+import { TableBase, Loader } from 'src/components/common';
 import debounce from 'lodash.debounce';
 import {
   getCurrentPage,
@@ -18,6 +18,8 @@ import {
   setUsersFilterSettings,
   setUsersFilterValues
 } from 'src/actions';
+import { addItemFilter, deleteItemFilter, OTHER_HEIGHT } from 'src/utils/table';
+import { initialUsersFilterState } from 'src/reducers/tableFilters.reducer';
 import {
   STATUSES,
   tableConfig,
@@ -25,13 +27,6 @@ import {
   userTableMap,
   getRolesValuesForRequest
 } from './utilsUserTable';
-import { Loader } from '../../common/Loader';
-import {
-  addItemFilter,
-  deleteItemFilter,
-  OTHER_HEIGHT
-} from '../../../utils/table';
-import { initialUsersFilterState } from '../../../reducers/tableFilters.reducer';
 
 export const UsersTable: FC = () => {
   const ROWS_COUNT = 50;

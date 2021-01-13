@@ -22,6 +22,7 @@ exports[`SearchInput NumericRangeFilter should render correctly 1`] = `
           "paper": "",
         }
       }
+      filterOptions={[Function]}
       freeSolo={true}
       getOptionLabel={[Function]}
       getOptionSelected={[Function]}

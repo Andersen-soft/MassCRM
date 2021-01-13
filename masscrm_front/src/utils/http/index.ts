@@ -1,12 +1,15 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { backendUrl } from 'src/constants';
+import { refreshToken } from 'src/actions';
 
 const redirectOnTokenExpiration = (error: { [key: string]: string[] }) => {
   const token = Cookies.get('token');
-  if (error.token) {
-    token && Cookies.remove('token');
+  if (error.token && !token) {
     window.location.href = '/';
+  }
+  if (error.token && token) {
+    refreshToken().then(() => window.location.reload());
   }
 };
 

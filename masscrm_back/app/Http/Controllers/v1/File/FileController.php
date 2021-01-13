@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FileController extends BaseController
 {
+
     /**
      * @OA\Get(
      *      path="/file",
@@ -30,3 +31,4 @@ class FileController extends BaseController
         return response()->download($request->get('name'));
     }
 }
+

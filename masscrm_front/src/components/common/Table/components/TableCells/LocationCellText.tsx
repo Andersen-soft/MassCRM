@@ -3,7 +3,7 @@ import React, {
   useState,
   MouseEvent,
   useEffect,
-  useCallback,
+  useMemo,
   useContext
 } from 'react';
 import { Popover } from '@material-ui/core';
@@ -16,6 +16,7 @@ import {
   getRegion
 } from 'src/selectors';
 import {
+  getRegions,
   getAddContactList,
   getCitiesListByRegion,
   getRegionListByCountry,
@@ -23,7 +24,7 @@ import {
 } from 'src/actions';
 import { ILocation } from 'src/interfaces';
 import { ErrorEmitterContext } from 'src/context';
-import { DoubleClickError } from '../../../../../utils/errors';
+import { DoubleClickError } from 'src/utils/errors';
 
 export const LocationCellText: FC<{
   location: ILocation;
@@ -44,7 +45,7 @@ export const LocationCellText: FC<{
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const getNameCallBack = ({ name }: { name: string }) => name;
 
-  const getItems = useCallback(() => {
+  const items = useMemo(() => {
     if (!isCountry && !isCity) return regions.map(getNameCallBack);
     if (isCity) return cities.map(getNameCallBack);
     return countries.map(getNameCallBack);
@@ -97,12 +98,21 @@ export const LocationCellText: FC<{
       });
   };
 
-  useEffect(() => {
+  const fetchCitiesOrRegions = async () => {
     if (anchorEl) {
-      !isCountry &&
+      if (isCity) {
+        const { data: currRegions } = await getRegions(
+          getCode(country, countries)
+        );
+
+        dispatch(getCitiesListByRegion(getCode(region, currRegions)));
+      } else if (!isCountry)
         dispatch(getRegionListByCountry(getCode(country, countries)));
-      isCity && dispatch(getCitiesListByRegion(getCode(region, regions)));
     }
+  };
+
+  useEffect(() => {
+    fetchCitiesOrRegions();
   }, [anchorEl]);
 
   return (
@@ -127,7 +137,7 @@ export const LocationCellText: FC<{
           inputProps={inputProps}
           onSubmit={onSubmitHandler}
           onCancel={handleClose}
-          items={getItems()}
+          items={items}
         />
       </Popover>
     </>

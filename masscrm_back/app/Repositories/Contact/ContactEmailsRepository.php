@@ -6,7 +6,6 @@ namespace App\Repositories\Contact;
 
 use App\Models\Contact\Contact;
 use App\Models\Contact\ContactEmails;
-use App\Services\Parsers\Import\Contact\ImportEmail;
 
 class ContactEmailsRepository
 {

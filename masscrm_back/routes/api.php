@@ -69,6 +69,9 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
                 ->name('companies.destroy-list');
         });
 
+        Route::resource('vacancies','Vacancy\VacancyController')
+            ->only('destroy');
+
         Route::group(['prefix' => 'countries'], function () {
             Route::get('/', 'Country\CountryController@countries')->name('country');
             Route::get('{code}/regions', 'Country\CountryController@regions')->name('region');

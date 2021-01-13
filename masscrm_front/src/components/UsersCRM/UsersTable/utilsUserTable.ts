@@ -1,5 +1,8 @@
-import { ITableConfig, ITableRow } from '../../common/Table/interfaces';
-import { IUser } from '../../../interfaces';
+import {
+  ITableConfig,
+  ITableRow
+} from 'src/components/common/Table/interfaces';
+import { IUser } from 'src/interfaces';
 
 interface IStatuses {
   [key: string]: number;

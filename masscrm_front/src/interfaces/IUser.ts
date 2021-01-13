@@ -47,3 +47,12 @@ export interface IUserFiltersValues {
   position: string;
   status: string;
 }
+export interface IUsersFiltersRequestValues {
+  fullName?: string;
+  email?: string;
+  login?: string;
+  roles?: string[];
+  skype?: string;
+  position?: string;
+  active: number;
+}

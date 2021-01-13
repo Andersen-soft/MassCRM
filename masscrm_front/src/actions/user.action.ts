@@ -4,10 +4,15 @@ import ldapUser from 'src/services/ldapUser';
 import sendAddUser from 'src/services/sendAddUser';
 import patchEditUser from 'src/services/patchEditUser';
 import getRolesReq from 'src/services/getRolesReq';
-import { setToken } from 'src/services/setTokenToCookies';
 import qs from 'qs';
+import Cookies from 'js-cookie';
 import HTTP from '../utils/http';
-import { IFilter, IStoreState, IUser } from '../interfaces';
+import {
+  IFilter,
+  IStoreState,
+  IUser,
+  IUsersFiltersRequestValues
+} from '../interfaces';
 import { IAddUserFormInputs } from '../components/UsersCRM/AddUserForm';
 import { setLoaderAction } from './loader.action';
 import { SnackErrorBarData } from '../utils/errors';
@@ -36,7 +41,7 @@ export const getUserData = (payload: {
       login: payload.login,
       password: payload.password
     });
-    setToken(String(tokenData.access_token));
+    Cookies.set('token', String(tokenData.access_token));
     const {
       data: [userData]
     } = await HTTP.get('auth/user');
@@ -55,6 +60,18 @@ export const logout = async () => {
     return await HTTP.get('/auth/logout');
   } catch (error) {
     return Promise.reject();
+  }
+};
+
+export const refreshToken = async () => {
+  try {
+    const {
+      data: [tokenData]
+    } = await HTTP.get('/auth/refresh');
+    Cookies.set('token', String(tokenData.access_token));
+  } catch (e) {
+    Cookies.remove('token');
+    window.location.href = '/';
   }
 };
 
@@ -145,6 +162,7 @@ export const getLdapUser = (email: string) => async (dispatch: Dispatch) => {
 export const postAddUser = (
   user: IAddUserFormInputs,
   currentPage: number,
+  filter: IUsersFiltersRequestValues,
   handleAlert?: () => void,
   handleClose?: () => void
 ) => async (dispatch: Function) => {
@@ -153,7 +171,7 @@ export const postAddUser = (
     if (handleClose) {
       handleClose();
     }
-    dispatch(getUsers({ page: currentPage, limit: 50 }));
+    dispatch(getUsers({ page: currentPage, limit: 50, search: { ...filter } }));
   } catch (e) {
     dispatch(setError({ errorText: e.response.data.errors }));
     if (handleAlert) {
@@ -166,6 +184,7 @@ export const patchUser = (
   user: IAddUserFormInputs,
   id: number,
   currentPage: number,
+  filter: IUsersFiltersRequestValues,
   handleAlert?: () => void,
   handleClose?: () => void
 ) => async (dispatch: Function) => {
@@ -174,7 +193,7 @@ export const patchUser = (
     if (handleClose) {
       handleClose();
     }
-    dispatch(getUsers({ page: currentPage, limit: 50 }));
+    dispatch(getUsers({ page: currentPage, limit: 50, search: { ...filter } }));
   } catch (e) {
     dispatch(setError({ errorText: e.response.data.errors }));
     if (handleAlert) {

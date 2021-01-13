@@ -1,14 +1,14 @@
 .wrapper {
-  width: 31%;
+  width: 32%;
   display: flex;
   justify-content: space-between;
   align-self: baseline;
   flex-direction: column;
-  margin: 0 25px 32px 0;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  margin: 10px 5px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+  padding: 16px;
 }
 
 .editBlock {

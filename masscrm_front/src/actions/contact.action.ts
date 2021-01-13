@@ -64,18 +64,10 @@ export const deleteAttachment = (id: number, contactId: number) => async (
   await getActivityLog(contactId)(dispatch);
 };
 
-const convertBytesToMegabytes = (bytes: number): string =>
-  (bytes / 1e6).toFixed(1);
-
 export const uploadContactFile = (file: File, contactId: number) => async (
   dispatch: Dispatch
 ) => {
   try {
-    const fileSizeInMegabytes = convertBytesToMegabytes(file.size);
-    if (Number(fileSizeInMegabytes) > 100) {
-      setNotification('File is too big. Max file size: 100MB')(dispatch);
-      return;
-    }
     const formData = new FormData();
     formData.append('file', file);
     formData.append('id', `${contactId}`);

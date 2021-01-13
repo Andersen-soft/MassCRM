@@ -18,11 +18,15 @@ export const getCountryList = () => async (dispatch: Dispatch) => {
   }
 };
 
+export const getRegions = (code: string) => {
+  return HTTP.get(`countries/${code}/regions`);
+};
+
 export const getRegionListByCountry = (code: string) => async (
   dispatch: Dispatch
 ) => {
   try {
-    const { data } = await HTTP.get(`countries/${code}/regions`);
+    const { data } = await getRegions(code);
     dispatch(getRegionListByCountryAction({ region: data }));
   } catch (error) {
     setNotification(error);

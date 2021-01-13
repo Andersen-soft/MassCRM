@@ -14,28 +14,34 @@ import {
   CustomTextarea,
   CustomSwitch,
   SearchInput,
-  CustomSelect
+  CustomSelect,
+  CommonAlert
 } from 'src/components/common';
-import { CommonAlert } from 'src/components/common/CommonAlert';
 import { CloseModal } from 'src/components/UsersCRM/AddUserForm/CloseModal';
 import {
   getLdapUsers,
   getUsersSelector,
   getRolesSelector,
-  getErrors
-} from 'src/selectors/user.selector';
+  getErrors,
+  getCurrentPage,
+  getUsersFiltersValues
+} from 'src/selectors';
 import {
   getLdapUser,
   postAddUser,
   patchUser,
   getRolesDispatch
-} from 'src/actions/user.action';
-import { IUser } from 'src/interfaces';
+} from 'src/actions';
+import { IUser, IUsersFiltersRequestValues } from 'src/interfaces';
 import { getRolesText } from 'src/utils/roles/getRolesText';
 import { useStyles } from 'src/components/UsersCRM/AddUserForm/AddUserForm.styles';
+import { addUserFormSchema } from 'src/utils/form/validate';
+
 import { RolesInfo } from './RolesInfo';
-import { addUserFormSchema } from '../../../utils/form/validate';
-import { getCurrentPage } from '../../../selectors';
+import {
+  getRolesValuesForRequest,
+  STATUSES
+} from '../UsersTable/utilsUserTable';
 
 interface IAddUserFormProps {
   id?: number;
@@ -80,15 +86,14 @@ const INITIAL_VALUES = {
   fromActiveDirectory: false
 };
 
-export const AddUserForm: FC<IAddUserFormProps> = props => {
+export const AddUserForm: FC<IAddUserFormProps> = ({ id, handleClose }) => {
   const dispatch = useDispatch();
-
-  const { id, handleClose } = props;
 
   const ldapUsers = useSelector(getLdapUsers);
   const roles = useSelector(getRolesSelector);
   const currentPage = useSelector(getCurrentPage);
   const errorsText = useSelector(getErrors);
+  const usersFiltersState = useSelector(getUsersFiltersValues);
 
   const [open, setOpen] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
@@ -126,21 +131,52 @@ export const AddUserForm: FC<IAddUserFormProps> = props => {
     [ldapUsers]
   );
 
-  const submitHandler = useCallback((formState: IAddUserFormInputs) => {
-    const userRoles = formState?.roles?.map(
-      (role: string) => rolesDisplay[role]
-    );
-    const data = { ...formState, roles: userRoles };
-    if (id) {
-      dispatch(
-        patchUser(data, id, Number(currentPage), handleClickAlert, handleClose)
+  const getStatusValuesForRequest = (status: string) => STATUSES[status];
+
+  const requestValues: IUsersFiltersRequestValues = useMemo(
+    () => ({
+      fullName: usersFiltersState['full name'] || undefined,
+      email: usersFiltersState['e-mail'] || undefined,
+      login: usersFiltersState.login || undefined,
+      roles: getRolesValuesForRequest(usersFiltersState.roles),
+      skype: usersFiltersState.skype || undefined,
+      position: usersFiltersState.position || undefined,
+      active: getStatusValuesForRequest(usersFiltersState.status)
+    }),
+    [usersFiltersState]
+  );
+
+  const submitHandler = useCallback(
+    (formState: IAddUserFormInputs) => {
+      const userRoles = formState?.roles?.map(
+        (role: string) => rolesDisplay[role]
       );
-    } else {
-      dispatch(
-        postAddUser(data, Number(currentPage), handleClickAlert, handleClose)
-      );
-    }
-  }, []);
+      const data = { ...formState, roles: userRoles };
+      if (id) {
+        dispatch(
+          patchUser(
+            data,
+            id,
+            Number(currentPage),
+            requestValues,
+            handleClickAlert,
+            handleClose
+          )
+        );
+      } else {
+        dispatch(
+          postAddUser(
+            data,
+            Number(currentPage),
+            requestValues,
+            handleClickAlert,
+            handleClose
+          )
+        );
+      }
+    },
+    [usersFiltersState]
+  );
 
   const RolesText = useMemo(() => getRolesText(roles), [roles]);
 

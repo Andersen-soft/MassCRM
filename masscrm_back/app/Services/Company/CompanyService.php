@@ -97,8 +97,14 @@ class CompanyService
 
     public function deleteCompany(int $companyId): int
     {
-        return Company::destroy($companyId);
+        $company = Company::destroy($companyId);
+        if ($company) {
+            return $company;
+        }
+
+        throw new NotFoundException('Company with ID '.$companyId.' does not exist.');
     }
+
 
     public function deleteCompanies(array $companyIds): int
     {
