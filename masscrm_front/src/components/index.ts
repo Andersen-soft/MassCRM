@@ -11,3 +11,4 @@ export * from './Blacklist';
 export * from './StatusPage';
 export * from './DisplayErrors';
 export * from './ErrorPage';
+export * from './ReviewPage';

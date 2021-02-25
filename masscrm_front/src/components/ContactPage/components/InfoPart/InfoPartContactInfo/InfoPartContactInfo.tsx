@@ -1,22 +1,30 @@
 import React, { FC, useCallback, useMemo } from 'react';
 import { styleNames } from 'src/services';
-import { IContactResult } from 'src/interfaces';
+import { IContactResult, IEMail, IPhone } from 'src/interfaces';
 import { GENDER_MAP } from 'src/utils/map';
-import { SocialIcon, ShowMoreInformation } from 'src/components/common';
+import {
+  ShowMoreInformation,
+  CustomSwitch,
+  LinkedinField
+} from 'src/components/common';
 import { socialNetworks } from 'src/data/socialNetworks';
+
+import { getFullName } from 'src/utils/contact';
 import style from './InfoPartContactInfo.scss';
 
 const sn = styleNames(style);
 
+type IShowMoreItems = (IPhone | IEMail | string)[];
+
 export const InfoPartContactInfo: FC<{ contactData: IContactResult }> = ({
-  contactData
-}) => {
-  const {
+  contactData: {
     responsible,
     phones,
     emails,
     origin,
     linkedin,
+    first_name,
+    last_name,
     full_name,
     gender,
     birthday,
@@ -25,8 +33,8 @@ export const InfoPartContactInfo: FC<{ contactData: IContactResult }> = ({
     confidence,
     comment,
     social_networks
-  } = contactData;
-
+  }
+}) => {
   const genderName = gender ? GENDER_MAP[gender] : '';
 
   const infoItem = useCallback(
@@ -36,23 +44,32 @@ export const InfoPartContactInfo: FC<{ contactData: IContactResult }> = ({
         <span className={sn('spanRight')}>{fun ? fun() : value}</span>
       </div>
     ),
-    [contactData]
-  );
-
-  const linkField = useCallback(
-    (type: string, link?: string) => (
-      <SocialIcon socialName={type} link={link} />
-    ),
-    [linkedin, skype, social_networks]
+    [
+      responsible,
+      phones,
+      emails,
+      origin,
+      linkedin,
+      full_name,
+      first_name,
+      last_name,
+      gender,
+      birthday,
+      location,
+      skype,
+      confidence,
+      comment,
+      social_networks
+    ]
   );
 
   const socialItem = useCallback(({ link }) => {
     let socialName = '';
     socialNetworks.forEach((item: string) => {
-      if (link.indexOf(item) >= 0) socialName = item;
+      if (link.includes(item)) socialName = item;
     });
 
-    return linkField(socialName, link);
+    return <LinkedinField link={link} linkType={socialName} />;
   }, []);
 
   const socialField = useCallback(() => social_networks?.map(socialItem), [
@@ -77,27 +94,8 @@ export const InfoPartContactInfo: FC<{ contactData: IContactResult }> = ({
     []
   );
 
-  const showMorePhones = useMemo(
-    () =>
-      phones?.length > 1 &&
-      showMoreBtn(phones.map(({ id, phone }) => ({ id, value: phone }))),
-    [phones]
-  );
-
-  const showMoreEmails = useMemo(
-    () =>
-      emails?.length > 1 &&
-      showMoreBtn(emails.map(({ id, email }) => ({ id, value: email }))),
-    [emails]
-  );
-
-  const showMoreOrigins = useMemo(
-    () =>
-      origin &&
-      origin?.length > 1 &&
-      showMoreBtn(origin.map(value => ({ value }))),
-    [origin]
-  );
+  const showMoreItems = (items: IShowMoreItems | undefined, func: any) =>
+    items && items?.length > 1 && showMoreBtn(items.map(func));
 
   const contactDataMap = [
     {
@@ -107,15 +105,22 @@ export const InfoPartContactInfo: FC<{ contactData: IContactResult }> = ({
     {
       title: 'Phone',
       value: phones[0]?.phone,
-      showMore: showMorePhones
+      showMore: showMoreItems(phones, ({ id, phone }: IPhone) => ({
+        id,
+        value: phone
+      }))
     },
     {
       title: 'Full Name',
-      value: full_name
+      value: getFullName({
+        firstName: first_name,
+        lastName: last_name,
+        fullName: full_name
+      })
     },
     {
       title: 'Skype',
-      value: skype && linkField('skype', skype)
+      value: skype && <LinkedinField link={skype} linkType='skype' />
     },
     {
       title: 'Gender',
@@ -124,37 +129,46 @@ export const InfoPartContactInfo: FC<{ contactData: IContactResult }> = ({
     {
       title: 'Email',
       value: emails[0]?.email,
-      showMore: showMoreEmails
+      showMore: showMoreItems(emails, ({ id, email }: IEMail) => ({
+        id,
+        value: email
+      }))
     },
     {
       title: 'Date of Birth',
       value: birthday
     },
     {
-      title: 'Confidence',
-      value: confidence
+      title: 'Requires validation',
+      value: <CustomSwitch disabled value={emails[0]?.verification || false} />
     },
     {
       title: 'Country',
       value: location?.country
     },
     {
-      title: 'Origin',
-      value: origin?.length ? origin[0] : '',
-      showMore: showMoreOrigins
+      title: 'Confidence',
+      value: confidence
     },
     {
       title: 'Region',
       value: location?.region
     },
     {
-      title: 'LinkedIn',
-      value: linkField('linkedin', linkedin)
+      title: 'Origin',
+      value: origin?.[0] || '',
+      showMore: showMoreItems(origin, (value: string) => ({ value }))
     },
     {
       title: 'City',
       value: location?.city
     },
+
+    {
+      title: 'LinkedIn',
+      value: <LinkedinField link={linkedin} linkType='linkedin' />
+    },
+
     {
       title: 'Other social networks',
       element: socialField

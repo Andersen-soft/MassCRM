@@ -165,11 +165,8 @@ class ImportContact
 
     private const ALWAYS_MERGE_FIELDS = [
         Contact::LAST_TOUCH_FIELD,
-        Contact::OPENS_FIELD,
         Contact::VIEWS_FIELD,
-        Contact::DELIVERIES_FIELD,
-        Contact::REPLIES_FIELD,
-        Contact::BOUNCES_FIELD
+        Contact::DELIVERIES_FIELD
     ];
 
     private const LOCATION_FIELDS = [
@@ -182,7 +179,8 @@ class ImportContact
         ValidatorService $validatorService,
         RulesContact $rulesContact,
         Url $urlHelper
-    ) {
+    )
+    {
         $this->userService = $userService;
         $this->locationService = $locationService;
         $this->validatorService = $validatorService;
@@ -198,7 +196,8 @@ class ImportContact
         ?Company $company,
         ?array $origin,
         ?string $comment
-    ): Contact {
+    ): Contact
+    {
         $contact = $this->setUserAndCompanyToContact($contact, $user, $company);
 
         if (empty($row['contact'])) {
@@ -224,10 +223,12 @@ class ImportContact
                 $contact->{$key} = $item;
                 continue;
             }
+
             if (in_array($key, self::LOCATION_FIELDS, true)) {
                 $contact = $this->addLocation($contact, $row['contact']);
                 continue;
             }
+
             if ($key === Contact::GENDER_FIELD && !empty($contact->gender) && !empty($item)) {
                 $contact->gender = $this->setGender($item);
                 continue;
@@ -238,16 +239,23 @@ class ImportContact
                 continue;
             }
 
+            if (in_array($key, self::CHECK_DATE_FIELDS) && !is_null($item) && strtotime($item)) {
+                $contact->{$key} = 1;
+                continue;
+            }
+
             if ($contact->{$key} === null && !empty($item)) {
-                $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
-                $time = strtotime($item);
+                if ($contact->getCasts()[$key] === 'datetime') {
+                    $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
+                    $time = strtotime($item);
 
-                /** @phpstan-ignore-next-line */
-                if ($date || is_int($time) && Carbon::parse((int) $time)) {
-                    $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int) $item)->format('d-m-Y H:i');
-                    $contact->{$key} = $date;
+                    /** @phpstan-ignore-next-line */
+                    if ($date || (is_int($time) && Carbon::parse($time))) {
+                        $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int)$item)->format('d-m-Y H:i');
+                        $contact->{$key} = $date;
 
-                    continue;
+                        continue;
+                    }
                 }
 
                 $contact->{$key} = $item;
@@ -271,7 +279,8 @@ class ImportContact
         ?Company $company,
         ?array $origin,
         ?string $comment
-    ): Contact {
+    ): Contact
+    {
         $contact = $this->setNewDataCompany($contact, $row, $user, $responsible, $company, $origin, $comment);
 
         if (!$this->validatorService->validateUpdate($contact, $this->rulesContact)) {
@@ -290,7 +299,8 @@ class ImportContact
         ?Company $company,
         ?array $origin,
         ?string $comment
-    ): ?Contact {
+    ): ?Contact
+    {
         if (empty($row['contact'])) {
             return null;
         }
@@ -315,7 +325,8 @@ class ImportContact
         ?Company $company,
         ?array $origin,
         ?string $comment
-    ): Contact {
+    ): Contact
+    {
         $contact = $this->setUserAndCompanyToContact($contact, $user, $company);
 
         if (empty($row['contact'])) {
@@ -335,7 +346,6 @@ class ImportContact
 
             if (in_array($key, self::CHECK_DATE_FIELDS) && !is_null($item) && strtotime($item)) {
                 $contact->{$key} = 1;
-
                 continue;
             }
 
@@ -344,16 +354,18 @@ class ImportContact
                 continue;
             }
 
-            if(!is_null($item)){
-                $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
-                $time = strtotime($item);
+            if (!is_null($item)) {
+                if ($contact->getCasts()[$key] === 'datetime') {
+                    $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
+                    $time = strtotime($item);
 
-                /** @phpstan-ignore-next-line */
-                if ($date || is_int($time) && Carbon::parse((int) $time)) {
-                    $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int) $item)->format('d-m-Y H:i');
-                    $contact->{$key} = $date;
+                    /** @phpstan-ignore-next-line */
+                    if ($date || (is_int($time) && Carbon::parse((int)$time))) {
+                        $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int)$item)->format('d-m-Y H:i');
+                        $contact->{$key} = $date;
 
-                    continue;
+                        continue;
+                    }
                 }
 
                 $contact->{$key} = $item;
@@ -387,7 +399,8 @@ class ImportContact
             }
 
             $row[$field] = $this->mapCountries($row[$field]);
-            $loc = $this->locationService->findLocations($row[$field]);
+
+            $loc = $this->locationService->findLocations($row[$field], $row);
 
             if ($loc) {
                 $country = $loc->getCountry();
@@ -412,7 +425,7 @@ class ImportContact
         return $contact;
     }
 
-    private function setGender(?string $item) : ?string
+    private function setGender(?string $item): ?string
     {
         if (!$item) {
             return $item;

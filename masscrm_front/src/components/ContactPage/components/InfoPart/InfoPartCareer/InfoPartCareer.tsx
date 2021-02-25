@@ -20,15 +20,15 @@ export const InfoPartCareer: FC<{
   const previousCompanies = useSelector(getPreviousCompaniesSelector);
 
   const columnItem = useCallback(
-    (title, value, isEdit?) => (
+    (title: string, value?: string, editFieldName?: string) => (
       <div className={sn('column_item')}>
         <span className={sn('spanLeft')}>{title}:</span>
         <span className={sn('spanRight')}>
-          <div className={sn('column_value')}>{value}</div>
-          {isEdit && (
+          <div className={sn('columnValue')}>{value}</div>
+          {editFieldName && value && (
             <CommonIcon
               IconComponent={Edit}
-              onClick={() => handleChange(isEdit)}
+              onClick={() => handleChange(editFieldName)}
             />
           )}
         </span>
@@ -45,8 +45,8 @@ export const InfoPartCareer: FC<{
         </div>
         <div className={sn('wrapper')}>
           <div className={sn('column')}>
-            {columnItem('Date of change', company.updated_at)}
-            {columnItem('Company', company.name, 'company')}
+            {columnItem('Date of change', company?.updated_at)}
+            {columnItem('Company', company?.name, 'company')}
             {columnItem('Position', currentPosition, 'position')}
           </div>
         </div>

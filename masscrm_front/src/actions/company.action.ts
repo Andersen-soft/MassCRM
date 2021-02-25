@@ -43,10 +43,14 @@ export const getCompanyList = (filter: ICompanyFilter) => async (
 };
 
 export const createCompany = async (company: ICompanyUpdate) => {
-  const {
-    data: [{ id }]
-  } = await HTTP.post(`companies`, company);
-  return id;
+  try {
+    const {
+      data: [{ id }]
+    } = await HTTP.post(`companies`, company);
+    return id;
+  } catch (error) {
+    throw JSON.stringify(error);
+  }
 };
 
 export const deleteCompany = async (id: number) => {
@@ -58,19 +62,34 @@ export const updateCompany = async (
   company: ICompanyUpdate,
   contactID?: number
 ) => {
-  const currentCompany = getCompanyForUpdate(
-    store.getState()?.contacts?.data?.find(({ id }) => id === contactID)
-      ?.company || ({} as ICompany)
-  );
-  await HTTP.put(`companies/${idCompany}`, {
-    ...currentCompany,
-    ...company
-  });
+  try {
+    const currentCompany = getCompanyForUpdate(
+      store.getState()?.contacts?.data?.find(({ id }) => id === contactID)
+        ?.company || ({} as ICompany)
+    );
+    await HTTP.put(`companies/${idCompany}`, {
+      ...currentCompany,
+      ...company
+    });
+  } catch (error) {
+    throw JSON.stringify(error);
+  }
 };
 
-export const getOneCompanyRequest = (id: number) => (dispatch: Dispatch) => {
+export const getCompanyRequest = (id: number) => (dispatch: Dispatch) => {
   HTTP.get(`companies/${id}`)
-    .then(({ data }) => {
+    .then(({ data: [data] }) => {
+      dispatch(setLoaderAction({ isLoading: true }));
+      dispatch(getCompanyAction({ data }));
+    })
+    .finally(() => dispatch(setLoaderAction({ isLoading: false })));
+};
+
+export const getCompanyWithRelatedContactsRequest = (id: number) => (
+  dispatch: Dispatch
+) => {
+  HTTP.get(`companies/${id}/contacts`)
+    .then(({ data: [data] }) => {
       dispatch(setLoaderAction({ isLoading: true }));
       dispatch(getCompanyAction({ data }));
     })

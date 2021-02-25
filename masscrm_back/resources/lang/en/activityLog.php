@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 return [
+    'Contact_createdBaseModel_id' => 'Added Contact :dataNew name',
+    'Contact_deletedBaseModel_id' => 'Contact was delete :dataOld name',
     'Contact_addNewValueField_first_name' => 'Added first name :dataNew',
     'Contact_addNewValueField_responsible' => 'Added responsible :dataNew',
     'Contact_addNewValueField_last_name' => 'Added last name :dataNew',
@@ -81,6 +83,8 @@ return [
     'CompanyAttachment_updateAttachmentFile_file_name' => 'File :dataOld updated to Attachments',
     'CompanyAttachment_deleteAttachmentFile_file_name' => 'File :dataOld deleted from Attachments',
 
+    'Company_createdBaseModel_id' => 'Added Company :dataNew',
+    'Company_deletedBaseModel_id' => 'Company was delete :dataOld',
     'Company_addNewValueField_name' => 'Added name company :dataNew',
     'Company_addNewValueField_website' => 'Added website :dataNew',
     'Company_addNewValueField_linkedin' => 'Added link to linkedIn :dataNew',

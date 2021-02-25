@@ -103,7 +103,8 @@ pipeline {
             expression { return (env.BRANCH_NAME == 'stage') }
             } 
             steps{
-            build job: 'Andersen/MassCRM/Run_tests_param', parameters: [string(name: 'branch', value: "${env.BRANCH_NAME}")], propagate: false
+            build job: 'Andersen/MassCRM/Run_tests_param', parameters: [string(name: 'branch', value: "${env.BRANCH_NAME}")], propagate: true
+            //, propagate: false
             }
 
 

@@ -13,4 +13,5 @@ export interface ICommonInputProps {
     value: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
   autoFocus?: string;
+  isDoubleClick?: boolean;
 }

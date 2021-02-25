@@ -2,5 +2,6 @@
 
 return [
     'finished' => 'Import has been finished.',
+    'failed' => 'Import has been failed.',
     'name_import' => 'Import :file.'
 ];

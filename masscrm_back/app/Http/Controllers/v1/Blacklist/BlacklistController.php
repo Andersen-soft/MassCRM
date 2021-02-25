@@ -8,6 +8,7 @@ use App\Http\Requests\Blacklist\CreateBlacklistRequest;
 use App\Http\Requests\Blacklist\DestroyBlacklistsRequest;
 use App\Http\Requests\Blacklist\GetBlacklistRequest;
 use App\Http\Requests\Blacklist\UpdateBlacklistRequest;
+use App\Http\Resources\User\User as UserResource;
 use App\Services\Blacklist\BlacklistExportService;
 use App\Services\Blacklist\BlacklistService;
 use Illuminate\Http\JsonResponse;
@@ -220,5 +221,33 @@ class BlacklistController extends BaseController
         );
 
         return $this->success([]);
+    }
+
+    /**
+     * @OA\GET(
+     *      path="/blacklists/users",
+     *      tags={"Blacklist"},
+     *      description="Get list of users from blacklist",
+     *      security={{"bearerAuth":{}}},
+     *      @OA\Response(
+     *          response="200",
+     *          description="Successfully",
+     *          @OA\JsonContent(
+     *              required={"success", "data"},
+     *              @OA\Property(property="success", type="boolean", example=true),
+     *              @OA\Property(property="data", type="array",
+     *                  @OA\Items(type="object", ref="#/components/schemas/User")
+     *              ),
+     *          ),
+     *      ),
+     *     @OA\Response(response="400", ref="#/components/responses/400"),
+     *     @OA\Response(response="401", ref="#/components/responses/401")
+     * )
+     */
+    public function getUsers(BlacklistService $blacklistService)
+    {
+        $users = $blacklistService->getBlacklistUsers()->paginate(5);
+
+        return $this->success(UserResource::collection($users));
     }
 }

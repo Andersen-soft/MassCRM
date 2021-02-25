@@ -1,7 +1,8 @@
-import React, { FC, useCallback, useContext } from 'react';
+import React, { FC, useCallback, useContext, useState, useEffect } from 'react';
 import {
   changeContactsResponsible,
   getAddContactList,
+  resetUsersFullName,
   searchUsers
 } from 'src/actions';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,7 +11,8 @@ import { inputStyle } from 'src/styles/CommonInput.style';
 import debounce from 'lodash.debounce';
 import { useLocation } from 'react-router';
 import { FilterContext } from 'src/context';
-import { MoreInformation, SearchInput } from '../../../../index';
+import { MoreInformation, SearchInput } from 'src/components/common';
+import { getTrimmedValue } from 'src/utils/string';
 import { IChangeResponsibleProps } from './interfaces';
 import { ChangeResponsibleIcon } from './ChangeResponsibleIcon';
 
@@ -23,40 +25,53 @@ export const ChangeResponsible: FC<IChangeResponsibleProps> = ({
   const dispatch = useDispatch();
   const location = useLocation();
   const selectedContacts: number[] = config.body.selectedRows || [];
-  const { requestValues } = useContext(FilterContext);
+  const { getRequestValues } = useContext(FilterContext);
   const currentUser = useSelector(getUser);
   const isManager = Object.keys(currentUser.roles).includes('manager');
   const styleInput = inputStyle();
 
+  const [localValue, setLocalValue] = useState('');
+
   const handleSetResponsibleSearch = useCallback(
     debounce((value: string) => {
-      dispatch(
-        searchUsers({
-          search: {
-            fullName: value
-          },
-          sort: {
-            fieldName: 'fullName',
-            typeSort: 'ASC'
-          }
-        })
-      );
+      setLocalValue(value);
+
+      getTrimmedValue(value) &&
+        dispatch(
+          searchUsers({
+            search: {
+              fullName: value
+            },
+            sort: {
+              fieldName: 'fullName',
+              typeSort: 'ASC'
+            }
+          })
+        );
     }, 300),
     []
   );
 
-  const successCallback = () => dispatch(getAddContactList(requestValues({})));
+  const successCallback = () => {
+    setLocalValue('');
+    dispatch(getAddContactList(getRequestValues({})));
+  };
 
   const handleChangeResponsible = (value: string) => {
+    if (!getTrimmedValue(value)) {
+      autocomplete.length && dispatch(resetUsersFullName({ fullName: [] }));
+      return;
+    }
+
     if (selectedContacts.length && searchUserList) {
       const newResponsible = searchUserList.find(
-        ({ name, surname }) => `${name} ${surname}` === value
+        ({ name, surname }) => `${name} ${surname}` === getTrimmedValue(value)
       );
       if (location.search.includes('selectAll=on')) {
         changeContactsResponsible(
           [],
           newResponsible?.id,
-          requestValues({})
+          getRequestValues({})
         ).then(successCallback);
       } else {
         changeContactsResponsible(selectedContacts, newResponsible?.id).then(
@@ -66,6 +81,12 @@ export const ChangeResponsible: FC<IChangeResponsibleProps> = ({
     }
   };
 
+  useEffect(() => {
+    autocomplete.length &&
+      !localValue &&
+      dispatch(resetUsersFullName({ fullName: [] }));
+  }, [autocomplete]);
+
   return isManager && isFullTable && selectedContacts.length ? (
     <MoreInformation
       tooltip='Change Responsible'
@@ -74,6 +95,7 @@ export const ChangeResponsible: FC<IChangeResponsibleProps> = ({
         <SearchInput
           placeholder='Responsible'
           name='Responsible'
+          value={localValue || ''}
           items={autocomplete}
           onChange={handleSetResponsibleSearch}
           onSelect={handleChangeResponsible}

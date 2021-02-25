@@ -9,6 +9,7 @@ export interface ISingleInputFormProps {
   type?: 'link' | 'text' | 'switch' | 'linkedin' | 'skype';
   switchValue?: boolean;
   isDate?: boolean;
+  isDoubleClick?: boolean;
 }
 
 export interface ISingleInputForm {

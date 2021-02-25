@@ -43,7 +43,7 @@ export const exportTableConfig: ITableConfig = {
 
 export const exportTableMap = () => ({
   id,
-  created_at,
+  updated_at,
   name,
   user,
   status,
@@ -52,7 +52,7 @@ export const exportTableMap = () => ({
   id: id as number,
   cells: [
     {
-      data: created_at
+      data: updated_at
     },
     {
       data: `${user?.name} ${user?.surname}`
@@ -73,7 +73,7 @@ export const importTableMap = (
   openModalHandler: (id: number) => () => void
 ) => ({
   id,
-  created_at,
+  updated_at,
   name,
   user,
   status,
@@ -82,7 +82,7 @@ export const importTableMap = (
   id: id as number,
   cells: [
     {
-      data: created_at
+      data: updated_at
     },
     {
       data: `${user?.name} ${user?.surname}`

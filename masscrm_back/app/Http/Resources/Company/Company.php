@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Company;
 
+use App\Http\Resources\Contact\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Models\Company\Company as CompanyModel;
@@ -80,7 +81,8 @@ class Company extends JsonResource
             'max_employees' => $this->max_employees,
             'comment' => $this->comment,
             'industries' => $this->industries_collection,
-            'vacancies' => $this->vacancies_collection
+            'vacancies' => $this->vacancies_collection,
+            'contacts' => Contact::collection($this->whenLoaded('contacts')),
         ];
 
         $type = $this->type === CompanyModel::TYPE_COMPANY_SUBSIDIARY ? 'holding' : 'subsidiary';

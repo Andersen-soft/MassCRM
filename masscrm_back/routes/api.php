@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.api_version')], function () {
+    Route::post('contact/reports/download-count', 'Report\ReportController@downloadCount');
     Route::post('contact/reports/download', 'Report\ReportController@download');
 
     Route::group(['prefix' => 'users'], function () {
@@ -44,7 +45,9 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
             Route::post('delete-list', 'Contact\ContactController@destroyMany')
                 ->name('contacts.destroy-list');
             Route::get('counter-daily-plan', 'Contact\ContactController@getCounterDailyPlan');
-            Route::put('change-responsible', 'Contact\ContactController@changeResponsible');
+            Route::group(['middleware' => 'managerPermission'], function () {
+                Route::put('change-responsible', 'Contact\ContactController@changeResponsible');
+            });
             Route::get('previous-companies/{id}', 'Contact\ContactController@getPreviousCompanies');
         });
 
@@ -63,8 +66,10 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
         Route::resource('contacts', 'Contact\ContactController')
             ->only('store', 'update', 'index', 'show', 'destroy');
         Route::resource('companies', 'Company\CompanyController')
-            ->only('store', 'update', 'index', 'show', 'destroy');
+            ->only('store', 'update', 'index', 'destroy');
         Route::group(['prefix' => 'companies'], function () {
+            Route::get('{company}/{contacts?}', 'Company\CompanyController@show')
+                ->name('companies.show');
             Route::post('delete-list', 'Company\CompanyController@destroyMany')
                 ->name('companies.destroy-list');
         });
@@ -95,6 +100,7 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
             Route::group(['prefix' => 'blacklists'], static function () {
                 Route::get('export', 'Blacklist\BlacklistController@export');
                 Route::post('delete', 'Blacklist\BlacklistController@destroy');
+                Route::get('users', 'Blacklist\BlacklistController@getUsers');
             });
 
         });

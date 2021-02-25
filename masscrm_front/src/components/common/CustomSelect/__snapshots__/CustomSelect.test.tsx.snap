@@ -2,12 +2,12 @@
 
 exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
 <div
-  className="makeStyles-wrap-26"
+  className="makeStyles-wrap-27"
 >
   <WithStyles(ForwardRef(FormControl))
     classes={
       Object {
-        "root": "makeStyles-input-1 makeStyles-FormLabel-20 undefined undefined undefined",
+        "root": "makeStyles-input-1 makeStyles-FormLabel-21 undefined undefined undefined",
       }
     }
     style={
@@ -20,8 +20,8 @@ exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
     <WithStyles(ForwardRef(InputLabel))
       classes={
         Object {
-          "outlined": "makeStyles-InputLabelOutlined-18",
-          "shrink": "makeStyles-InputLabelShrink-19",
+          "outlined": "makeStyles-InputLabelOutlined-19",
+          "shrink": "makeStyles-InputLabelShrink-20",
         }
       }
     >
@@ -30,13 +30,13 @@ exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
     <WithStyles(ForwardRef(Select))
       MenuProps={
         Object {
-          "className": "makeStyles-Paper-14",
+          "className": "makeStyles-Paper-15",
         }
       }
       classes={
         Object {
-          "icon": "makeStyles-customSelectIcon-12",
-          "outlined": "makeStyles-customSelectOutlined-13",
+          "icon": "makeStyles-customSelectIcon-13",
+          "outlined": "makeStyles-customSelectOutlined-14",
         }
       }
       inputProps={
@@ -52,35 +52,35 @@ exports[`CustomSelect MultiSelectFilter should render correctly 1`] = `
       value={Array []}
     >
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-15"
+        className="makeStyles-ListItemBtn-16"
         key="A"
         value="A"
       >
         A
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-15"
+        className="makeStyles-ListItemBtn-16"
         key="B"
         value="B"
       >
         B
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-15"
+        className="makeStyles-ListItemBtn-16"
         key="C"
         value="C"
       >
         C
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-15"
+        className="makeStyles-ListItemBtn-16"
         key="D"
         value="D"
       >
         D
       </WithStyles(ForwardRef(MenuItem))>
       <WithStyles(ForwardRef(MenuItem))
-        className="makeStyles-ListItemBtn-15"
+        className="makeStyles-ListItemBtn-16"
         key="E"
         value="E"
       >

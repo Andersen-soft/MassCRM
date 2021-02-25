@@ -14,4 +14,5 @@ export interface IDateRangeProps {
   }) => void;
   hasDataRangeFilter?: boolean;
   resetDateFilter?: Function;
+  styleProp?: 'fullWidth';
 }

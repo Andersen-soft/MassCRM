@@ -3,6 +3,8 @@ import React, {
   FC,
   useCallback,
   useContext,
+  useEffect,
+  useRef,
   useState
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,23 +16,24 @@ import {
   updateContact,
   getContact,
   getAddContactList,
-  setPage
+  setPage,
+  getFiltersData as getFiltersDataAction
 } from 'src/actions';
 import {
   getUser,
   getFilterSettings,
-  getIndustries,
-  getCurrentPage
+  getCurrentPage,
+  getContacts,
+  getFiltersData
 } from 'src/selectors';
-import { ICompany, IContact, ILocation } from 'src/interfaces';
-import { OccupiedMessage, DefaultPopUp } from 'src/components/common/PopUp';
+import { ICompany, IContact, IIndustry, ILocation } from 'src/interfaces';
 import { contactFormSchema } from 'src/utils/form/validate';
 import { createErrorsObject, getErrorsList } from 'src/utils/errors';
 import { deleteEmptyFields } from 'src/utils/form/objectHelpers';
 import { CompanyBuilder } from 'src/utils/form/companyBuilder';
 import { ContactBuilder } from 'src/utils/form/contactBuilder';
 import { ErrorEmitterContext } from 'src/context';
-import { IContactFormInputs, IErrorsContact } from './interfaces';
+import { IContactFormInputs } from './interfaces';
 import { ContactFormUI, ContactFormModalUI } from './index';
 
 interface ISearchObject {
@@ -50,6 +53,7 @@ export const ContactForm: FC<{
   autoFocus?: string;
   onSubmitSuccess?: Function;
   typeModal?: 'copy' | 'create' | 'edit';
+  shouldGetFiltersData: boolean;
 }> = ({
   onCloseModal,
   contact,
@@ -57,27 +61,27 @@ export const ContactForm: FC<{
   onCancelModal,
   autoFocus,
   onSubmitSuccess,
-  typeModal
+  typeModal,
+  shouldGetFiltersData
 }) => {
   const dispatch = useDispatch();
-  const allIndustries = useSelector(getIndustries);
+
   const [isEditedFullName, setIsEditedFullName] = useState<boolean>(false);
-  const [errorsList, setErrorsList] = useState<IErrorsContact>({ open: false });
-  const { name: nameUser, surname: surnameUser, roles } = useSelector(getUser);
-  const isFullForm = Boolean(roles?.manager || roles?.superAdmin);
+
+  const contactsData = useSelector(getContacts);
   const filter = useSelector(getFilterSettings);
   const currentPage: number = useSelector(getCurrentPage);
-  const { errorsEventEmitter, handleClearErrors } = useContext(
-    ErrorEmitterContext
-  );
+  const { name: nameUser, surname: surnameUser, roles } = useSelector(getUser);
+
+  const { errorsEventEmitter } = useContext(ErrorEmitterContext);
+
+  const filtersData = useSelector(getFiltersData);
+  const allIndustriesRef = useRef([] as IIndustry[]);
+
   const formForVacancies = Boolean(
     roles?.nc2 || roles?.manager || roles?.superAdmin
   );
-
-  const closePopup = useCallback(() => {
-    setErrorsList({ open: false });
-    handleClearErrors();
-  }, []);
+  const isFullForm = Boolean(roles?.manager || roles?.superAdmin);
 
   const setTouchedHandler = useCallback(() => {
     setIsTouchedForm && setIsTouchedForm(true);
@@ -87,14 +91,21 @@ export const ContactForm: FC<{
     resetCallback({});
 
     if (onSubmitSuccess) onSubmitSuccess();
-    if (currentPage !== 1) dispatch(setPage(1));
-    else dispatch(getAddContactList({ ...filter, page: currentPage }));
+
+    if (currentPage !== 1) {
+      dispatch(setPage(1));
+    } else if (
+      currentPage === 1 &&
+      (!contactsData.length || contactsData.length > 1)
+    ) {
+      dispatch(getAddContactList({ ...filter, page: currentPage }));
+    }
     onCloseModal && onCloseModal();
-    closePopup();
   };
 
   const errorCallback = (val: IContactFormInputs) => (error: string) => {
     const parseError = JSON.parse(error);
+
     const createError = (title: string[]) => (dat: any[]) => {
       const errorsObject = createErrorsObject(title, dat.flat());
       errorsEventEmitter.emit('popUpErrors', {
@@ -202,7 +213,8 @@ export const ContactForm: FC<{
     social_networks: [],
     country: '',
     region: '',
-    city: ''
+    city: '',
+    skip_validation: 0
   };
 
   const handleSubmit = (
@@ -240,7 +252,8 @@ export const ContactForm: FC<{
       company_subsidiary,
       company_holding,
       max_employees,
-      min_employees
+      min_employees,
+      skip_validation
     }: IContactFormInputs,
     formikHelpers: FormikHelpers<any>
   ) => {
@@ -273,7 +286,8 @@ export const ContactForm: FC<{
       birthday,
       phones,
       company_founded,
-      company_type
+      company_type,
+      skip_validation
     };
 
     const location: ILocation = { country };
@@ -301,7 +315,7 @@ export const ContactForm: FC<{
     const newCompany = new CompanyBuilder()
       .setName(company)
       .setWebsite(companyWebSite)
-      .setIndustries(allIndustries, industry)
+      .setIndustries(allIndustriesRef.current, industry)
       .setMinEmployees(min_employees)
       .setMaxEmployees(max_employees)
       .setFounded(company_founded)
@@ -311,20 +325,34 @@ export const ContactForm: FC<{
       .setVacancies(formForVacancies, vacancies)
       .setCTOFullName(CTO)
       .setCompanyLinkedIn(companyLinkedIn)
-      .setSkipValidation(errorsList.open);
+      .setSkipValidation(!!skip_validation);
 
     const sendData = (myData: ContactBuilder) =>
       contact?.id && typeModal !== 'copy'
         ? updateMyContact(myData, formikHelpers.resetForm, contact.id, values)
         : createNewContact(myData, formikHelpers.resetForm, values);
 
-    const errorCallbackCompany = (error: { [key: string]: string[] }) => {
-      const errorsArray = Object.values(error).flat();
-      setErrorsList({
-        simpleErr: errorsArray.filter(item => !item.includes('already used')),
-        duplicateErr: errorsArray.filter(item => item.includes('already used')),
-        open: true
-      });
+    const errorCallbackCompany = (error: string) => {
+      const parseError: { [key: string]: string[] } = JSON.parse(error);
+      const isDuplicateErrors =
+        parseError.website?.toString().includes('website is already') ||
+        parseError.linkedin?.toString().includes('LinkedIn is already');
+
+      if (isDuplicateErrors) {
+        errorsEventEmitter.emit('companyDuplicateErrors', {
+          errorsObject: [
+            {
+              title:
+                parseError.linkedin && parseError.website
+                  ? [...parseError.linkedin, ...parseError.website]
+                  : parseError.website || parseError.linkedin,
+              value: { ...values, skip_validation: 1 },
+              submitFunction: handleSubmit,
+              helpers: formikHelpers
+            }
+          ]
+        });
+      }
     };
 
     if (company_id) {
@@ -371,38 +399,20 @@ export const ContactForm: FC<{
     setIsEditedFullName(true);
   };
 
-  const errorDialog = useCallback(
-    (submitFunction: () => void) => {
-      if (errorsList?.duplicateErr?.length) {
-        return (
-          <DefaultPopUp
-            onClose={closePopup}
-            onConfirm={submitFunction}
-            questionMessage={
-              <>
-                <OccupiedMessage message={errorsList?.duplicateErr} />
-                <span>Are you sure you want to create new company?</span>
-              </>
-            }
-          />
-        );
-      }
-      return false;
-    },
-    [errorsList]
-  );
-
   const props = {
     companies: [],
     onChangeFullName,
     isEditedFullName,
     isFullForm,
     onChangeSubsidiary,
-    onChangeHolding,
-    errorsList,
-    errorDialog,
-    closePopup
+    onChangeHolding
   };
+
+  useEffect(() => {
+    !Object.keys(filtersData).length &&
+      shouldGetFiltersData &&
+      dispatch(getFiltersDataAction());
+  }, []);
 
   return (
     <Formik

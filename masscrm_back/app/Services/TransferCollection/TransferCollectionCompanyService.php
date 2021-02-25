@@ -2,16 +2,16 @@
 
 namespace App\Services\TransferCollection;
 
-use App\Models\Company\CompanyIndustry;
-use App\Models\Company\CompanySubsidiary;
-use App\Models\Company\CompanyVacancy;
-use App\Models\Contact\Contact;
+use App\Models\Company\Fields\CompanyFields;
 use App\Models\Industry;
 use App\Repositories\Company\CompanyRepository;
 use App\Models\Company\Company;
 
 class TransferCollectionCompanyService
 {
+    public const RELATION_VACANCIES = 'vacancies';
+    public const RELATION_INDUSTRIES = 'industries';
+
     private CompanyRepository $companyRepository;
 
     public function __construct(CompanyRepository $companyRepository)
@@ -19,36 +19,45 @@ class TransferCollectionCompanyService
         $this->companyRepository = $companyRepository;
     }
 
-    public function transfer(): void
+    /**
+     * @param array $relations
+     * @param bool $fresh
+     */
+    public function transfer(array $relations = [], bool $fresh = false): void
     {
+        if ($fresh) {
+            Company::query()->update([CompanyFields::IS_UPLOAD_COLLECTION_FIELD => false]);
+        }
+
         do {
-            /** @var Company $company*/
+            /** @var Company $company */
             $company = $this->companyRepository->getCompanyForTransfer();
             if (null !== $company) {
-                $this->updateCollectionCompany($company);
+                $this->updateCollectionCompany($company, $relations);
             }
         } while ($company);
     }
 
     public function getVacancies(Company $company): array
     {
-        $vacancies = [];
+        $vacancies = collect();
 
         if (empty($company->vacancies)) {
-            return $vacancies;
+            return $vacancies->toArray();
         }
 
-        /** @var CompanyVacancy $companyVacancy */
-        foreach ($company->vacancies as $companyVacancy) {
-            $vacancies[] = [
-                'id' => $companyVacancy->id,
-                'job' => $companyVacancy->vacancy,
-                'skills' => $companyVacancy->skills,
-                'link' => $companyVacancy->link,
-            ];
-        }
+        $vacancies = $company->vacancies()->get();
+        $vacancies->transform(function ($item) {
+           return [
+               'id' => $item->id,
+               'active' => $item->active,
+               'job' => $item->vacancy,
+               'skills' => $item->skills,
+               'link' => $item->link,
+           ];
+        });
 
-        return $vacancies;
+        return $vacancies->toArray();
     }
 
     public function getIndustries(Company $company): array
@@ -60,7 +69,7 @@ class TransferCollectionCompanyService
         }
 
         /** @var Industry $industry */
-        foreach ($company->industries as $industry) {
+        foreach ($company->industries()->get() as $industry) {
             $industries[] = [
                 'id' => $industry->id,
                 'name' => $industry->name,
@@ -89,10 +98,24 @@ class TransferCollectionCompanyService
         return $subsidiaries;
     }
 
-    public function updateCollectionCompany(Company $company): void
+    public function updateCollectionCompany(Company $company, $relations = []): void
     {
-        $company->industries_collection = $this->getIndustries($company);
-        $company->vacancies_collection = $this->getVacancies($company);
+        if (empty($relations)) {
+            $company->industries_collection = $this->getIndustries($company);
+            $company->vacancies_collection = $this->getVacancies($company);
+            $company->is_upload_collection = true;
+            $company->save();
+            return;
+        }
+
+        if (in_array(self::RELATION_VACANCIES, $relations, true)) {
+            $company->vacancies_collection = $this->getVacancies($company);
+        }
+
+        if (in_array(self::RELATION_INDUSTRIES, $relations, true)) {
+            $company->industries_collection = $this->getIndustries($company);
+        }
+
         $company->is_upload_collection = true;
         $company->save();
     }

@@ -1,20 +1,32 @@
 import { handleActions } from 'redux-actions';
 import {
   getBlacklistAction,
-  setBlacklistFilterAction,
+  setBlacklistFilterSettingsAction,
+  setBlacklistFilterValuesAction,
   setFiltersUseAction,
   setShowCountAction
 } from '../actions/blacklist.action';
 import { IBlacklistStore } from '../interfaces';
+import history from '../store/history';
+
+const initBlacklistFiltersState = {
+  blacklist: '',
+  user: '',
+  date: []
+};
+
+const currentParam = new URLSearchParams(history.location.search);
+
+const getDataByJson = (param: string) =>
+  JSON.parse(currentParam.get(param) as string) || null;
+
+const filter = getDataByJson('filter');
 
 const initialState: IBlacklistStore = {
   isFiltersUse: false,
   data: [],
-  blacklistFilter: {
-    blacklist: '',
-    user: '',
-    date: []
-  },
+  filterValues: { ...initBlacklistFiltersState, ...filter },
+  filterSettings: {},
   showCount: 5
 };
 
@@ -24,7 +36,7 @@ export const blacklistReducer = handleActions(
       ...state,
       ...payload
     }),
-    [`${setBlacklistFilterAction}`]: (state, { payload }) => ({
+    [`${setBlacklistFilterSettingsAction}`]: (state, { payload }) => ({
       ...state,
       ...payload
     }),
@@ -35,6 +47,13 @@ export const blacklistReducer = handleActions(
     [`${setShowCountAction}`]: (state, { payload }) => ({
       ...state,
       ...payload
+    }),
+    [`${setBlacklistFilterValuesAction}`]: (state, { payload }) => ({
+      ...state,
+      filterValues: {
+        ...state.filterValues,
+        ...payload
+      }
     })
   },
   initialState

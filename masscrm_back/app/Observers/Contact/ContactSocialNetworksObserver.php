@@ -2,72 +2,31 @@
 
 namespace App\Observers\Contact;
 
-use App\Models\Contact\Contact;
-use App\Models\Contact\ContactSocialNetworks;
 use App\Models\ActivityLog\ActivityLogContact;
-use ReflectionClass;
+use App\Models\Contact\ContactSocialNetworks;
+use App\Services\ActivityLog\ActivityLog;
 
 class ContactSocialNetworksObserver
 {
+    use ActivityLog;
+
+    private $activeLogClass = ActivityLogContact::class;
+
     private const FIELD_LINK = 'link';
-    private const NAME_FIELDS = [self::FIELD_LINK];
+    private static array $updateFieldLog = [self::FIELD_LINK];
 
     public function created(ContactSocialNetworks $contactSocialNetworks): void
     {
-        /** @var Contact $contact */
-        $contact = $contactSocialNetworks->contact;
-
-        if ($contact->getUpdatedAt()->diffInSeconds($contact->getCreatedAt()) < 5) {
-            return;
-        }
-
-        foreach (self::NAME_FIELDS as $item) {
-            (new ActivityLogContact())
-                ->setContactId($contact->getId())
-                ->setUserId($contact->getUserId())
-                ->setActivityType(ActivityLogContact::ADDED_NEW_VALUE_FIELD_EVENT)
-                ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
-                ->setModelField($item)
-                ->setDataNew($contactSocialNetworks->{$item})
-                ->setLogInfo($contactSocialNetworks->getRawOriginal())
-                ->save();
-        }
+        $this->createEvent($contactSocialNetworks, self::FIELD_LINK);
     }
 
     public function updated(ContactSocialNetworks $contactSocialNetworks): void
     {
-        /** @var Contact $contact */
-        $contact = $contactSocialNetworks->contact;
-
-        foreach ($contactSocialNetworks->getChanges() as $key => $value) {
-            if (in_array($key, self::NAME_FIELDS, true)) {
-                (new ActivityLogContact())
-                    ->setContactId($contact->getId())
-                    ->setUserId($contact->getUserId())
-                    ->setActivityType(ActivityLogContact::UPDATE_VALUE_FIELD_EVENT)
-                    ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
-                    ->setModelField($key)
-                    ->setDataNew($contactSocialNetworks->{$key})
-                    ->setDataOld($contactSocialNetworks->getOriginal($key))
-                    ->setLogInfo($contactSocialNetworks->getRawOriginal())
-                    ->save();
-            }
-        }
+        $this->updateEvent($contactSocialNetworks);
     }
 
-    public function deleting(ContactSocialNetworks $contactSocialNetworks): void
+    public function deleted(ContactSocialNetworks $contactSocialNetworks): void
     {
-        /** @var Contact $contact */
-        $contact = $contactSocialNetworks->contact;
-
-        (new ActivityLogContact())
-            ->setContactId($contact->getId())
-            ->setUserId($contact->getUserId())
-            ->setActivityType(ActivityLogContact::DELETE_VALUE_FIELD_EVENT)
-            ->setModelName((new ReflectionClass($contactSocialNetworks))->getShortName())
-            ->setModelField(self::FIELD_LINK)
-            ->setDataOld($contactSocialNetworks->getOriginal(self::FIELD_LINK))
-            ->setLogInfo($contactSocialNetworks->getRawOriginal())
-            ->save();
+        $this->deleteEvent($contactSocialNetworks, self::FIELD_LINK);
     }
 }

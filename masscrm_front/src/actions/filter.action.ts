@@ -1,5 +1,6 @@
-import { createAction } from 'redux-actions';
+import { createAction, ActionFunctionAny, Action } from 'redux-actions';
 import { Dispatch } from 'redux';
+import { ITableRow } from 'src/components/common/Table/interfaces';
 import HTTP from '../utils/http';
 import { setNotification } from './notification.action';
 import {
@@ -14,10 +15,10 @@ import history from '../store/history';
 import { initialSortingState } from '../reducers/tableSorting.reducer';
 import { deleteEmptyFields } from '../utils/form/objectHelpers';
 
-export const getFiltersDataAction = createAction('GET_FILTER_DATA');
-export const setFilterSettingsAction = createAction('SET_FILTER_DATA');
+export const getFiltersDataAction = createAction('GET_FILTERS_DATA');
+export const setFilterSettingsAction = createAction('SET_FILTER_SETTINGS');
 export const setUsersFilterSettingsAction = createAction(
-  'SET_USERS_FILTER_DATA'
+  'SET_USERS_FILTERS_SETTINGS'
 );
 export const setListFieldAction = createAction('SET_LIST_FIELD');
 export const setFilterValuesAction = createAction('SET_FILTER_VALUES');
@@ -29,7 +30,19 @@ export const setUsersFilterValuesAction = createAction(
 );
 export const setSortValuesAction = createAction('SET_SORT_VALUE');
 export const setSortAction = createAction('SET_SORT');
-export const setSelectedContactsAction = createAction('SET_SELECTED_CONTACTS');
+
+export const setSelectedAllContactsAction = createAction(
+  'SET_SELECTED_ALL_CONTACTS'
+);
+export const setSelectedBlacklistContactsAction = createAction(
+  'SET_SELECTED_BLACKLIST_CONTACTS'
+);
+export const setSelectedAddContactsAction = createAction(
+  'SET_SELECTED_ADD_CONTACTS'
+);
+export const setSelectedMyContactsAction = createAction(
+  'SET_SELECTED_MY_CONTACTS'
+);
 
 export const getFiltersData = () => async (dispatch: Dispatch) => {
   try {
@@ -59,6 +72,7 @@ export const setFilterValues = (obj?: FiltersTypes) => (
   const {
     filter: { values }
   } = state();
+
   const initialStateValue = values && deleteEmptyFields(values);
   const currentParam = new URLSearchParams(history.location.search);
 
@@ -144,24 +158,37 @@ export const setSort = (obj?: ISortingObject) => (dispatch: Dispatch) => {
   dispatch(setSortAction(currentValues));
 };
 
-export const setSelectedContacts = ({ data = [], id }: ISelectedContacts) => (
+export const setSelectedContacts = (
+  selectedContactsFilterName: string,
+  setSelectedContactsAction: ActionFunctionAny<Action<any>>
+) => ({ data = [], id }: ISelectedContacts) => (
   dispatch: Dispatch,
   state: () => IStoreState
 ) => {
   if (data.length) {
-    const selectedContacts = data.map(item => item.id);
-    return dispatch(setSelectedContactsAction({ selectedContacts }));
-  }
-  if (id) {
-    const {
-      filter: { selectedContacts }
-    } = state();
-    const contactsIds = selectedContacts.includes(id)
-      ? selectedContacts.filter((item: number) => item !== id)
-      : [...selectedContacts, id];
+    const selectedContactsList = data.map(
+      ({ id: selectedContactId }: ITableRow) => selectedContactId
+    );
     return dispatch(
-      setSelectedContactsAction({ selectedContacts: contactsIds })
+      setSelectedContactsAction({
+        [selectedContactsFilterName]: selectedContactsList
+      })
     );
   }
-  return dispatch(setSelectedContactsAction({ selectedContacts: [] }));
+
+  if (id) {
+    const {
+      filter: { [selectedContactsFilterName]: selectedContactsList }
+    } = state();
+    const contactsIds = selectedContactsList.includes(id)
+      ? selectedContactsList.filter((item: number) => item !== id)
+      : [...selectedContactsList, id];
+    return dispatch(
+      setSelectedContactsAction({ [selectedContactsFilterName]: contactsIds })
+    );
+  }
+
+  return dispatch(
+    setSelectedContactsAction({ [selectedContactsFilterName]: [] })
+  );
 };

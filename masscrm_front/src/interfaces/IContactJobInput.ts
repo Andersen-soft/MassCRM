@@ -1,3 +1,5 @@
+import { IContactResult } from './IContact';
+
 export interface IContactJobValues {
   [index: string]: string | number | undefined;
   id?: number;
@@ -6,7 +8,8 @@ export interface IContactJobValues {
   link: string;
 }
 
-export type IContactsJobs = Array<IContactJobValues>;
+export type IContactsJobs = IContactJobValues[];
+export type IContacts = IContactResult[];
 
 export interface IJobFormState {
   vacancies: IContactsJobs;

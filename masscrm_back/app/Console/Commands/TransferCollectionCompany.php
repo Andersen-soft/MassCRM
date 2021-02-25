@@ -18,14 +18,16 @@ class TransferCollectionCompany extends Command
      *
      * @var string
      */
-    protected $signature = 'transferCompany:command';
+    protected $signature = 'transferCompany:command
+                            {relations?* : [vacancies, industries]}
+                            {--f|fresh : update to all}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Update company collection fields';
 
     /**
      * Create a new command instance.
@@ -45,6 +47,9 @@ class TransferCollectionCompany extends Command
      */
     public function handle(): void
     {
-        $this->transferCollectionCompanyService->transfer();
+        $this->transferCollectionCompanyService->transfer(
+            $this->argument('relations'),
+            $this->option('fresh')
+        );
     }
 }

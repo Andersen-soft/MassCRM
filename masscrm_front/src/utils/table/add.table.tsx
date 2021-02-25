@@ -43,7 +43,7 @@ export const addContactMapCallback = (
     social_networks,
     emails = [],
     // TODO: fix it
-    company = {} as ICompany,
+    company,
     comment,
     created_at,
     updated_at,
@@ -80,7 +80,7 @@ export const addContactMapCallback = (
     linkedin: companyLinkedin,
     subsidiary,
     created_at: companyCreated
-  } = company;
+  } = company || ({} as ICompany);
 
   const required_validation =
     (emails.length && emails[0]?.verification) || false;
@@ -107,7 +107,7 @@ export const addContactMapCallback = (
     if (isDate && value && typeof value === 'string') {
       return format(new Date(value), 'd.MM.yyyy');
     }
-    if (name === 'linkedin') {
+    if (name === 'linkedin' || 'website') {
       return checkUrl(value as string);
     }
     return value;
@@ -143,7 +143,7 @@ export const addContactMapCallback = (
     textCell({
       id: company?.id,
       name,
-      value: company[name]?.toString(),
+      value: company ? company[name]?.toString() : '',
       required,
       isCompany: true,
       isDate,
@@ -151,17 +151,22 @@ export const addContactMapCallback = (
       formatter: formatterFunction
     });
 
-  const linkCompanyTD = (name: string, required?: boolean) =>
+  const linkCompanyTD = (
+    name: string,
+    required?: boolean,
+    formatterFunction?: FormatterType
+  ) =>
     textCell({
       id: company?.id,
       name,
-      value: company[name]?.toString(),
+      value: company ? company[name]?.toString() : '',
       required,
       isCompany: true,
-      link: company[name]?.toString().split('://')[1],
+      link: company ? company[name]?.toString().split('://')[1] : '',
       type: 'link',
       contact,
-      validation: isWebsite
+      validation: isWebsite,
+      formatter: formatterFunction
     });
 
   const contactLink = textCell({
@@ -251,7 +256,7 @@ export const addContactMapCallback = (
     {
       code: 'company',
       component: companyCell({
-        value: [company],
+        value: company ? [company] : [],
         id: companyId,
         contactID: id,
         type: 'name',
@@ -277,10 +282,14 @@ export const addContactMapCallback = (
         required: true,
         type: 'linkedin',
         validation: isLinkedin,
-        contact
+        contact,
+        formatter
       })
     },
-    { code: 'company_website', component: linkCompanyTD('website') }
+    {
+      code: 'company_website',
+      component: linkCompanyTD('website', false, formatter)
+    }
   ];
 
   const jobInfo = [
@@ -321,7 +330,7 @@ export const addContactMapCallback = (
 
   const dataRow: ITableRow = {
     id: id || 0,
-    cells: !rowsForJob
+    cells: rowsForJob
       ? [
           {
             data: (index + 1).toString()
@@ -394,7 +403,7 @@ export const addContactMapCallback = (
 
   const positionInfo = {
     code: 'position',
-    component: textContactTD('position')
+    component: textContactTD('position', true)
   };
 
   const industryInfo = {
@@ -433,21 +442,36 @@ export const addContactMapCallback = (
   };
 
   if (isMyContact) {
-    const allInfo: Array<ITableCell> = [
-      ...personalInfo,
-      positionInfo,
-      ...companyInfo,
-      ...emailInfo,
-      ...locationInfo,
-      industryInfo,
-      ...jobInfo,
-      commentInfo,
-      ctoInfo,
-      ...dateCompanyInfo,
-      ...workInfo,
-      skypeInfo,
-      birthdayInfo
-    ];
+    const allInfo: Array<ITableCell> = rowsForJob
+      ? [
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          industryInfo,
+          ...jobInfo,
+          commentInfo,
+          ctoInfo,
+          ...dateCompanyInfo,
+          ...workInfo,
+          skypeInfo,
+          birthdayInfo
+        ]
+      : [
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          industryInfo,
+          commentInfo,
+          ctoInfo,
+          ...dateCompanyInfo,
+          ...workInfo,
+          skypeInfo,
+          birthdayInfo
+        ];
 
     if (isNC2) {
       const dataNC2: ITableRow = {

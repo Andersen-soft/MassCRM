@@ -1,10 +1,15 @@
 import React, { ChangeEvent, FC } from 'react';
 import { Autocomplete } from '@material-ui/lab';
-import { Box, FormControl, TextField } from '@material-ui/core';
-import Checkbox from '@material-ui/core/Checkbox';
+import {
+  Box,
+  FormControl,
+  TextField,
+  Checkbox,
+  CircularProgress
+} from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { setMultiFilterValues } from 'src/actions';
-import { getMultiFilterValues } from 'src/selectors';
+import { getMultiFilterValues, getAutocomplete } from 'src/selectors';
 import { IInputFilterProps } from './interfaces';
 import { inputStyle } from '../../../styles/CommonInput.style';
 import { searchStyle } from './InputFilter.style';
@@ -25,7 +30,9 @@ export const InputFilter: FC<IInputFilterProps> = ({
   const style = inputStyle();
   const classes = searchStyle();
   const multiFilterState = useSelector(getMultiFilterValues);
+  const isAutocomplete = useSelector(getAutocomplete);
   const dispatch = useDispatch();
+  const exceptionFields = ['hasJobs', 'noEmail', 'vacancyStatus'];
 
   const handleMultiChange = (
     event: ChangeEvent<{}>,
@@ -51,9 +58,10 @@ export const InputFilter: FC<IInputFilterProps> = ({
     changeFilter({ name, item });
   };
 
-  const handleChangeInput = (event: ChangeEvent<{}>, inputValue: string) => {
-    changeInput && changeInput(inputValue, name);
-  };
+  const handleChangeInput = (event: ChangeEvent<{}>, inputValue: string) =>
+    changeInput &&
+    !exceptionFields.includes(name) &&
+    changeInput(inputValue, name);
 
   const withoutRepeat = (itemsArr: string[], existArr: string[]) => {
     return itemsArr.filter(id => !existArr.includes(id));
@@ -109,6 +117,18 @@ export const InputFilter: FC<IInputFilterProps> = ({
                 name={name}
                 variant='outlined'
                 error={!!errorMessage}
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment:
+                    isAutocomplete && !mainFilter ? (
+                      <>
+                        {params.InputProps.endAdornment}
+                        <CircularProgress color='secondary' size={20} />
+                      </>
+                    ) : (
+                      params.InputProps.endAdornment
+                    )
+                }}
               />
               {!mainFilter && multiSelect && (
                 <CommonButton

@@ -84,18 +84,18 @@ interface ITableHeight {
 
 export const OTHER_HEIGHT: ITableHeight = {
   userTable: '201px',
-  dailyTable: '365px',
-  contactTable: '280px',
-  myContactTable: '280px',
+  dailyTable: '381px',
+  contactTable: '296px',
+  myContactTable: '296px',
   blacklistTable: '520px',
   exportTable: '250px'
 };
 
 export const OTHER_HEIGHT_SMALL_SCREEN: ITableHeight = {
   userTable: '201px',
-  dailyTable: '365px',
-  contactTable: '330px',
-  myContactTable: '330px',
+  dailyTable: '381px',
+  contactTable: '346px',
+  myContactTable: '346px',
   blacklistTable: '520px',
   exportTable: '250px'
 };

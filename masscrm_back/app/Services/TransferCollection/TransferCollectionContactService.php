@@ -205,6 +205,6 @@ class TransferCollectionContactService
         $contact->sale_collection = $this->getSale($contact);
         $contact->is_upload_collection = true;
 
-        $contact->save();
+        $contact->scopeWithoutTimestamps()->save();
     }
 }

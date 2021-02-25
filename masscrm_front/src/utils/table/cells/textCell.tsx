@@ -34,6 +34,14 @@ interface ITextCell {
   ) => string | boolean | undefined;
 }
 
+interface ICompanyOrContactArgs {
+  error: { [key: string]: string[] };
+  inputValue: string;
+  submitFunction: Function;
+  wrongField: string;
+  isUrl?: boolean;
+}
+
 export const textCell = ({
   id,
   name,
@@ -58,13 +66,88 @@ export const textCell = ({
 
       return inputValue;
     },
-    [formatter]
+    [formatter, value]
   );
 
-  const onSubmitHandler = (val?: string | boolean) => {
-    const newValue: IContact = {};
+  const createError = (title: string[], errorName: string) => (data: any) => {
+    const errorsObject = createErrorsObject(title, data);
+    errorsEventEmitter.emit(errorName, {
+      errorsArray: [JSON.stringify(errorsObject)]
+    });
+  };
 
+  const companyOrContact = ({
+    error,
+    inputValue,
+    wrongField,
+    submitFunction,
+    isUrl
+  }: ICompanyOrContactArgs) => {
+    return isCompany
+      ? errorsEventEmitter.emit('companyDuplicateErrors', {
+          errorsObject: [
+            {
+              title: error.website
+                ? [...error.linkedin, ...error.website]
+                : error.linkedin,
+              value: inputValue,
+              submitFunction
+            }
+          ]
+        })
+      : getContact({
+          search: {
+            [wrongField]: isUrl ? checkUrl(inputValue) : inputValue,
+            skip_responsibility: 1
+          }
+        }).then(createError(error[wrongField], 'popUpErrors'));
+  };
+
+  const onSubmitHandler = (
+    val?: string | boolean,
+    skipValidation?: boolean
+  ) => {
+    const newValue: IContact = {};
     newValue[name] = getFormattedValue(val);
+
+    const skip_validation = skipValidation ? 1 : 0;
+    const errorCallback = (inputValue: string) => (errors: string) => {
+      const parseError = JSON.parse(errors);
+      const islinkedInDuplicate = parseError.linkedin
+        ?.toString()
+        .includes('LinkedIn is already used');
+      const isWebsitenDuplicate = parseError.website
+        ?.toString()
+        .includes('website is already');
+
+      if (islinkedInDuplicate) {
+        companyOrContact({
+          error: parseError,
+          inputValue,
+          wrongField: 'linkedin',
+          submitFunction: onSubmitHandler,
+          isUrl: true
+        });
+      }
+      if (isWebsitenDuplicate) {
+        errorsEventEmitter.emit('companyDuplicateErrors', {
+          errorsObject: [
+            {
+              title:
+                islinkedInDuplicate && isWebsitenDuplicate
+                  ? [...parseError.linkedin, ...parseError.website]
+                  : parseError.website || parseError.linkedin,
+              value: checkUrl(inputValue),
+              submitFunction: onSubmitHandler
+            }
+          ]
+        });
+      } else if (errors && !islinkedInDuplicate && !isWebsitenDuplicate) {
+        errorsEventEmitter.emit('snackBarErrors', {
+          errorsArray: [DoubleClickError(errors)]
+        });
+      }
+    };
 
     const FULL_NAME_MAP: { [key: string]: string } = {
       first_name: `${val} ${contact?.last_name}`,
@@ -75,41 +158,10 @@ export const textCell = ({
 
     newValue.full_name = val ? FULL_NAME_MAP[name] : FULL_NAME_MAP.default;
 
-    const errorCallback = (inputValue: string) => (errors: string) => {
-      const parseError = JSON.parse(errors);
-
-      const createError = (title: string[]) => (data: any) => {
-        const errorsObject = createErrorsObject(title, data);
-        errorsEventEmitter.emit('popUpErrors', {
-          errorsArray: [JSON.stringify(errorsObject)]
-        });
-      };
-      if (
-        parseError.linkedin &&
-        parseError.linkedin
-          ?.toString()
-          .includes('This LinkedIn is already used')
-      ) {
-        getContact({
-          search: { linkedin: checkUrl(inputValue), skip_responsibility: 1 }
-        }).then(createError(parseError.linkedin));
-      } else if (
-        parseError.linkedin?.toString().includes('This Email is already used')
-      ) {
-        getContact({
-          search: { linkedin: checkUrl(inputValue), skip_responsibility: 1 }
-        }).then(createError(parseError.linkedin));
-      } else if (errors) {
-        errorsEventEmitter.emit('snackBarErrors', {
-          errorsArray: [DoubleClickError(errors)]
-        });
-      }
-    };
-
     const doAfterSave = () => dispatch(getAddContactList(filter));
 
     return isCompany
-      ? updateCompany(id, newValue, contact?.id)
+      ? updateCompany(id, { ...newValue, skip_validation }, contact?.id)
           .then(doAfterSave)
           .catch(errorCallback(val as string))
       : updateContact(newValue, id)

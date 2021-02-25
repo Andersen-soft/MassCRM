@@ -6,6 +6,7 @@ use App\Models\User\User;
 use App\Search\ActivityLog\Contact\ActivityLogContactIndexConfigurator;
 use App\Search\ActivityLog\Contact\Transformers\ActivityLogContactTransformer;
 use App\Search\ActivityLog\Contact\Rules\ActivityLogContactSearchRule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use ScoutElastic\Searchable;
 
@@ -75,5 +76,12 @@ class ActivityLogContact extends AbstractActivityLog
     public function toSearchableArray(): array
     {
         return (new ActivityLogContactTransformer())->transform($this);
+    }
+
+    public function setIdChangedModel(Model $model, int $id = null): AbstractActivityLog
+    {
+        $this->setContactId($model->contact_id ?? $id);
+
+        return $this;
     }
 }

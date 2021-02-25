@@ -116,7 +116,12 @@ class BlacklistService
             if ($user) {
                 $contact->user()->associate($user);
             }
-            $contact->save();
+            $contact->scopeWithoutTimestamps()->save();
         }
+    }
+
+    public function getBlacklistUsers(): Builder
+    {
+        return $this->blacklistRepository->getListUsers();
     }
 }

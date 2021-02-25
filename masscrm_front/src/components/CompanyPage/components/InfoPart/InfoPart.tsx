@@ -1,14 +1,15 @@
 import React, { FC, useCallback, useMemo, useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { styleNames } from 'src/services';
-import { getCompany, getContacts, getLoader } from 'src/selectors';
+import {
+  getCompany,
+  getCompanyRelatedContacts,
+  getLoader,
+  getUserRoles
+} from 'src/selectors';
 import {
   updateCompany,
-  getOneCompanyRequest,
-  getContact,
-  getRelatedContacts,
-  getIndustriesList,
-  getFiltersData
+  getCompanyWithRelatedContactsRequest
 } from 'src/actions';
 import {
   CommonButton,
@@ -24,25 +25,24 @@ import style from './InfoPart.scss';
 
 const sn = styleNames(style);
 
-const buttonData = [
-  { type: 'companyInfo', label: 'Company Info' },
-  { type: 'jobs', label: 'Jobs' },
-  { type: 'relatedContacts', label: 'Related contacts' }
-];
-
 export const InfoPart: FC<{ id: number }> = ({ id }) => {
   const companyData = useSelector(getCompany);
-  const contactsData = useSelector(getContacts);
+  const relatedContactsData = useSelector(getCompanyRelatedContacts);
   const dispatch = useDispatch();
   const load = useSelector(getLoader);
 
-  const [isActiveTab, setToActiveTab] = useState<string>('companyInfo');
-  const [openEditForm, setOpenEditForm] = useState<boolean>(false);
-  const [openDeleteForm, setOpenDeleteForm] = useState<boolean>(false);
-  const [openMessage, setOpenMessage] = useState<boolean>(false);
-  const [vacancyToEdit, setVacancyToEdit] = useState<IContactJobValues>(
-    {} as IContactJobValues
-  );
+  const [isActiveTab, setToActiveTab] = useState('companyInfo');
+  const [openEditForm, setOpenEditForm] = useState(false);
+  const [openDeleteForm, setOpenDeleteForm] = useState(false);
+  const [openMessage, setOpenMessage] = useState(false);
+  const [vacancyToEdit, setVacancyToEdit] = useState({} as IContactJobValues);
+  const roles = useSelector(getUserRoles);
+
+  const buttonData = [
+    { type: 'companyInfo', label: 'Company Info' },
+    { type: 'jobs', label: !roles.nc1 ? 'Jobs' : '' },
+    { type: 'relatedContacts', label: 'Related contacts' }
+  ];
 
   const handleSetOpenMessage = useCallback(() => {
     setOpenMessage((prevState: boolean) => !prevState);
@@ -56,7 +56,7 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
   );
 
   const onSubmitSuccess = useCallback(() => {
-    id && dispatch(getOneCompanyRequest(id));
+    id && dispatch(getCompanyWithRelatedContactsRequest(id));
   }, [id]);
 
   const getDeleteJob = (jobId: number) => {
@@ -65,7 +65,7 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
 
     updateCompany(companyData.id, {
       vacancies: [...updatedVacancies]
-    }).then(() => dispatch(getOneCompanyRequest(id)));
+    }).then(() => dispatch(getCompanyWithRelatedContactsRequest(id)));
   };
 
   const getVacancyToEdit = (jobId: number) => {
@@ -76,12 +76,8 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
     setVacancyToEdit(jobToEdit);
   };
 
-  const fetchRelatedContacts = async () => {
-    const relatedContacts = await getContact({
-      search: { company: { name: [companyData.name] } }
-    });
-    dispatch(getRelatedContacts({ data: [...relatedContacts] }));
-  };
+  const fetchCompanyWithRelatedContactsRequest = () =>
+    dispatch(getCompanyWithRelatedContactsRequest(id));
 
   const infoPartBody = useCallback(
     (tabName: string) => {
@@ -98,15 +94,17 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
         ),
         relatedContacts: (
           <InfoPartRelatedContacts
-            contacts={contactsData}
+            contacts={relatedContactsData}
             companyId={companyData.id}
-            fetchRelatedContacts={fetchRelatedContacts}
+            fetchCompanyWithRelatedContactsRequest={
+              fetchCompanyWithRelatedContactsRequest
+            }
           />
         )
       };
       return COMPONENTS[tabName] || null;
     },
-    [companyData, contactsData, vacancyToEdit]
+    [companyData, relatedContactsData, vacancyToEdit]
   );
 
   const clickHandler = useCallback(
@@ -132,17 +130,8 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
   );
 
   useEffect(() => {
-    id && dispatch(getOneCompanyRequest(id));
+    id && fetchCompanyWithRelatedContactsRequest();
   }, [id]);
-
-  useEffect(() => {
-    dispatch(getIndustriesList());
-    dispatch(getFiltersData());
-  }, []);
-
-  useEffect(() => {
-    companyData.name && fetchRelatedContacts();
-  }, [companyData]);
 
   return (
     <>
@@ -175,7 +164,7 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
           <CompanyDelete
             handleClose={handleToggleForm(setOpenDeleteForm)}
             open={openDeleteForm}
-            relatedContacts={contactsData}
+            relatedContacts={relatedContactsData}
             handleSetOpenMessage={handleSetOpenMessage}
             id={companyData.id}
           />

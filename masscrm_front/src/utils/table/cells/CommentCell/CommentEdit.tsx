@@ -40,7 +40,7 @@ export const CommentEdit: FC<ICommentCell & ICommentEdit> = ({
     <div className={sn('comment-edit')}>
       <CustomTextarea
         className={sn('comment-edit_text')}
-        value={val}
+        value={val || ''}
         onChange={onChangeHandler}
       />
       <div className={sn('comment-edit_btn')}>

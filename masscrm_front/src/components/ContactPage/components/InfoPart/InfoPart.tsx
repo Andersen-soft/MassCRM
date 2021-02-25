@@ -3,13 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { styleNames } from 'src/services';
 import { getContact } from 'src/selectors';
 import { CommonButton, ContactEdit } from 'src/components/common';
-import {
-  getCountryList,
-  getFiltersData,
-  getIndustriesList,
-  getOneContactRequest,
-  getPreviousCompanies
-} from 'src/actions';
+import { getOneContactRequest, getPreviousCompanies } from 'src/actions';
 import {
   InfoPartCareer,
   InfoPartCampaigns,
@@ -97,9 +91,6 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
 
   useEffect(() => {
     id && dispatch(getOneContactRequest(id));
-    dispatch(getIndustriesList());
-    dispatch(getCountryList());
-    dispatch(getFiltersData());
   }, []);
 
   return (
@@ -119,7 +110,7 @@ export const InfoPart: FC<{ id: number }> = ({ id }) => {
         <ContactEdit
           contact={contactData}
           handleClose={handleToggleEditForm}
-          open={open}
+          open={open && 'edit'}
           autoFocus={autoFocus}
           onSubmitSuccess={onSubmitSuccess}
         />

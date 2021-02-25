@@ -1,6 +1,7 @@
 import React, { FC, useCallback, useState } from 'react';
-import { IContactResult } from 'src/interfaces';
+import { IContacts } from 'src/interfaces';
 import { CommonButton } from 'src/components/common';
+import { getFullName } from 'src/utils/contact';
 import { styleNames } from 'src/services';
 import { InfoPartNoItems } from '..';
 
@@ -10,10 +11,10 @@ import { AddRelatedContactModal } from '../..';
 const sn = styleNames(style);
 
 export const InfoPartRelatedContacts: FC<{
-  contacts: Array<IContactResult>;
+  contacts: IContacts;
   companyId: number;
-  fetchRelatedContacts: Function;
-}> = ({ contacts, companyId, fetchRelatedContacts }) => {
+  fetchCompanyWithRelatedContactsRequest: Function;
+}> = ({ contacts, companyId, fetchCompanyWithRelatedContactsRequest }) => {
   const [open, setOpen] = useState<boolean>(false);
 
   const handleToggleAddRelatedContactForm = useCallback(
@@ -39,9 +40,11 @@ export const InfoPartRelatedContacts: FC<{
                   target='_blank'
                   rel='noreferrer'
                 >
-                  {full_name ||
-                    `${first_name || ''}${last_name ? ' ' : ''}${last_name ||
-                      ''}`}
+                  {getFullName({
+                    firstName: first_name,
+                    lastName: last_name,
+                    fullName: full_name
+                  })}
                 </a>
               ))}
             </div>
@@ -60,7 +63,9 @@ export const InfoPartRelatedContacts: FC<{
           handleClose={handleToggleAddRelatedContactForm}
           open={open}
           companyId={companyId}
-          fetchRelatedContacts={fetchRelatedContacts}
+          fetchCompanyWithRelatedContactsRequest={
+            fetchCompanyWithRelatedContactsRequest
+          }
         />
       )}
     </>

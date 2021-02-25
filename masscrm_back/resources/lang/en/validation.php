@@ -138,6 +138,9 @@ return [
         'company_have_other_type' => 'The company :input have type another type',
         'wrong_count_relation_companies' => 'Wrong quantity relation Holding companies.'
     ],
+    'vacancies' => [
+        'unique' => 'Vacancy already exists',
+    ],
     'company' => [
         'name_unique' => 'The company name :input is already exist',
         'website_unique' => 'This website is already used for :companyName',

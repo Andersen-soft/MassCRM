@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Events\User\CreateSocketUserNotificationEvent;
 use App\Models\Process;
 use App\Models\User\User;
+use App\Models\User\UsersNotification;
 use App\Services\Blacklist\BlacklistExportService;
 use App\Services\Process\ProcessService;
 use Illuminate\Bus\Queueable;
@@ -12,6 +14,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Exception;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Log;
 
 class ExportBlackList implements ShouldQueue
@@ -46,7 +49,16 @@ class ExportBlackList implements ShouldQueue
             $blacklistExportService->export($this->process, $this->search, $this->sort, $this->user);
         } catch (Exception $e) {
             $processService->updateStatusProcess($this->process, Process::TYPE_STATUS_PROCESS_FAILED);
+            $this->notifyError();
             Log::error($e->getMessage());
         }
+    }
+
+    public function notifyError()
+    {
+        CreateSocketUserNotificationEvent::dispatch(
+            UsersNotification::TYPE_EXPORT_BLACKLIST_FAILED,
+            Lang::get('export.blacklist.export_failed')
+        );
     }
 }

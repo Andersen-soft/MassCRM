@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
 return [
+    'Contact_createdBaseModel_id' => 'Добавлен контак :dataNew',
+    'Contact_deletedBaseModel_id' => 'Контакт был удален :dataOld',
     'Contact_addNewValueField_first_name' => 'Добавлена фамилия :dataNew',
     'Contact_addNewValueField_responsible' => 'Добавлен отвественный :dataNew',
     'Contact_addNewValueField_last_name' => 'Добавлено имя :dataNew',
@@ -81,6 +83,8 @@ return [
     'CompanyAttachment_updateAttachmentFile_file_name' => 'Файл :dataOld изменен to Вложении',
     'CompanyAttachment_deleteAttachmentFile_file_name' => 'Файл :dataOld удален из Вложений',
 
+    'Company_createdBaseModel_id' => 'Добавлена компания :dataNew',
+    'Company_deletedBaseModel_id' => 'Компания была удалена :dataOld',
     'Company_addNewValueField_name' => 'Добавлено название компании :dataNew',
     'Company_addNewValueField_website' => 'Добавлен website :dataNew',
     'Company_addNewValueField_linkedin' => 'Добавлена ссылка на LinkedIn :dataNew',

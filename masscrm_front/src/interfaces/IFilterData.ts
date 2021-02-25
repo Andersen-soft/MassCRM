@@ -41,10 +41,13 @@ export interface IFilterData {
   origin?: Array<string>;
   company_type?: Array<string>;
   export_status?: { [key: string]: string };
+  user_roles?: string[];
 }
 
 export interface ISelectedContacts {
-  [key: string]: ITableRow[] | undefined | number;
+  [key: string]: ITableRow[] | undefined | number | string | Function;
   data?: ITableRow[];
   id?: number;
+  setSelectedContactsAction: Function;
+  selectedContactsFilterName: string;
 }

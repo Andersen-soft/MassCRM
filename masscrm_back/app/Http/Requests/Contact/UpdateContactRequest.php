@@ -62,7 +62,7 @@ class UpdateContactRequest extends AbstractRequest
             'social_networks' => 'nullable|array',
             'social_networks.*' => ['string', 'url', new UniqueContactSocialNetwork((int) $this->contact)],
             'comment' => 'nullable|string',
-            'company_id' => 'nullable|integer|exists:companies,id',
+            'company_id' => 'required|integer|exists:companies,id',
             'skype' => 'nullable|string|max:60',
             'origin' => 'array',
             'origin.*' => 'string|in:' . implode(',', $origin),

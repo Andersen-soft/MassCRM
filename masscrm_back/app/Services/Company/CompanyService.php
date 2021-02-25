@@ -11,6 +11,7 @@ use App\Models\Company\Company;
 use App\Models\Company\CompanyVacancy;
 use App\Models\User\User;
 use App\Repositories\Company\CompanyRepository;
+use App\Repositories\Company\VacancyRepository;
 use App\Services\TransferCollection\TransferCollectionCompanyService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,14 +24,19 @@ class CompanyService
 
     private CompanyRepository $companyRepository;
 
+    private VacancyRepository $vacancyRepository;
+
     public function __construct(
         CompanyRepository $repository,
         TransferCollectionCompanyService $transferCollectionCompanyService,
-        CompanyRepository $companyRepository
-    ) {
+        CompanyRepository $companyRepository,
+        VacancyRepository $vacancyRepository
+    )
+    {
         $this->repository = $repository;
         $this->transferCollectionCompanyService = $transferCollectionCompanyService;
         $this->companyRepository = $companyRepository;
+        $this->vacancyRepository = $vacancyRepository;
     }
 
     public function fetchListCompanies(array $search, array $sort): Builder
@@ -102,7 +108,7 @@ class CompanyService
             return $company;
         }
 
-        throw new NotFoundException('Company with ID '.$companyId.' does not exist.');
+        throw new NotFoundException('Company with ID ' . $companyId . ' does not exist.');
     }
 
 
@@ -111,9 +117,13 @@ class CompanyService
         return Company::destroy($companyIds);
     }
 
-    public function getCompany(int $id): Company
+    public function getCompany(int $id, bool $withContacts): Company
     {
         $company = Company::find($id);
+        if ($withContacts) {
+            $company->loadMissing('contacts');
+        }
+
         if ($company instanceof Company) {
             return $company;
         }
@@ -172,15 +182,16 @@ class CompanyService
         $companyVacancy = $company->vacancies()->pluck('vacancy', 'id')->toArray();
         foreach ($vacancies as $vacancy) {
             $query = CompanyVacancy::query();
-            $query = !empty($vacancy['id'])
-                ? $query->where('id', $vacancy['id'])
-                : $query->where('vacancy', $vacancy['job']);
-
-            $newVacancy = $query->first();
-            if ($newVacancy instanceof CompanyVacancy) {
-                unset($companyVacancy[$newVacancy->id]);
-            } else {
+            if (empty($vacancy['id'])) {
                 $newVacancy = new CompanyVacancy();
+            } else {
+                $query = $query->where('id', $vacancy['id']);
+                $newVacancy = $query->first();
+                if ($newVacancy instanceof CompanyVacancy) {
+                    unset($companyVacancy[$newVacancy->id]);
+                } else {
+                    $newVacancy = new CompanyVacancy();
+                }
             }
 
             $newVacancy->vacancy = $vacancy['job'];
@@ -195,5 +206,16 @@ class CompanyService
 
         $company->vacancies_collection = $this->transferCollectionCompanyService->getVacancies($company);
         $company->save();
+    }
+
+    public function deactivateVacancies(int $daysToDeactivate): void
+    {
+        $vacancies = $this->vacancyRepository->deactivateVacanciesByDate($daysToDeactivate);
+
+        if ($vacancies->isNotEmpty()) {
+            $vacancies->pluck(Company::COMPANY_FIELD)->unique(Company::ID_FIELD)->each(function (Company $company) {
+                $this->transferCollectionCompanyService->updateCollectionCompany($company->scopeWithoutTimestamps(), [TransferCollectionCompanyService::RELATION_VACANCIES]);
+            });
+        }
     }
 }

@@ -110,7 +110,6 @@ export const ContactEdit: FC<IContactCell & IContactEdit> = ({
               render={arrayHelpers => (
                 <div>
                   {values.items.map((item, index) => (
-                    // eslint-disable-next-line react/no-array-index-key
                     <div className={sn('list-td_input')} key={index}>
                       <CommonInput
                         name={`items.${index}`}

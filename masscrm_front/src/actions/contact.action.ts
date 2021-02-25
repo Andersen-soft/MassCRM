@@ -1,14 +1,21 @@
 import { createAction } from 'redux-actions';
 import { Dispatch } from 'redux';
 import qs from 'qs';
-import { IContact, IContactFilter, IContactResult } from '../interfaces';
+import { deleteEmptyFields } from 'src/utils/form/objectHelpers';
+import { IContact, IContactFilter, IContactResult } from 'src/interfaces';
+import HTTP, { HTTPFile } from 'src/utils/http';
+import { store } from 'src/store/configureStore';
+import { transformContactForUpdate } from 'src/utils/map';
 import { setNotification } from './notification.action';
-import HTTP, { HTTPFile } from '../utils/http';
 import { setLoaderAction } from './loader.action';
-import { store } from '../store/configureStore';
-import { transformContactForUpdate } from '../utils/map';
-import { deleteEmptyFields } from '../utils/form/objectHelpers';
+import { setAutocompleteAction } from '.';
 
+export const setContactForBindingToCompany = createAction(
+  'SET_CONTACT_FOR_BINDING_TO_COMPANY'
+);
+export const setIsContactForBindingToCompanyUpdated = createAction(
+  'SET_IS_CONTACT_FOR_BINDING_TO_COMPANY_UPDATED'
+);
 export const getContactListAction = createAction('GET_CONTACT_DATA');
 export const getContactPlanAction = createAction('GET_CONTACT_PLAN');
 export const getContactAction = createAction('GET_CONTACT');
@@ -98,8 +105,9 @@ export const getContactPlan = () => async (dispatch: Dispatch) => {
   }
 };
 
-export const getAutocompleteDate = async (filter: IContactFilter) => {
+export const getAutocompleteData = async (filter: IContactFilter) => {
   try {
+    store.dispatch(setAutocompleteAction({ isPending: true }));
     return await HTTP.get('contacts', {
       params: filter,
       paramsSerializer(params) {
@@ -107,7 +115,10 @@ export const getAutocompleteDate = async (filter: IContactFilter) => {
       }
     });
   } catch (error) {
+    store.dispatch(setAutocompleteAction({ isPending: false }));
     throw new Error(JSON.stringify(error.response.data));
+  } finally {
+    store.dispatch(setAutocompleteAction({ isPending: false }));
   }
 };
 

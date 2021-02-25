@@ -7,8 +7,11 @@ import {
   IContactsJobs
 } from 'src/interfaces/IContactJobInput';
 import { contactFormJobsSchema } from 'src/utils/form/validateJobs';
-import { getOneCompanyRequest, updateCompany } from 'src/actions';
-
+import {
+  getCompanyWithRelatedContactsRequest,
+  updateCompany
+} from 'src/actions';
+import { checkJobUrl } from 'src/utils/form/chekUrl';
 import { jobInputStyle } from './AddOrEditFormInput.style';
 
 const INITIAL_VALUES: IContactJobValues = {
@@ -38,22 +41,26 @@ export const AddOrEditJobForm: FC<{
 
   const handleSubmitForm = useCallback(
     (value, actions) => {
+      const checkedUrlValue = checkJobUrl(value);
+
       if (vacancies?.length) {
         updateCompany(companyId, {
           vacancies:
             modalType === 'add'
-              ? [...vacancies, value]
+              ? [...vacancies, checkedUrlValue]
               : [
                   ...vacancies.map(vacancy =>
                     vacancy.id === vacancyToEdit.id
-                      ? { id: vacancy.id, ...value }
+                      ? { id: vacancy.id, ...checkedUrlValue }
                       : vacancy
                   )
                 ]
-        }).then(() => dispatch(getOneCompanyRequest(companyId)));
+        }).then(() =>
+          dispatch(getCompanyWithRelatedContactsRequest(companyId))
+        );
       } else {
-        updateCompany(companyId, { vacancies: [value] }).then(() =>
-          dispatch(getOneCompanyRequest(companyId))
+        updateCompany(companyId, { vacancies: [checkedUrlValue] }).then(() =>
+          dispatch(getCompanyWithRelatedContactsRequest(companyId))
         );
       }
       actions.resetForm();

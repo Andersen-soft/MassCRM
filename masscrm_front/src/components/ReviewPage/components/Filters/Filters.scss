@@ -1,0 +1,33 @@
+.wrapper {
+  width: 19%;
+  padding: 16px 24px;
+  background: #fff;
+}
+
+.form {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+
+  &-filter {
+    margin-bottom: 24px;
+    align-self: stretch;
+
+    &s {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-direction: column;
+      align-self: stretch;
+    }
+  }
+
+  &-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    align-self: stretch;
+  }
+}

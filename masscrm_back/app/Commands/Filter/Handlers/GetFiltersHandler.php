@@ -18,10 +18,11 @@ class GetFiltersHandler
     public const ORIGIN = 'origin';
     public const COMPANY_TYPE = 'company_type';
     public const EXPORT_STATUS = 'export_status';
+    public const USER_ROLES = 'user_roles';
 
     public const FILTERS = [
         self::COLUMN_SEPARATOR, self::CONTACTS_TYPE, self::IMPORT_SOURCE, self::FIELDS, self::GENDERS,
-        self::COMPANY_SIZE, self::ORIGIN, self::COMPANY_TYPE, self::EXPORT_STATUS
+        self::COMPANY_SIZE, self::ORIGIN, self::COMPANY_TYPE, self::EXPORT_STATUS, self::USER_ROLES
     ];
 
     public function handle(GetFiltersCommand $command): array

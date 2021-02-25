@@ -25,6 +25,9 @@ export const searchStyle = makeStyles(() =>
       },
       '& .Mui-error': {
         borderColor: '#fd5757'
+      },
+      '& .MuiCircularProgress-svg': {
+        color: '#feDa00'
       }
     },
     checkbox: {

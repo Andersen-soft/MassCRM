@@ -1,15 +1,15 @@
 import { createSelector } from 'reselect';
 import { IStoreState } from 'src/interfaces/store';
-import { ICompany, IAttachment, IActivityLog } from '../interfaces';
-
-export const getCompanies = createSelector(
-  ({ companies }: IStoreState): Array<ICompany> => companies.data,
-  data => data
-);
+import { ICompany, IAttachment, IActivityLog, IContacts } from '../interfaces';
 
 export const getCompany = createSelector(
-  ({ companies }: IStoreState): ICompany =>
-    companies.data[0] || ({} as ICompany),
+  ({ companies }: IStoreState): ICompany => companies.data || ({} as ICompany),
+  companies => companies
+);
+
+export const getCompanyRelatedContacts = createSelector(
+  ({ companies }: IStoreState): IContacts =>
+    companies.data.contacts || ({} as IContacts),
   companies => companies
 );
 

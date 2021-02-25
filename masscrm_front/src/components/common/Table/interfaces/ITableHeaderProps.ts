@@ -28,4 +28,6 @@ export interface ITableHeaderProps {
   clearAutocompleteList?: () => void;
   isFullTable?: boolean;
   currentPage?: number;
+  setSelectedContacts?: Function;
+  isNC2myContacts?: boolean;
 }

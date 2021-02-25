@@ -2,6 +2,7 @@
 
 use App\Models\Company\Company;
 use App\Models\Process;
+use App\Models\User\User;
 use Illuminate\Support\Facades\Lang;
 
 return [
@@ -126,5 +127,10 @@ return [
             Lang::get('export.statuses.' . Process::TYPE_STATUS_PROCESS_IN_PROGRESS),
         Process::TYPE_STATUS_PROCESS_FAILED => Lang::get('export.statuses.' . Process::TYPE_STATUS_PROCESS_FAILED),
         Process::TYPE_STATUS_PROCESS_DONE => Lang::get('export.statuses.' . Process::TYPE_STATUS_PROCESS_DONE)
+    ],
+    'user_roles' => [
+        User::USER_ROLE_NC1,
+        User::USER_ROLE_NC2,
+        User::USER_ROLE_MANAGER,
     ]
 ];

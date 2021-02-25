@@ -48,7 +48,9 @@ export const TableHeader: FC<ITableHeaderProps> = ({
   clearAutocompleteList,
   isFullTable,
   data,
-  currentPage
+  currentPage,
+  setSelectedContacts,
+  isNC2myContacts
 }) => {
   const dispatch = useDispatch();
   const sortingState = useSelector(getFilterSorting);
@@ -133,7 +135,8 @@ export const TableHeader: FC<ITableHeaderProps> = ({
 
   const canEdit = useMemo(
     () =>
-      hasEdit && (
+      hasEdit &&
+      !isNC2myContacts && (
         <StyledTableCell
           component='th'
           scope='row'
@@ -166,10 +169,11 @@ export const TableHeader: FC<ITableHeaderProps> = ({
               isCheckedAll={isCheckedAll || false}
               onSelectAll={onSelectAll}
               currentPage={currentPage}
+              setSelectedContacts={setSelectedContacts}
             />
           </StyledTableCell>
         )}
-        {hasDelete && (
+        {hasDelete && !isNC2myContacts && (
           <StyledTableCell
             component='th'
             scope='row'

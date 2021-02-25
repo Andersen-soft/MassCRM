@@ -18,7 +18,6 @@ use App\Models\Company\Company;
 use App\Services\Company\CompanyService;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\Company\Company as CompanyResources;
-use Illuminate\Support\Facades\Lang;
 
 class CompanyController extends BaseController
 {
@@ -157,8 +156,8 @@ class CompanyController extends BaseController
     }
 
     /**
-     * @OA\Get(
-     *      path="/companies/{id}",
+     * @OA\GET(
+     *      path="/companies/{id}/contacts",
      *      tags={"Company"},
      *      description="Get company by id",
      *      security={{"bearerAuth":{}}},
@@ -176,9 +175,10 @@ class CompanyController extends BaseController
      *     @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function show(int $id): JsonResponse
+    public function show(int $id, $contacts = null): JsonResponse
     {
-        $company = $this->companyService->getCompany((new getcompanycommand((int)$id))->getContactId());
+        $withContacts = $contacts === 'contacts';
+        $company = $this->companyService->getCompany((new GetCompanyCommand((int)$id))->getContactId(), $withContacts);
 
         return $this->success([new CompanyResources($company)]);
     }

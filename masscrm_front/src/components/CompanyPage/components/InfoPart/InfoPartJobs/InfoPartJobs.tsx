@@ -21,8 +21,8 @@ export const InfoPartJobs: FC<{
   companyId,
   vacancyToEdit
 }) => {
-  const [openAddOrEditForm, setOpenAddOrEditForm] = useState<boolean>(false);
-  const [modalType, setModalType] = useState<string>('');
+  const [openAddOrEditForm, setOpenAddOrEditForm] = useState(false);
+  const [modalType, setModalType] = useState('');
 
   const handleGetDeleteJob = useCallback(
     (id: number) => () => {

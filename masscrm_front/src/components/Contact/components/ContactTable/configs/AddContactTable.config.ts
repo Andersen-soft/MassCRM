@@ -269,7 +269,7 @@ export const TableConfigCallBack = (
   ];
 
   const tableConfig: ITableConfig = {
-    rows: !rowsForJob
+    rows: rowsForJob
       ? [
           { name: '№', hasFilter: false, isFiltered: false },
           ...personalInfo,
@@ -306,21 +306,36 @@ export const TableConfigCallBack = (
   };
 
   if (isMyContact) {
-    const allInfo = [
-      ...personalInfo,
-      positionInfo,
-      ...companyInfo,
-      ...emailInfo,
-      ...locationInfo,
-      industryInfo,
-      ...jobInfo,
-      commentInfo,
-      ctoInfo,
-      ...dateCompanyInfo,
-      ...workInfo,
-      skypeInfo,
-      birthdayInfo
-    ];
+    const allInfo = rowsForJob
+      ? [
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          industryInfo,
+          ...jobInfo,
+          commentInfo,
+          ctoInfo,
+          ...dateCompanyInfo,
+          ...workInfo,
+          skypeInfo,
+          birthdayInfo
+        ]
+      : [
+          ...personalInfo,
+          positionInfo,
+          ...companyInfo,
+          ...emailInfo,
+          ...locationInfo,
+          industryInfo,
+          commentInfo,
+          ctoInfo,
+          ...dateCompanyInfo,
+          ...workInfo,
+          skypeInfo,
+          birthdayInfo
+        ];
 
     if (isFullTable) {
       return {

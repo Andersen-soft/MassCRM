@@ -30,10 +30,10 @@ export const ContactEdit: FC<{
       let companySize = '';
       if (company?.max_employees === 1) {
         companySize = 'Self Employed';
-      } else if (company.max_employees && company.min_employees) {
+      } else if (company?.max_employees && company?.min_employees) {
         companySize = `${company?.min_employees} - ${company?.max_employees}`;
-      } else if (!company.max_employees && company.min_employees) {
-        companySize = `${company.min_employees} +`;
+      } else if (!company?.max_employees && company?.min_employees) {
+        companySize = `${company?.min_employees} +`;
       }
 
       let inputValues: IContactFormInputs = {

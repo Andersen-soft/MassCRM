@@ -39,7 +39,7 @@
     "@material-ui/lab": "^4.0.0-alpha.56",
     "@material-ui/pickers": "^3.2.10",
     "@types/react-lottie": "^1.2.5",
-    "axios": "^0.19.0",
+    "axios": "^0.19.2",
     "classnames": "^2.2.6",
     "date-fns": "^2.16.1",
     "env-cmd": "^10.1.0",

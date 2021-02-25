@@ -27,6 +27,15 @@ export const websocketReducer = handleActions(
         wsData: payload
       };
     },
+    [websocketActionTypes.WEBSOCKET_IMPORT_FAILED]: (
+      state: S,
+      { payload }: Action<any>
+    ): S => {
+      return {
+        ...state,
+        wsData: payload
+      };
+    },
     [websocketActionTypes.WEBSOCKET_EXPORT_BLACKLIST_FINISHED]: (
       state: S,
       { payload }: Action<any>
@@ -36,7 +45,25 @@ export const websocketReducer = handleActions(
         wsData: payload
       };
     },
+    [websocketActionTypes.WEBSOCKET_EXPORT_BLACKLIST_FAILED]: (
+      state: S,
+      { payload }: Action<any>
+    ): S => {
+      return {
+        ...state,
+        wsData: payload
+      };
+    },
     [websocketActionTypes.WEBSOCKET_EXPORT_CONTACT_FINISHED]: (
+      state: S,
+      { payload }: Action<any>
+    ): S => {
+      return {
+        ...state,
+        wsData: payload
+      };
+    },
+    [websocketActionTypes.WEBSOCKET_EXPORT_CONTACT_FAILED]: (
       state: S,
       { payload }: Action<any>
     ): S => {

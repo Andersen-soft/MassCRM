@@ -2,8 +2,10 @@
 
 namespace App\Jobs;
 
+use App\Events\User\CreateSocketUserNotificationEvent;
 use App\Models\Process;
 use App\Models\User\User;
+use App\Models\User\UsersNotification;
 use App\Services\Process\ProcessService;
 use App\Services\Reports\ReportFileService;
 use Exception;
@@ -12,6 +14,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Log;
 
 class ExportContactList implements ShouldQueue
@@ -36,6 +39,8 @@ class ExportContactList implements ShouldQueue
 
     private array $ids;
 
+    private string $token;
+
     public function __construct(
         array $listField,
         array $search,
@@ -44,6 +49,7 @@ class ExportContactList implements ShouldQueue
         User $user,
         Process $process,
         bool $isInWork,
+        string $token,
         array $ids = []
     ) {
         $this->queue = self::EXPORT_BLACKLIST_QUEUE;
@@ -55,6 +61,7 @@ class ExportContactList implements ShouldQueue
         $this->process = $process;
         $this->isInWork = $isInWork;
         $this->ids = $ids;
+        $this->token = $token;
     }
 
     public function handle(): void
@@ -73,11 +80,21 @@ class ExportContactList implements ShouldQueue
                 $this->typeFile,
                 $this->user,
                 $this->isInWork,
-                $this->ids
+                $this->ids,
+                $this->token
             );
         } catch (Exception $e) {
             $processService->updateStatusProcess($this->process, Process::TYPE_STATUS_PROCESS_FAILED);
+            $this->notifyError();
             Log::error($e->getMessage());
         }
+    }
+
+    public function notifyError()
+    {
+        CreateSocketUserNotificationEvent::dispatch(
+            UsersNotification::TYPE_EXPORT_CONTACTS_FAILED,
+            Lang::get('export.contacts.export_failed')
+        );
     }
 }

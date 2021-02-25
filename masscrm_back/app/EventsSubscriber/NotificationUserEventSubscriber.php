@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\EventsSubscriber;
 
+use App\Events\User\CreateSocketUserExportProgressBarEvent;
+use App\Events\User\CreateSocketUserImportProgressBarEvent;
 use App\Services\Notification\NotificationUserService;
 use App\Events\User\RegistrationUserToEmailEvent;
 use App\Events\User\RegistrationUserToActiveDirectoryEvent;
@@ -47,6 +49,16 @@ class NotificationUserEventSubscriber
             CreateSocketUserNotificationEvent::class,
             self::class . '@handleCreateUserNotification'
         );
+
+        $events->listen(
+            CreateSocketUserImportProgressBarEvent::class,
+            self::class . '@handleProgressBarImportNotification'
+        );
+
+        $events->listen(
+            CreateSocketUserExportProgressBarEvent::class,
+            self::class . '@handleProgressBarExportNotification'
+        );
     }
 
     public function handleRegistrationUserActiveDirectory(RegistrationUserToActiveDirectoryEvent $event): void
@@ -78,5 +90,15 @@ class NotificationUserEventSubscriber
             $event->filePath,
             $event->operationId
         );
+    }
+
+    public function handleProgressBarImportNotification(CreateSocketUserImportProgressBarEvent $event): void
+    {
+        $this->notificationUserService->sendNotificationImportProgressBarToSocket($event->percent, $event->importId, $event->token);
+    }
+
+    public function handleProgressBarExportNotification(CreateSocketUserExportProgressBarEvent $event): void
+    {
+        $this->notificationUserService->sendNotificationExportProgressBarToSocket($event->percent, $event->exportId, $event->token);
     }
 }

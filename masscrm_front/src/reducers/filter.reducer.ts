@@ -10,7 +10,10 @@ import {
   setMultiFilterValuesAction,
   setSortValuesAction,
   setSortAction,
-  setSelectedContactsAction
+  setSelectedBlacklistContactsAction,
+  setSelectedAllContactsAction,
+  setSelectedAddContactsAction,
+  setSelectedMyContactsAction
 } from 'src/actions/';
 import {
   initialFiltersState,
@@ -21,6 +24,7 @@ import { initialSortingState } from './tableSorting.reducer';
 import history from '../store/history';
 
 const currentParam = new URLSearchParams(history.location.search);
+
 const getDataByJson = (param: string) =>
   JSON.parse(currentParam.get(param) as string) || null;
 
@@ -37,7 +41,10 @@ const initialState: IFilterStore = {
   usersValues: initialUsersFilterState,
   sort: sorting || initialSortingState,
   sortBy: sortBy || {},
-  selectedContacts: []
+  selectedAllContacts: [],
+  selectedAddContacts: [],
+  selectedMyContacts: [],
+  selectedBlacklistContacts: []
 };
 
 export const filterReducer = handleActions(
@@ -105,7 +112,28 @@ export const filterReducer = handleActions(
       ...state,
       sortBy: { ...payload }
     }),
-    [`${setSelectedContactsAction}`]: (
+    [`${setSelectedAllContactsAction}`]: (
+      state: IFilterStore,
+      { payload }: Action<any>
+    ) => ({
+      ...state,
+      ...payload
+    }),
+    [`${setSelectedBlacklistContactsAction}`]: (
+      state: IFilterStore,
+      { payload }: Action<any>
+    ) => ({
+      ...state,
+      ...payload
+    }),
+    [`${setSelectedMyContactsAction}`]: (
+      state: IFilterStore,
+      { payload }: Action<any>
+    ) => ({
+      ...state,
+      ...payload
+    }),
+    [`${setSelectedAddContactsAction}`]: (
       state: IFilterStore,
       { payload }: Action<any>
     ) => ({

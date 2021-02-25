@@ -8,7 +8,8 @@ import {
   getLdapUserAction,
   onClearFilter,
   getSearchUsers,
-  deleteInactiveUserAction
+  deleteInactiveUserAction,
+  resetUsersFullName
 } from 'src/actions/user.action';
 import { IUsersStore } from 'src/interfaces/store';
 
@@ -56,6 +57,9 @@ export const usersReducer = handleActions(
     },
     [`${onClearFilter}`]: state => {
       return { ...state, ...initialState };
+    },
+    [`${resetUsersFullName}`]: (state, { payload }) => {
+      return { ...state, ...payload };
     }
   },
   initialState

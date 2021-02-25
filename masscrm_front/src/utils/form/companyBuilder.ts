@@ -97,7 +97,7 @@ export class CompanyBuilder {
     return this;
   }
 
-  setSkipValidation(skip_validation: boolean) {
+  setSkipValidation(skip_validation?: boolean) {
     this.skip_validation = skip_validation ? 1 : 0;
     return this;
   }

@@ -29,6 +29,8 @@ interface ITableToolsProps {
   multiFiltersState: IMultiFilterState;
   handleChangeInput: (value: string, name: string) => void;
   resetFilter: (resetObject: FiltersTypes) => void;
+  selectedContacts: number[];
+  rowsForJob?: boolean;
 }
 
 const defaultOptions = {
@@ -46,7 +48,9 @@ export const TableTools: FC<ITableToolsProps> = ({
   filtersState,
   multiFiltersState,
   handleChangeInput,
-  resetFilter
+  resetFilter,
+  selectedContacts,
+  rowsForJob
 }) => {
   const dispatch = useDispatch();
   const importStatus = useSelector(getImportStatus);
@@ -67,6 +71,7 @@ export const TableTools: FC<ITableToolsProps> = ({
         multiFiltersState={multiFiltersState}
         autocompleteValues={autocompleteValues}
         onChangeFilter={onChangeFilter}
+        rowsForJob={rowsForJob}
       />
       <div className={sn('table-tools_item')} />
       <div className={sn('table-tools_item')}>
@@ -92,7 +97,7 @@ export const TableTools: FC<ITableToolsProps> = ({
             </span>
           </div>
         )}
-        {isFullTable && <DownloadReport />}
+        {isFullTable && <DownloadReport selectedContacts={selectedContacts} />}
         <KebabMenu isFullFunctionality={isFullTable} />
       </div>
     </div>

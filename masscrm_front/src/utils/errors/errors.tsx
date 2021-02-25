@@ -1,6 +1,6 @@
 import React from 'react';
 import EditRoundedIcon from '@material-ui/icons/EditRounded';
-import { IContactResult } from '../../interfaces';
+import { IContactResult } from 'src/interfaces';
 
 export const createErrorsObject = (title: string[], data: IContactResult[]) => {
   return data.map(

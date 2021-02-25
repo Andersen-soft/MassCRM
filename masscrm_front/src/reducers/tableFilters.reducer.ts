@@ -58,6 +58,9 @@ export const initialFiltersState: IContactFiltersState = {
   Comment: '',
   noEmail: '',
   mainBounces: [],
+  responsibleRoles: [],
+  hasJobs: 'Disabled',
+  vacancyStatus: 'Active',
   global: {}
 };
 

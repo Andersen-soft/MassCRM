@@ -53,6 +53,5 @@ RUN crontab -l | { cat; echo "3 2 * * * /bin/bash -c /var/www/storage/bash/lembl
 RUN crontab -l | { cat; echo "3 4 * * * /bin/bash -c /var/www/storage/bash/repblacklist.sh"; } | crontab -
 RUN crontab -l | { cat; echo "2 0 * * * /bin/bash -c /var/www/storage/bash/transfcomp.sh"; } | crontab -
 RUN crontab -l | { cat; echo "0 21 * * * /bin/bash -c /var/www/storage/bash/transfcont.sh"; } | crontab -
-#RUN crontab -l | { cat; echo "*/2 * * * * (echo -n \`date\` && echo ' transferContact:command')|tee -a /var/log/docker/cron.log"; } | crontab -
-#RUN service cron start
+RUN crontab -l | { cat; echo "2 3 * * * /bin/bash -c /var/www/storage/bash/deactvac.sh"; } | crontab -
 CMD ["/usr/bin/supervisord"]

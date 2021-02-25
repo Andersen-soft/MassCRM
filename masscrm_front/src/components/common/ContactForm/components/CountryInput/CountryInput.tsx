@@ -1,9 +1,10 @@
-import React, { FC, useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { FC, useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { getCountries } from 'src/selectors';
 import { SearchInput } from 'src/components/common/SearchInput';
 import { ICountry } from 'src/interfaces';
 import { findSubstr } from 'src/utils/string';
+import { getCountryList } from 'src/actions';
 
 export const CountryInput: FC<{
   className: string;
@@ -16,6 +17,8 @@ export const CountryInput: FC<{
   const [matchedCountries, setMatchedCountries] = useState<ICountry[]>(
     countries
   );
+
+  const dispatch = useDispatch();
 
   const countryItems = matchedCountries.map(({ name }: ICountry) => name);
 
@@ -52,6 +55,14 @@ export const CountryInput: FC<{
     },
     [countries]
   );
+
+  useEffect(() => {
+    !countries.length && dispatch(getCountryList());
+  }, []);
+
+  useEffect(() => {
+    setMatchedCountries(countries);
+  }, [countries]);
 
   return (
     <div className={className}>

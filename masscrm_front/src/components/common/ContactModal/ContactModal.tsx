@@ -63,6 +63,7 @@ export const ContactModal: FC<{
             contact={contact}
             setIsTouchedForm={setIsTouchedFormHandle}
             typeModal={open === 'copy' ? 'copy' : 'edit'}
+            shouldGetFiltersData
           />
         </DialogContent>
       </Dialog>

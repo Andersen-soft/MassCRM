@@ -15,9 +15,13 @@ export const blacklistTableConfig: ITableConfig = {
     },
     {
       name: 'user',
-      hasFilter: true,
+      // TODO refine after backend will be implemented
+      // temporarily false due to the absence of corresponding filter on the backend side
+      hasFilter: false,
       isFiltered: false,
-      hasInputFilter: true
+      // TODO refine after backend will be implemented
+      // temporarily false due to the absence of corresponding filter on the backend side
+      hasInputFilter: false
     },
     {
       name: 'date',

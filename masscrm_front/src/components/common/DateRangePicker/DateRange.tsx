@@ -1,5 +1,5 @@
 import React, { FC, useState, useCallback, useEffect } from 'react';
-import { Box } from '@material-ui/core';
+import { Box, makeStyles } from '@material-ui/core';
 import DateFnsUtils from '@date-io/date-fns';
 import { isSameDay } from 'date-fns';
 import { EventNote, Close } from '@material-ui/icons';
@@ -11,6 +11,12 @@ import { IDateRangeProps } from './interfaces/IDateRangeProps';
 
 const sn = styleNames(myStyle);
 
+const useStyles = makeStyles(() => ({
+  fullWidth: {
+    width: '100%'
+  }
+}));
+
 export const DateRange: FC<IDateRangeProps> = ({
   date = [],
   changeFilter,
@@ -19,8 +25,11 @@ export const DateRange: FC<IDateRangeProps> = ({
   singular,
   hasDataRangeFilter,
   resetDateFilter,
+  styleProp,
   ...props
 }) => {
+  const classes = useStyles();
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isCleaned, setIsCleaned] = useState<boolean>(false);
   const handleDate = useCallback(
@@ -59,7 +68,9 @@ export const DateRange: FC<IDateRangeProps> = ({
 
   return (
     <MuiPickersUtilsProvider utils={DateFnsUtils}>
-      <Box className={sn('date-range')}>
+      <Box
+        className={`${sn('date-range')} ${styleProp ? classes[styleProp] : ''}`}
+      >
         <DateRangePicker
           {...props}
           value={date}

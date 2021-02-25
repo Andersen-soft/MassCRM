@@ -47,6 +47,7 @@ RUN crontab -l | { cat; echo "3 2 * * * /bin/bash -c /var/www/storage/bash/lembl
 RUN crontab -l | { cat; echo "3 4 * * * /bin/bash -c /var/www/storage/bash/repblacklist.sh"; } | crontab -
 RUN crontab -l | { cat; echo "2 0 * * * /bin/bash -c /var/www/storage/bash/transfcomp.sh"; } | crontab -
 RUN crontab -l | { cat; echo "0 21 * * * /bin/bash -c /var/www/storage/bash/transfcont.sh"; } | crontab -
+RUN crontab -l | { cat; echo "2 3 * * * /bin/bash -c /var/www/storage/bash/deactvac.sh"; } | crontab -
 RUN php artisan config:cache
 RUN php artisan migrate
 RUN php artisan cache:clear

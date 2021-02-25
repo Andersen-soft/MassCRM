@@ -20,7 +20,8 @@ export const TableRowItem: FC<ITableRowProps> = ({
   config,
   data,
   currentPage,
-  fetchUsers
+  fetchUsers,
+  isNC2myContacts
 }) => {
   const [open, setOpen] = useState<boolean>(false);
   const onSelectHandler = () =>
@@ -57,7 +58,8 @@ export const TableRowItem: FC<ITableRowProps> = ({
 
   const canDeleted = useMemo(
     () =>
-      config.hasDelete && (
+      config.hasDelete &&
+      !isNC2myContacts && (
         <TableCell className='smallTD' component='th' scope='row' key='delete'>
           <CommonIcon
             IconComponent={Delete}
@@ -77,7 +79,8 @@ export const TableRowItem: FC<ITableRowProps> = ({
 
   const canEdit = useMemo(
     () =>
-      config.hasEdit && (
+      config.hasEdit &&
+      !isNC2myContacts && (
         <TableCell component='th' scope='row' key='edit' className='smallTD'>
           <CommonIcon IconComponent={Edit} onClick={onEditHandler(row.id)} />
         </TableCell>

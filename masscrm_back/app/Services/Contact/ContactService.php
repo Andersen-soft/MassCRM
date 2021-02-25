@@ -6,6 +6,8 @@ namespace App\Services\Contact;
 
 use App\Commands\Contact\ChangeResponseContactsCommand;
 use App\Exceptions\Custom\NotFoundException;
+use App\Exceptions\Permission\PermissionException;
+use App\Exceptions\Validation\ValidationRequestException;
 use App\Models\ActivityLog\ActivityLogContact;
 use App\Commands\Contact\DestroyContactsCommand;
 use App\Commands\Contact\GetContactListCommand;
@@ -17,6 +19,7 @@ use Carbon\Carbon;
 use App\Commands\Contact\UpdateContactCommand;
 use App\Commands\Contact\CreateContactCommand;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Lang;
 
 class ContactService
 {
@@ -88,7 +91,13 @@ class ContactService
     public function deleteContacts(DestroyContactsCommand $command): bool
     {
         if (empty($command->getSearch())) {
-            $destroyResult = Contact::destroy($command->getContactsId());
+            $idsToDelete = Contact::query()->whereIn('id', $command->getContactsId())
+                ->when($command->getUser()->hasRole(User::USER_ROLE_NC2), function ($query) use ($command) {
+                    return $query->where('responsible_id', $command->getUser()->id);
+                })
+                ->pluck('id');
+
+            $destroyResult = Contact::destroy($idsToDelete);
         } else {
             $formSearchParams = $this->formSearchParams($command->getSearch());
             $destroyResult = $this->deleteContactListBySearchParams(
@@ -118,8 +127,10 @@ class ContactService
         $searchArr = $searchParams;
         $tmp = $searchArr;
         $search = [];
-        unset($tmp[Company::COMPANY_FIELD]);
-        unset($tmp[ContactSale::SALE]);
+        unset(
+            $tmp[Company::COMPANY_FIELD],
+            $tmp[ContactSale::SALE]
+        );
 
         if (!empty($tmp)) {
             $search[Contact::CONTACT] = $tmp;
@@ -145,6 +156,9 @@ class ContactService
                 $exceptIds
             );
 
+            if ($user->hasRole(User::USER_ROLE_NC2)) {
+                $listOfContacts = $listOfContacts->where('responsible_id', $user->id);
+            }
             $this->baseContactService->contactRepository->deleteContact($listOfContacts);
 
             return true;
@@ -194,6 +208,16 @@ class ContactService
         $contact = $this->baseContactService->contactRepository->getContactById($command->getContactId());
         if (!$contact) {
             throw new NotFoundException('Contact value(' . $command->getContactId() . ') not found');
+        }
+
+        $this->checkUserCanModifyContact($contact, $command->getUser());
+
+        // Check if NC can update someone's contact
+        if ($contact->user != $command->getUser() &&
+            $command->getUser()->hasRole(User::USER_ROLE_NC2) &&
+            $contact->user->hasRole(User::USER_ROLE_NC2) &&
+            optional(optional($contact->company)->vacancies())->exists()) {
+            throw new PermissionException('Permission denied');
         }
 
         $this->contact->updateContact(
@@ -258,9 +282,22 @@ class ContactService
     {
         $contact = Contact::query()->find($contactId);
         if ($contact instanceof Contact) {
+            $contact->loadMissing('company');
             return $contact;
         }
 
         throw new NotFoundException('Contact value(' . $contactId . ') not found');
+    }
+
+    private function checkUserCanModifyContact(Contact $contact, User $user): void
+    {
+        if ($user->hasRole(User::USER_ROLE_NC2) && $contact->getResponsible() !== $user->getId()) {
+            throw new ValidationRequestException([Lang::get('exception.user_can_not_modify_contact')]);
+        }
+    }
+
+    public function getContactsByCompanyId(int $contactId)
+    {
+        return Contact::query()->where('company_id', '=', $contactId);
     }
 }

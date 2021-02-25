@@ -41,18 +41,25 @@ export const companyFormSchema = (roles: IRoles) =>
 export const contactFormSchema = (roles: IRoles) =>
   object().shape({
     formCondition: boolean(),
-    first_name: string().required('Required field'),
-    last_name: string().required('Required field'),
+    first_name: string()
+      .required('Required field')
+      .test('isString', 'Must be a string', val => !Number(val)),
+    last_name: string()
+      .required('Required field')
+      .test('isString', 'Must be a string', val => !Number(val)),
     country: string()
       .required('Required field')
       .nullable(),
     position: string()
       .required('Required field')
+      .test('isString', 'Must be a string', val => !Number(val))
       .nullable(),
     linkedin: string()
       .matches(LINKEDIN_REG_EXP, 'Invalid format')
       .nullable(),
-    company: string().required('Required field'),
+    company: string()
+      .required('Required field')
+      .test('isString', 'Must be a string', val => !Number(val)),
     companyWebSite: string()
       .lowercase()
       .test(

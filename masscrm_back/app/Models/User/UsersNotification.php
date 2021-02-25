@@ -22,8 +22,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class UsersNotification extends Model
 {
     public const TYPE_IMPORT_FINISHED = 'import_finished';
+    public const TYPE_IMPORT_FAILED = 'import_failed';
     public const TYPE_EXPORT_BLACKLIST_FINISHED = 'export_blacklist_finished';
+    public const TYPE_EXPORT_BLACKLIST_FAILED = 'export_blacklist_failed';
     public const TYPE_EXPORT_CONTACTS_FINISHED = 'export_contacts_finished';
+    public const TYPE_EXPORT_CONTACTS_FAILED = 'export_contacts_failed';
     public const TYPE_IS_IN_WORK_UPDATED = 'is_in_work_updated';
 
     protected $fillable = [

@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useMemo } from 'react';
-import { format, max, min } from 'date-fns';
+import { format, max, min, parseISO } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { IContactFilter } from '../interfaces';
 import { getBouncesValue, ROWS_COUNT, VALIDATION_VALUE } from '../utils/table';
@@ -15,7 +15,7 @@ import { GENDERS } from '../constants/genders';
 
 interface IRequestValuesArgs {
   daily?: boolean;
-  myContact?: boolean;
+  myContacts?: boolean;
 }
 
 type IDateFilterType =
@@ -30,11 +30,14 @@ type IDateFilterType =
   | 'Founded';
 
 interface IDefaultValue {
-  requestValues: ({ daily, myContact }: IRequestValuesArgs) => IContactFilter;
+  getRequestValues: ({
+    daily,
+    myContacts
+  }: IRequestValuesArgs) => IContactFilter;
 }
 
 export const FilterContext = React.createContext<IDefaultValue>({
-  requestValues: () => ({})
+  getRequestValues: () => ({})
 });
 
 export const FilterProvider: FC = ({ children }) => {
@@ -54,8 +57,9 @@ export const FilterProvider: FC = ({ children }) => {
 
   const getMinMax = (array: number[]) => ({ min: array[0], max: array[1] });
 
-  const getFormatDateForRequest = (value: Date, view: string) =>
-    format(value, view);
+  const getFormatDateForRequest = (value: Date, view: string) => {
+    return format(value, view);
+  };
 
   const getValidationForRequest = (validation: string) =>
     VALIDATION_VALUE[validation];
@@ -67,13 +71,28 @@ export const FilterProvider: FC = ({ children }) => {
         max: format(new Date(), 'yyyy-MM-dd')
       };
     }
+
+    const isDatesArrayValuesAreStrings = filtersState[name].every(
+      (val: string | Date | number) => typeof val === 'string'
+    );
+    const getDates = isDatesArrayValuesAreStrings
+      ? [
+          parseISO(`${filtersState[name][0]}`),
+          parseISO(`${filtersState[name][1]}`)
+        ]
+      : filtersState[name];
+
+    const getDateValue = (isMinFunc?: boolean) =>
+      filtersState[name]?.length
+        ? getFormatDateForRequest(
+            isMinFunc ? min(getDates) : max(getDates),
+            'yyyy-MM-dd'
+          )
+        : undefined;
+
     return {
-      min: filtersState[name]?.length
-        ? getFormatDateForRequest(min(filtersState[name]), 'yyyy-MM-dd')
-        : undefined,
-      max: filtersState[name]?.length
-        ? getFormatDateForRequest(max(filtersState[name]), 'yyyy-MM-dd')
-        : undefined
+      min: getDateValue(true),
+      max: getDateValue()
     };
   };
 
@@ -82,20 +101,37 @@ export const FilterProvider: FC = ({ children }) => {
       ? filtersState.noEmail.toLowerCase()
       : undefined;
 
-  const requestValues: ({
+  const getHasJobsValue = () => (filtersState.hasJobs === 'Exist' ? '1' : '0');
+
+  const isNC2myContacts = (isMyContacts?: boolean) =>
+    Object.keys(currentUser.roles).includes('nc2') && isMyContacts;
+
+  const getJobsStatus = () => {
+    if (
+      filtersState.vacancyStatus === 'All' ||
+      Object.keys(currentUser.roles).includes('nc1')
+    )
+      return undefined;
+    return filtersState.vacancyStatus === 'Active' ? '1' : '0';
+  };
+
+  const getRequestValues: ({
     daily,
-    myContact
+    myContacts
   }: IRequestValuesArgs) => IContactFilter = useMemo(
-    () => ({ daily, myContact }: IRequestValuesArgs) => ({
+    () => ({ daily, myContacts }: IRequestValuesArgs) => ({
       page: currentPage,
       limit: ROWS_COUNT,
       search: {
-        skip_responsibility: daily || myContact ? 0 : undefined,
+        skip_responsibility:
+          (daily || myContacts) && !isNC2myContacts(myContacts) ? 0 : undefined,
         global: filtersState.global,
         created_at: getMinMaxDate('Contact created', daily),
         updated_at: getMinMaxDate('Contact updated'),
         responsible_id:
-          (daily || myContact) && currentUser.id
+          (daily || myContacts) &&
+          currentUser.id &&
+          !isNC2myContacts(myContacts)
             ? [currentUser.id]
             : filtersState.Responsible,
         first_name: filtersState['First name'] || undefined,
@@ -154,11 +190,15 @@ export const FilterProvider: FC = ({ children }) => {
           jobs: filtersState.Job ? [filtersState.Job] : undefined,
           skills: filtersState['Job Skills']
             ? [filtersState['Job Skills']]
-            : undefined
+            : undefined,
+          has_jobs:
+            filtersState.hasJobs === 'Disabled' ? undefined : getHasJobsValue(),
+          jobs_status: getJobsStatus()
         },
         requires_validation: getValidationForRequest(filtersState.Validation),
         is_in_work: filtersState['In work'].map(item => Number(item === 'Yes')),
-        date_of_use: getMinMaxDate('Date of use')
+        date_of_use: getMinMaxDate('Date of use'),
+        responsible_roles: filtersState.responsibleRoles
       },
       sort: sortBy,
       listField:
@@ -169,7 +209,7 @@ export const FilterProvider: FC = ({ children }) => {
   );
 
   return (
-    <FilterContext.Provider value={{ requestValues }}>
+    <FilterContext.Provider value={{ getRequestValues }}>
       {children}
     </FilterContext.Provider>
   );

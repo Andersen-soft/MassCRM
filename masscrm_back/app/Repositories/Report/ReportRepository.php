@@ -20,7 +20,7 @@ class ReportRepository implements SearchType
     private const FORMAT_MASK_STRING_TO_INT = '9999';
     private ContactRepository $contactRepository;
 
-    //TODO "companies.id" was deleted from groupBy
+
     private const GROUP_BY_QUERY = [
         'contacts.id'
     ];
@@ -52,15 +52,7 @@ class ReportRepository implements SearchType
 
     public function buildQueryReport(array $search, array $sort, array $ids = []): Builder
     {
-        $query = Contact::query()->select(['contacts.*']);
-
-        if (isset($search['global'])) {
-            $data = Contact::search(json_encode($search['global']))->select([Contact::ID_FIELD])->take(1000)->keys();
-            $query->whereIn(Contact::ID_FIELD, $data);
-        }
-
-        $query = $this->getRelationTablesQuery($search, $query);
-        $query = $this->setParamsSearch($search, $query, $ids);
+        $query = $this->buildBaseQueryReport($search, $ids);
         $query = $this->setParamSort($sort, $query);
 
         $query = $query->selectSub('SELECT CONCAT(first_name,\' \',last_name) FROM contacts subContactFirst
@@ -85,10 +77,37 @@ class ReportRepository implements SearchType
         return $query->groupBy(self::GROUP_BY_QUERY);
     }
 
+    public function buildQueryReportCount(array $search, array $ids = []): int
+    {
+        $query = $this->buildBaseQueryReport($search, $ids);
+        $query = $query->distinct(self::GROUP_BY_QUERY);
+
+        return $query->count();
+    }
+
+    private function buildBaseQueryReport(array $search, array $ids = []): Builder
+    {
+        $query = Contact::query()->select(['contacts.*']);
+
+        if (isset($search['global'])) {
+            $data = Contact::search(json_encode($search['global']))->select([Contact::ID_FIELD])->take(1000)->keys();
+            $query->whereIn('contacts.' . Contact::ID_FIELD, $data);
+        }
+
+        $query = $this->getRelationTablesQuery($search, $query);
+        $query = $this->setParamsSearch($search, $query, $ids);
+
+        return $query;
+    }
+
     private function setParamsSearch(array $search, Builder $query, array $ids = []): Builder
     {
-        if (empty($search) || !empty($ids)) {
-            return $query->orWhereIn('id', $ids);
+        if (!empty($ids)) {
+            return $query->whereIn('contacts.id', $ids);
+        }
+
+        if (empty($search)) {
+            return $query;
         }
 
         foreach ($search as $key => $value) {
@@ -165,6 +184,21 @@ class ReportRepository implements SearchType
                         );
                     });
                     break;
+                case SearchType::TYPE_SEARCH_ROLES_USER:
+                    $query->where(static function (Builder $query) use ($value, $key) {
+                        foreach ($value as $item) {
+                            $query->orWhereJsonContains(self::LIST_FIELDS[$key]['field'], $item);
+                        }
+                    });
+                    break;
+                case SearchType::TYPE_SEARCH_FIELD_EXIST_OR_NOT:
+                    filter_var($value, FILTER_VALIDATE_BOOLEAN)
+                        ? $query->has(self::LIST_FIELDS[$key]['field'])
+                        : $query->doesntHave(self::LIST_FIELDS[$key]['field']);
+                    break;
+                case SearchType::TYPE_SEARCH_FIELD_VALUE_SELECT:
+                    $query->where(self::LIST_FIELDS[$key]['field'], '=', $value);
+                    break;
                 default:
                     break;
             }
@@ -224,6 +258,6 @@ class ReportRepository implements SearchType
 
     private function revertValue(string $value): int
     {
-        return (int) mb_eregi_replace('[^0-9]', '', $value);
+        return (int)mb_eregi_replace('[^0-9]', '', $value);
     }
 }

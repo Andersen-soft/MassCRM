@@ -30,13 +30,13 @@ class ContactFields extends BaseModel implements FieldsInterface
         'second' => 'contacts.id'
     ];
 
-    public const JOIN_CONTACT_SOCIAL_NETWORK_TABLE =[
+    public const JOIN_CONTACT_SOCIAL_NETWORK_TABLE = [
         'table' => 'contact_social_networks',
         'first' => 'contact_social_networks.contact_id',
         'second' => 'contacts.id'
     ];
 
-    public const JOIN_CONTACT_PHONES_TABLE  = [
+    public const JOIN_CONTACT_PHONES_TABLE = [
         'table' => 'contact_phones',
         'first' => 'contact_phones.contact_id',
         'second' => 'contacts.id'
@@ -75,6 +75,12 @@ class ContactFields extends BaseModel implements FieldsInterface
         'second' => 'contacts.id'
     ];
 
+    public const JOIN_USERS_TABLE_BY_RESPONSIBLE = [
+        'table' => 'users',
+        'first' => 'users.id',
+        'second' => 'contacts.responsible_id'
+    ];
+
     public const COMPANY_ID_FIELD = 'company_id';
     public const FIRST_NAME_FIELD = 'first_name';
     public const LAST_NAME_FIELD = 'last_name';
@@ -85,6 +91,7 @@ class ContactFields extends BaseModel implements FieldsInterface
     public const LINKEDIN_FIELD = 'linkedin';
     public const SKYPE_FIELD = 'skype';
     public const RESPONSIBLE_ID_FIELD = 'responsible_id';
+    public const RESPONSIBLE_ROLES_FIELD = 'responsible_roles';
     public const RESPONSIBLE = 'responsible';
     public const BIRTHDAY_FIELD = 'birthday';
 
@@ -132,6 +139,13 @@ class ContactFields extends BaseModel implements FieldsInterface
             self::SEARCH => true,
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT,
             self::FIELD => 'contacts.responsible_id'
+        ],
+        self::RESPONSIBLE_ROLES_FIELD => [
+            self::SORT => true,
+            self::SEARCH => true,
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_ROLES_USER,
+            self::FIELD => 'users.roles',
+            self::JOIN => [self::JOIN_USERS_TABLE_BY_RESPONSIBLE]
         ],
         self::CREATED_AT_FIELD => [
             self::SORT => true,

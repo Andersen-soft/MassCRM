@@ -11,7 +11,7 @@ import {
   getRolesSelector
 } from 'src/selectors';
 import {
-  getAutocompleteData,
+  getUsersAutocompleteData,
   getRoles,
   getUsers,
   setPage,
@@ -96,7 +96,7 @@ export const UsersTable: FC = () => {
         [`${rowsSearch?.code}`]: value || undefined
       }
     };
-    const { data } = await getAutocompleteData(searchAutocomplete);
+    const { data } = await getUsersAutocompleteData(searchAutocomplete);
     setLoadedAutocomplete(data);
   }, 500);
 

@@ -1,6 +1,10 @@
 import { createSelector } from 'reselect';
 import { IStoreState } from 'src/interfaces/store';
-import { IBlacklistFiltersState, IBlacklistItem } from '../interfaces';
+import {
+  IBlacklistFiltersState,
+  IBlacklistItem,
+  IBlacklistSearch
+} from '../interfaces';
 
 export const getBlacklistSelector = createSelector(
   (state: IStoreState): Array<IBlacklistItem> => state.blacklist.data || [],
@@ -17,15 +21,19 @@ export const showBlacklistItem = createSelector(
   (data: Array<IBlacklistItem>) => data.length
 );
 
-export const getTotalCount = createSelector(
+export const getBlacklistTotalCount = createSelector(
   (state: IStoreState): number => state.blacklist.total || 1,
   (total: number) => total
 );
 
 export const getBlacklistFilter = createSelector(
-  (state: IStoreState): IBlacklistFiltersState =>
-    state.blacklist.blacklistFilter,
+  (state: IStoreState): IBlacklistFiltersState => state.blacklist.filterValues,
   (filter: IBlacklistFiltersState) => filter
+);
+
+export const getBlacklistFilterSettings = createSelector(
+  (state: IStoreState): IBlacklistSearch => state.blacklist.filterSettings,
+  (filterSettings: IBlacklistSearch) => filterSettings
 );
 
 export const getFiltersUse = createSelector(

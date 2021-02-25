@@ -136,6 +136,7 @@ export interface IContactSearch {
   company?: ICompanySearch;
   is_in_work?: number[];
   date_of_use?: IMinMax;
+  responsible_roles?: string[];
 }
 
 export interface IContactFilter {
@@ -149,24 +150,25 @@ export interface IContactFilter {
 
 export interface IContactSearchDownload {
   [key: string]:
-    | Array<string>
+    | string[]
     | IMinMax
     | string
     | number
     | number[]
-    | undefined;
-  responsible?: Array<string>;
+    | undefined
+    | { roles?: string[] | undefined };
+  responsible?: Array<string> | { roles?: string[] | undefined };
   created?: IMinMax;
   updated?: IMinMax;
   firstName?: string;
   lastName?: string;
   fullName?: string;
-  gender?: Array<string>;
+  gender?: string[];
   dateOfBirth?: IMinMax;
-  country?: Array<string>;
-  city?: Array<string>;
-  region?: Array<string>;
-  location?: Array<string>;
+  country?: string[];
+  city?: string[];
+  region?: string[];
+  location?: string[];
   position?: string[];
   linkedIn?: string;
   otherSocialNetworks?: string;
@@ -174,10 +176,10 @@ export interface IContactSearchDownload {
   skype?: string;
   emails?: string;
   origin?: Array<string>;
-  requiresValidation?: Array<string>;
+  requiresValidation?: string[];
   colleagues?: string;
   colleaguesLink?: string;
-  mailingTool?: Array<string>;
+  mailingTool?: string[];
   id?: number;
   addedToMailing?: IMinMax;
   confidence?: IMinMax;
@@ -192,23 +194,26 @@ export interface IContactSearchDownload {
   mails?: string;
   myNotes?: string;
   saleCreated?: IMinMax;
-  source?: Array<string>;
+  source?: string[];
   saleLink?: string;
-  saleStatus?: Array<string>;
-  saleIs1cProject?: Array<string>;
-  company?: Array<string>;
+  saleStatus?: string[];
+  saleIs1cProject?: string[];
+  company?: string[];
   website?: string;
   companyLinkedIn?: string;
   cto?: string;
-  industries?: Array<string>;
+  industries?: string[];
   companySize?: IMinMax;
-  typeOfCompany?: Array<string>;
+  typeOfCompany?: string[];
   subsidiaryCompanies?: string;
   holdingCompany?: string;
   founded?: IMinMax;
-  jobs?: Array<string>;
-  jobsSkills?: Array<string>;
+  jobs?: string[];
+  jobsSkills?: string[];
   comments?: string;
+  responsible_roles?: string[];
+  has_jobs?: string;
+  jobs_status?: string;
 }
 
 export interface IContactDownload {
@@ -294,6 +299,9 @@ export interface IContactFiltersState {
   Comment: string;
   noEmail: string;
   mainBounces: string[];
+  responsibleRoles: string[];
+  hasJobs: string;
+  vacancyStatus: string;
   global: IGlobalContactSearch;
 }
 

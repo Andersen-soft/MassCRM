@@ -146,7 +146,7 @@ class ParserReplayCsvService extends ParserMain implements ParserServiceInterfac
                     $this->transferCollectionCompanyService->updateCollectionCompany($company);
                 }
 
-                $contact->save();
+                $contact->scopeWithoutTimestamps()->save();
                 $this->transferCollectionContactService->updateCollectionContact($contact);
 
                 try {

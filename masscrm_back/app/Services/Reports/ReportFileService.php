@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\Reports;
 
+use App\Events\User\CreateSocketUserExportProgressBarEvent;
 use App\Events\User\CreateSocketUserNotificationEvent;
+use App\Exceptions\Import\ImportException;
 use App\Jobs\ExportContactList;
 use App\Models\Contact\Contact;
 use App\Models\Process;
@@ -18,6 +20,10 @@ use League\Csv\Writer as CsvWriter;
 
 class ReportFileService extends AbstractReport
 {
+    private const PERCENT_STEP = 5;
+    private const PERCENT = 100;
+    private int $currentElement = 1;
+    private int $currentPercent = 0;
     private const PARAMS_SEARCH_GENERATE_NAME_PROCESS = ['country', 'city', 'company_industries', 'position', 'gender'];
 
     private ReportRepository $reportRepository;
@@ -28,19 +34,25 @@ class ReportFileService extends AbstractReport
         ReportRepository $reportRepository,
         ProcessService $processService,
         Contact $contact
-    ) {
+    )
+    {
         $this->reportRepository = $reportRepository;
         $this->processService = $processService;
         $this->contact = $contact;
     }
 
-    private function fetchReport(Contact $contact, array $pathMethods): array
+    private function fetchReport(Contact $contact, array $pathMethods, ?array $filters = null): array
     {
-        $data = $this->generateReport($contact, $pathMethods);
+        $data = $this->generateReport($contact, $pathMethods, $filters);
 
         $report = [];
         foreach ($pathMethods as $key => $pathMethod) {
             if (array_key_exists($key, $data)) {
+                if (is_array($data[$key]) && array_key_exists($key, self::EXPORT_FIELDS)) {
+                    $report = $this->combineAdditionalFields($report, $data, $key);
+                    continue;
+                }
+
                 if (is_array($data[$key])) {
                     $data[$key] = implode('; ', $data[$key]);
                 }
@@ -61,22 +73,27 @@ class ReportFileService extends AbstractReport
         string $typeFile,
         User $user,
         bool $isInWork,
-        array $ids
+        array $ids,
+        string $token
     ): void
     {
-        $filePath = storage_path('export/report_' . Carbon::now()->timestamp . '.'.$typeFile);
+        $filePath = storage_path('export/report_' . Carbon::now()->timestamp . '.' . $typeFile);
         $writer = CsvWriter::createFromPath($filePath, 'w+');
 
-        $listHeaders = $this->getListHeaders($listField);
+        $listHeaders = $this->getListHeaders($listField, $search);
         $writer->insertOne($listHeaders[self::HEADERS]);
         $data = $this->reportRepository->buildQueryReport($search, $sort, $ids);
+        $contacts = $data->get();
+        $count = $contacts->count();
 
         /** @var Contact $item */
-        foreach ($data->cursor() as $item) {
+        foreach ($contacts as $item) {
+            $this->percentOfExport($count, $process->id, $token);
             $writer->insertOne(
-                $this->fetchReport($item, $listHeaders[self::PATH_METHODS])
+                $this->fetchReport($item, $listHeaders[self::PATH_METHODS], $listHeaders[self::FILTERS])
             );
         }
+        $this->sendNotificationIfCountLessThenMinimum($count, $process->id, $token);
 
         if ($isInWork) {
             $this->contact->updateIsInWorkAndDate($data);
@@ -105,7 +122,8 @@ class ReportFileService extends AbstractReport
         string $typeFile,
         User $user,
         bool $isInWork,
-        array $ids
+        array $ids,
+        string $token
     ): void
     {
         $process = $this->processService->createProcess(
@@ -114,7 +132,7 @@ class ReportFileService extends AbstractReport
             $this->setProcessName($search)
         );
 
-        ExportContactList::dispatch($listField, $search, $sort, $typeFile, $user, $process, $isInWork, $ids);
+        ExportContactList::dispatch($listField, $search, $sort, $typeFile, $user, $process, $isInWork, $token, $ids);
     }
 
     private function setProcessName(array $search): string
@@ -155,5 +173,35 @@ class ReportFileService extends AbstractReport
         }
 
         return $listGender;
+    }
+
+    private function percentOfExport(?int $totalRows, $exportId, $token): void
+    {
+        if(null === $totalRows){
+            throw new ImportException('File does not have total rows', 400);
+        }
+        $elementPercentStep = ceil($totalRows * self::PERCENT_STEP / self::PERCENT);
+
+        if (($this->currentElement % $elementPercentStep) == 0) {
+            $this->currentPercent += self::PERCENT_STEP;
+            CreateSocketUserExportProgressBarEvent::dispatch(
+                $this->currentPercent,
+                $exportId,
+                $token
+            );
+        }
+
+        $this->currentElement ++;
+    }
+
+    private function sendNotificationIfCountLessThenMinimum(int $totalRows, int $exportId, $token): void
+    {
+        if($this->currentElement === $totalRows && $this->currentElement < self::PERCENT_STEP){
+            CreateSocketUserExportProgressBarEvent::dispatch(
+                self::PERCENT,
+                $exportId,
+                $token
+            );
+        }
     }
 }

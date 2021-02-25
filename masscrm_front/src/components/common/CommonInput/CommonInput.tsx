@@ -25,7 +25,8 @@ export const CommonInput: FC<InputProps & ICommonInputProps> = ({
   id,
   name,
   autoFocus,
-  endAdornment
+  endAdornment,
+  isDoubleClick
 }) => {
   const style = inputStyle();
   const [isVisible, setIsVisible] = useState<boolean>(false);
@@ -98,7 +99,17 @@ export const CommonInput: FC<InputProps & ICommonInputProps> = ({
           autoFocus={Boolean(autoFocus && autoFocus === name)}
         />
       </FormControl>
-      {errorMessage && <Box className={style.error}>{errorMessage}</Box>}
+      {errorMessage && (
+        <Box
+          className={
+            isDoubleClick
+              ? style.error
+              : `${style.error} ${style.positionAbsolute}`
+          }
+        >
+          {errorMessage}
+        </Box>
+      )}
     </>
   );
 };

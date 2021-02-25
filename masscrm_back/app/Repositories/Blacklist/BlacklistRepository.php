@@ -6,6 +6,7 @@ namespace App\Repositories\Blacklist;
 
 use App\Exceptions\Custom\NotFoundException;
 use App\Models\Blacklist;
+use App\Models\User\User;
 use App\Models\BlacklistIgnoreDomain;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -107,5 +108,15 @@ class BlacklistRepository
     public function deleteEmailsFromDomain(string $domain): void
     {
         Blacklist::query()->where('domain', 'ILIKE', '%@' . $domain)->delete();
+    }
+
+    public function getListUsers(): Builder
+    {
+        return User::query()->select('users.*')->whereIn('id', function($query) {
+            $query->select(DB::raw('user_id'))
+                ->from('blacklists')
+                ->whereNotNull('user_id')
+                ->distinct();
+        });
     }
 }

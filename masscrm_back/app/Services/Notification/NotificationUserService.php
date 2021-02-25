@@ -134,4 +134,40 @@ class NotificationUserService
 
         $user->notifications()->save($notification);
     }
+
+    public function sendNotificationImportProgressBarToSocket(int $percent, int $importId, $token): void
+    {
+        $client = new Client(config('socket.host') . '?token=' . $token);
+        $data = [
+            'info' => [
+                'type' => 'import_progress_bar',
+                'data' => [
+                    'id' => $importId,
+                    'created_at' => Carbon::now(),
+                    'percent' => $percent,
+                ]
+            ]
+        ];
+        $this->sendNotificationToSocket($data, $client);
+
+        $client->close();
+    }
+
+    public function sendNotificationExportProgressBarToSocket(int $percent, int $exportId, $token): void
+    {
+        $client = new Client(config('socket.host') . '?token=' . $token);
+        $data = [
+            'info' => [
+                'type' => 'export_progress_bar',
+                'data' => [
+                    'id' => $exportId,
+                    'created_at' => Carbon::now(),
+                    'percent' => $percent,
+                ]
+            ]
+        ];
+        $this->sendNotificationToSocket($data, $client);
+
+        $client->close();
+    }
 }

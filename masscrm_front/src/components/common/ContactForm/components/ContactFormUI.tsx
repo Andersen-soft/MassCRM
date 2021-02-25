@@ -9,22 +9,16 @@ import {
   CommonButton,
   CustomMultiInput,
   ContactJobInput,
-  CommonIcon
-} from 'src/components/common/index';
+  CommonIcon,
+  IndustryInput,
+  CompanySizeInput
+} from 'src/components/common';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { CSSTransition } from 'react-transition-group';
-import { Dialog } from '@material-ui/core';
 import { validateEmailFormMulti } from 'src/utils/form/validateEmail';
 import { validatePhoneFormMulti } from 'src/utils/form/validatePhone';
 import { validateSocialNetworkFormMulti } from 'src/utils/form/validateSocialNetwork';
-import {
-  CountryInput,
-  CityInput,
-  CompanyInput,
-  CompanySizeInput,
-  IndustryInput,
-  RegionInput
-} from '.';
+import { CountryInput, CityInput, CompanyInput, RegionInput } from '.';
 import { IContactForm } from '../interfaces';
 import style from '../ContactForm.scss';
 
@@ -35,9 +29,6 @@ export const ContactFormUI = connect<IContactForm & any>(
     isEditedFullName,
     onChangeFullName,
     role,
-    errorDialog,
-    errorsList,
-    closePopup,
     formik: {
       initialValues,
       values,
@@ -326,9 +317,6 @@ export const ContactFormUI = connect<IContactForm & any>(
             </form>
           </div>
         </CSSTransition>
-        <Dialog maxWidth='sm' open={errorsList.open} onClose={closePopup}>
-          {errorDialog(handleSubmit)}
-        </Dialog>
       </div>
     );
   }

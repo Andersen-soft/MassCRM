@@ -2,14 +2,18 @@
 
 namespace App\Observers\Company;
 
+use App\Models\ActivityLog\AbstractActivityLog;
 use App\Models\ActivityLog\ActivityLogCompany;
 use App\Models\Company\Company;
-use Carbon\Carbon;
-use ReflectionClass;
+use App\Services\ActivityLog\ActivityLog;
 
 class CompanyObserver
 {
-    private const NAME_FIELDS = [
+    use ActivityLog;
+
+    private $activeLogClass = ActivityLogCompany::class;
+
+    private static array $updateFieldLog = [
         Company::NAME_FIELD,
         Company::WEBSITE_FIELD,
         Company::LINKEDIN_FIELD,
@@ -22,53 +26,43 @@ class CompanyObserver
         Company::POSITION,
     ];
 
-    public function updated(Company $company): void
+    public function created(Company $company): void
     {
-        foreach ($company->getChanges() as $key => $value) {
-            if (in_array($key, self::NAME_FIELDS, true)) {
-                $activityType = $company->getOriginal($key) === null
-                    ? ActivityLogCompany::ADDED_NEW_VALUE_FIELD_EVENT
-                    : ActivityLogCompany::UPDATE_VALUE_FIELD_EVENT;
-
-                $dataOld = $company->getOriginal($key) instanceof Carbon ?
-                    $company->getOriginal($key)->format(Company::DATE_FORMAT) :
-                    $company->getOriginal($key);
-
-                (new ActivityLogCompany())
-                    ->setCompanyId($company->getId())
-                    ->setUserId($company->getUserId())
-                    ->setActivityType($activityType)
-                    ->setModelName((new ReflectionClass($company))->getShortName())
-                    ->setModelField($key)
-                    ->setDataOld($dataOld)
-                    ->setDataNew($value)
-                    ->setLogInfo($company->getRawOriginal())
-                    ->save();
-            }
-        }
-
-        $this->searchable($company);
+        ($this->createLog(
+            $company,
+            AbstractActivityLog::CREATED_BASE_MODEL_EVENT,
+            AbstractActivityLog::ID_FIELD,
+            $company->getName(),
+        ))->save();
     }
 
-    /**
-     * Handle the User "deleted" event.
-     *
-     * @param  Company $company
-     * @return void
-     */
     public function deleted(Company $company): void
     {
+        ($this->createLog(
+            $company,
+            AbstractActivityLog::DELETED_BASE_MODEL_EVENT,
+            AbstractActivityLog::ID_FIELD,
+            null,
+            $company->getName()
+        ))->save();
+        $this->searchable($company);
+    }
+
+    public function updated(Company $company): void
+    {
+        $this->updateEvent($company);
         $this->searchable($company);
     }
 
     /**
      * Handle the User "deleted" event.
      *
-     * @param  Company $company
+     * @param Company $company
      * @return void
      */
-    private function searchable(Company $company): void {
-        if( $company->contacts()->exists() ) {
+    private function searchable(Company $company): void
+    {
+        if ($company->contacts()->exists()) {
             $company->contacts->searchable();
         }
     }

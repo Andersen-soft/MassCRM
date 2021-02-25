@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use App\Models\Company\Company;
+use App\Models\User\User;
 
 return [
     'column_separator' => [
@@ -102,4 +103,9 @@ return [
     ],
     'origin' => ['NC1', 'NC2', 'Parser', 'Purchase', 'Legacy','Reply', 'Lemlist'],
     'company_type' => [Company::TYPE_COMPANY_HOLDING, Company::TYPE_COMPANY_SUBSIDIARY],
+    'user_roles' => [
+        User::USER_ROLE_NC1,
+        User::USER_ROLE_NC2,
+        User::USER_ROLE_MANAGER,
+    ]
 ];

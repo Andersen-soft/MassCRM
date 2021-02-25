@@ -1,32 +1,26 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace App\Http\Controllers\v1\File;
+declare(strict_types=1);
 
-use App\Http\Controllers\BaseController;
-use App\Http\Requests\File\FileRequest;
+namespace App\Services\File;
+
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class FileController extends BaseController
+class FileService
 {
-    /**
-     * @OA\Get(
-     *      path="/file",
-     *      tags={"File"},
-     *      description="Get file errors from import",
-     *      security={{"bearerAuth":{}}},
-     *      @OA\Parameter(name="name", in="query", required=true,
-     *        @OA\Schema(type="string", example="/var/www/storage")
-     *      ),
-     *      @OA\Response(
-     *        response="200",
-     *        description="File errors from import"
-     *     ),
-     *     @OA\Response(response="400", ref="#/components/responses/400"),
-     *     @OA\Response(response="401", ref="#/components/responses/401")
-     * )
-     */
-    public function getFile(FileRequest $request): BinaryFileResponse
+    public function download(string $file): BinaryFileResponse
     {
-        return response()->download($request->get('name'));
+        ob_end_clean();
+
+        header('Access-Control-Allow-Origin: *');
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/octet-stream');
+        header('Content-Disposition: attachment; filename=' . basename($file));
+        header('Content-Transfer-Encoding: binary');
+        header('Content-Length: ' . filesize($file));
+
+        readfile($file);
+        exit();
     }
 }
+

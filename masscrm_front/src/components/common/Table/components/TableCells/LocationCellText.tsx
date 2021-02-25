@@ -138,6 +138,7 @@ export const LocationCellText: FC<{
           onSubmit={onSubmitHandler}
           onCancel={handleClose}
           items={items}
+          isDoubleClick
         />
       </Popover>
     </>

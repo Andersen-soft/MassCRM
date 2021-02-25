@@ -4,10 +4,17 @@ namespace App\Http\Controllers\v1\File;
 
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\File\FileRequest;
+use App\Services\File\FileService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class FileController extends BaseController
 {
+    public FileService $fileService;
+
+    public function __construct(FileService $fileService)
+    {
+        $this->fileService = $fileService;
+    }
 
     /**
      * @OA\Get(
@@ -25,10 +32,14 @@ class FileController extends BaseController
      *     @OA\Response(response="400", ref="#/components/responses/400"),
      *     @OA\Response(response="401", ref="#/components/responses/401")
      * )
+     * @param FileRequest $request
+     * @return BinaryFileResponse
      */
     public function getFile(FileRequest $request): BinaryFileResponse
     {
-        return response()->download($request->get('name'));
+        $filename = $request->get('name');
+
+        return $this->fileService->download($filename);
     }
 }
 

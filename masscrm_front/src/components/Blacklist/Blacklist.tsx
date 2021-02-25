@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, FC } from 'react';
 import { Header } from '../common/Header';
 import { AddForm } from './components/AddForm';
 import { TablePanel } from './components/TablePanel';
 
-export const Blacklist = () => {
+export const Blacklist: FC<{
+  blacklistPage: boolean;
+}> = ({ blacklistPage }) => {
   const MAX_LINES = 7;
   const [lines, setLines] = useState<null | number>(null);
   const [areaHeight, setAreaHeight] = useState<boolean>(false);
@@ -27,7 +29,11 @@ export const Blacklist = () => {
       <Header />
       <div className='container'>
         <AddForm changeLines={onChangeLines} tall={areaHeight} />
-        <TablePanel showTable={showTable} changeShowTable={onChangeShowTable} />
+        <TablePanel
+          showTable={showTable}
+          changeShowTable={onChangeShowTable}
+          blacklistPage={blacklistPage}
+        />
       </div>
     </>
   );

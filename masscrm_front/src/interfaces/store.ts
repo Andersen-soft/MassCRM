@@ -20,7 +20,6 @@ import {
   IWebsocketStore,
   ISortingObject,
   ISortingState,
-  IBlacklistFiltersState,
   IBlacklistItem,
   IExportStore,
   IPreviousCompany,
@@ -28,8 +27,10 @@ import {
   IActivityLog,
   IImportDataStore,
   IFilter,
-  IFilterValuesUsers
+  IFilterValuesUsers,
+  IContact
 } from '.';
+import { IBlacklistSearch } from './IBlacklist';
 
 export type ILocationStore = ILocations;
 
@@ -42,13 +43,18 @@ export interface ILoaderStore {
   isLoading: boolean;
 }
 
+export interface IAutocompleteStore {
+  isPending: boolean;
+}
+
 export interface IBlacklistStore {
   isFiltersUse: boolean;
   data: Array<IBlacklistItem>;
-  blacklistFilter: IBlacklistFiltersState;
   total?: number;
   per_page?: number;
   showCount: number;
+  filterValues: any;
+  filterSettings: IBlacklistSearch;
 }
 
 export interface IContactStore {
@@ -62,6 +68,8 @@ export interface IContactStore {
   previous_companies?: Array<IPreviousCompany>;
   attachments?: Array<IAttachment>;
   activity_log?: IActivityLog;
+  contactForBindingToCompany?: IContact;
+  isContactForBindingToCompanyUpdated?: boolean;
 }
 
 export interface IUsersStore {
@@ -75,9 +83,8 @@ export interface IUsersStore {
   searchUsers?: Array<IUser>;
   fullName?: string[];
 }
-
 export interface ICompanyStore {
-  data: Array<ICompany>;
+  data: ICompany;
   attachments?: Array<IAttachment>;
   activity_log?: IActivityLog;
 }
@@ -103,6 +110,7 @@ export interface IImportStore {
 }
 
 export interface IFilterStore {
+  [key: string]: any;
   data?: IFilterData;
   settings?: IContactFilter;
   usersSettings: IFilter;
@@ -111,7 +119,10 @@ export interface IFilterStore {
   usersValues?: IFilterValuesUsers;
   sort?: ISortingState;
   sortBy?: ISortingObject;
-  selectedContacts: number[];
+  selectedAllContacts: number[];
+  selectedBlacklistContacts: number[];
+  selectedAddContacts: number[];
+  selectedMyContacts: number[];
 }
 
 export interface IPageStore {
@@ -138,4 +149,5 @@ export interface IStoreState {
   exportData: IExportStore;
   errorData: IErrorStore;
   importData: IImportDataStore;
+  autocomplete: IAutocompleteStore;
 }

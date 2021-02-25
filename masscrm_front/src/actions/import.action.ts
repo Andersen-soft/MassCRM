@@ -209,6 +209,13 @@ export const setFileInfoAction = (fileInfo: { name: string; size: string }) => (
   dispatch(setFileInfo({ fileInfo }));
 };
 
+export const getCountDownloadReport = async (filter: IContactDownload) => {
+  const {
+    data: { count }
+  } = await HTTP.post('contact/reports/download-count', filter);
+  return count;
+};
+
 export const downLoadReport = async (filter: IContactDownload) => {
   try {
     await HTTP.post('contact/reports/download', { ...filter });

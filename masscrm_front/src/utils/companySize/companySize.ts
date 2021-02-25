@@ -1,7 +1,4 @@
-export const createProperty = (
-  propertyName: string,
-  condition?: number | boolean
-) => (condition ? propertyName : '');
+import { createProperty } from 'src/utils/object';
 
 export const getCompanySize = (max?: number, min?: number) => {
   const sizeValues = {

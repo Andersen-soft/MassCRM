@@ -8,7 +8,6 @@ export interface IBlacklistItem {
   updated_at: Date;
   user: IUser;
 }
-
 export interface IBlacklistFiltersState {
   [index: string]: string | Date[];
   blacklist: string;

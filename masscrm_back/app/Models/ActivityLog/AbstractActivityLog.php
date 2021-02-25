@@ -41,6 +41,11 @@ abstract class AbstractActivityLog extends Model
     public const ADDED_NEW_VALUE_FIELD_EVENT = 'addNewValueField';
     public const DELETE_VALUE_FIELD_EVENT = 'deleteValueField';
 
+    public const CREATED_BASE_MODEL_EVENT = 'createdBaseModel';
+    public const DELETED_BASE_MODEL_EVENT = 'deletedBaseModel';
+
+    abstract public function setIdChangedModel(Model $model, int $id = null): AbstractActivityLog;
+
     public function getId(): int
     {
         return $this->id;
@@ -155,5 +160,10 @@ abstract class AbstractActivityLog extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public static function getDefaultActiveLogName(): string
+    {
+        return ActivityLogContact::class;
     }
 }

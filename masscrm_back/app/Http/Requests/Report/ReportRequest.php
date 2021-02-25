@@ -38,6 +38,8 @@ class ReportRequest extends AbstractRequest
             'search.global.to' => 'required_with:search.global.from|date',
             'search.responsible_id' => 'array|min:1',
             'search.responsible_id.*' => 'integer|exists:users,id',
+            'search.responsible_roles' => 'array|min:1',
+            'search.responsible_roles.*' => 'string',
             'search.created' => 'array|size:2',
             'search.created.min' => 'required_with:search.created|date',
             'search.created.max' => 'required_with:search.created|date|after_or_equal:search.created.min',
@@ -143,6 +145,8 @@ class ReportRequest extends AbstractRequest
             'search.company_created.min' => 'required_with:search.company_created|date',
             'search.company_created.max' =>
                 'required_with:search.company_created|date|after_or_equal:search.company_created.min',
+            'search.has_jobs' => 'boolean',
+            'search.jobs_status' => 'boolean',
             'search.jobs' => 'array|min:1',
             'search.jobs.*' => 'string',
             'search.jobs_skills' => 'array|min:1',

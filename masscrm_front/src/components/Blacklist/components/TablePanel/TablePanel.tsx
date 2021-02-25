@@ -36,7 +36,8 @@ const SHOW_COUNTS: Array<IShowCountItem> = [
 
 export const TablePanel = ({
   showTable,
-  changeShowTable
+  changeShowTable,
+  blacklistPage
 }: IPropsTablePanel) => {
   const classes = useStyles();
   const styleTooltip = tooltipStyle();
@@ -128,7 +129,7 @@ export const TablePanel = ({
         </div>
       </div>
       <CSSTransition in={showTable} timeout={400} unmountOnExit>
-        <BlacklistTable showCount={showCount} />
+        <BlacklistTable showCount={showCount} blacklistPage={blacklistPage} />
       </CSSTransition>
       <DownloadReportModal
         open={showReportModal}

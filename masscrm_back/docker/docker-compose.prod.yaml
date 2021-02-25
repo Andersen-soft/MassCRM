@@ -11,6 +11,8 @@ services:
     volumes:
       - /dockerlogs/server_logs_fpm:/var/log/docker
       - /dockerlogs/storage_logs_fpm:/var/www/storage/logs
+      - /opt/masscrm/importSuccess:/var/www/storage/importSuccess
+      - /opt/masscrm/importFiles:/var/www/storage/importFiles
       # - /dockerlogs/files_fpm:/var/www/storage/files
 
 

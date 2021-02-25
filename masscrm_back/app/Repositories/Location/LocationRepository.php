@@ -46,10 +46,36 @@ class LocationRepository
         return Region::query()->with('country')->where('name', 'ILIKE', $name)->first();
     }
 
+    public function countCitiesByName(string $name): int
+    {
+        return City::query()->where('name', 'ILIKE', $name)->count();
+    }
+
     public function getCityByName(string $name): ?City
     {
         return City::query()->with('region', 'region.country')
             ->where('name', 'ILIKE', $name)
+            ->first();
+    }
+
+    public function getCityByNameAndCountryName(string $cityName, string $countryName): ?City
+    {
+        return City::query()->with('region', 'region.country')
+            ->select('cities.*')
+            ->leftJoin('regions', 'cities.region_id', '=', 'regions.id')
+            ->leftJoin('countries', 'regions.country_id', '=', 'countries.id')
+            ->where('cities.name', 'ILIKE', $cityName)
+            ->where('countries.name', 'ILIKE', $countryName)
+            ->first();
+    }
+
+    public function getCityByNameAndRegionName(string $cityName, string $regionName): ?City
+    {
+        return City::query()->with('region', 'region.country')
+            ->select('cities.*')
+            ->leftJoin('regions', 'cities.region_id', '=', 'regions.id')
+            ->where('cities.name', 'ILIKE', $cityName)
+            ->where('regions.name', 'ILIKE', $regionName)
             ->first();
     }
 

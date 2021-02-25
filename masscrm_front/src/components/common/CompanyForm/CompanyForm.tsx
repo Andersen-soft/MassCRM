@@ -1,9 +1,20 @@
-import React, { ChangeEvent, FC, useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, {
+  ChangeEvent,
+  FC,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { Formik, FormikHelpers } from 'formik';
-import { createCompany, updateCompany } from 'src/actions';
-import { getUser, getIndustries } from 'src/selectors';
+import {
+  createCompany,
+  updateCompany,
+  getFiltersData as getFiltersDataAction
+} from 'src/actions';
+import { getUser, getIndustries, getFiltersData } from 'src/selectors';
 import { ICompany } from 'src/interfaces';
 import { companyFormSchema } from 'src/utils/form/validate';
 import { OccupiedMessage, DefaultPopUp } from 'src/components/common/PopUp';
@@ -37,6 +48,9 @@ export const CompanyForm: FC<{
   const isFullForm = Boolean(roles?.manager || roles?.superAdmin);
   const [errorsList, setErrorsList] = useState<IErrorsContact>({ open: false });
   const history = useHistory();
+  const dispatch = useDispatch();
+
+  const filtersData = useSelector(getFiltersData);
 
   const formForVacancies = Boolean(
     roles?.nc2 || roles?.manager || roles?.superAdmin
@@ -174,6 +188,10 @@ export const CompanyForm: FC<{
     closePopup,
     errorsList
   };
+
+  useEffect(() => {
+    !Object.keys(filtersData).length && dispatch(getFiltersDataAction());
+  }, []);
 
   return (
     <Formik

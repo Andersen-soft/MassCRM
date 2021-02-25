@@ -19,6 +19,7 @@ import {
 import { useTabsState } from 'src/hooks/tabs.hook';
 import { ErrorEmitterContext } from 'src/context';
 import { useContext } from 'react';
+import { getUser } from 'src/selectors';
 import { Tabs, TabsConfig, TabConfig } from '../common/Tabs';
 import { MessageModal } from '../common/MessageModal';
 import { UploadingSettings } from './ImportModalTabs/UploadingSettings';
@@ -60,6 +61,7 @@ let ALERT_TIMEOUT: NodeJS.Timeout;
 
 export const ImportModal: React.FC<Props> = props => {
   const importStore = useSelector((state: IStoreState) => state.import);
+  const currentUser = useSelector(getUser);
   const fieldsList = importStore.formState.fields;
   const fieldsSchema = yup.mixed().oneOf(fieldsList);
   const classes = useStyles();
@@ -71,6 +73,15 @@ export const ImportModal: React.FC<Props> = props => {
     handleClearErrors
   } = useContext(ErrorEmitterContext);
 
+  const REQUIRED_FIELDS: string[] = [
+    'First Name',
+    'Last Name',
+    'Email',
+    'Company',
+    'Country',
+    'Title',
+    'Industry'
+  ];
   const TABS_LIST = TABS_CONFIG.map((tabConfig: TabConfig) => tabConfig.key);
   const DEFAULT_SELECTED_TAB = importTabs || TABS_CONFIG[0].key;
   const TABS_STATE_PARAMS = {
@@ -112,64 +123,62 @@ export const ImportModal: React.FC<Props> = props => {
     dispatch(importActions.startImportingAction(data));
   };
 
-  const checkEmailOrCompany = () => {
-    const missingMail = !fieldsSchema.isValidSync('Email') ? 'Email' : '';
-    const missingCompany = !fieldsSchema.isValidSync('Company')
-      ? 'Company'
-      : '';
-    const and = missingMail && missingCompany ? ' and ' : '';
-
-    return missingMail || missingCompany
-      ? `Please select required columns: ${missingMail}${and}${missingCompany}`
-      : '';
-  };
-
-  const checkSequenceOrStatus = () => {
-    if (
-      fieldsSchema.isValidSync('Sequence') &&
-      !fieldsSchema.isValidSync('Status')
-    ) {
-      return 'Please select "Status" or skip "Sequence"';
-    }
-    if (
-      fieldsSchema.isValidSync('Status') &&
-      !fieldsSchema.isValidSync('Sequence')
-    ) {
-      return 'Please select "Sequence" or skip "Status"';
-    }
-    return '';
-  };
-
-  const checkJob = () => {
-    if (
-      !fieldsSchema.isValidSync('Job') &&
-      fieldsSchema.isValidSync('Job skills') &&
-      fieldsSchema.isValidSync('Job url')
-    ) {
-      return 'Please select "Job" or skip "Job skills" and "Job url"';
-    }
-    if (
-      !fieldsSchema.isValidSync('Job') &&
-      fieldsSchema.isValidSync('Job skills')
-    ) {
-      return 'Please select "Job" or skip "Job skills"';
-    }
-    if (
-      !fieldsSchema.isValidSync('Job') &&
-      fieldsSchema.isValidSync('Job url')
-    ) {
-      return 'Please select "Job" or skip "Job url"';
-    }
-    return '';
+  const checkRequiredField = () => {
+    const isNC2User = Object.keys(currentUser.roles).includes('nc2');
+    return REQUIRED_FIELDS.reduce((acc: string[], cur: string) => {
+      if (isNC2User && !fieldsSchema.isValidSync('Job')) {
+        return [...acc, 'Please select required columns: "Job"'];
+      }
+      if (
+        fieldsSchema.isValidSync('Sequence') &&
+        !fieldsSchema.isValidSync('Status')
+      ) {
+        return [...acc, 'Please select "Status" or skip "Sequence"'];
+      }
+      if (
+        fieldsSchema.isValidSync('Status') &&
+        !fieldsSchema.isValidSync('Sequence')
+      ) {
+        return [...acc, 'Please select "Sequence" or skip "Status"'];
+      }
+      if (
+        !fieldsSchema.isValidSync('Job') &&
+        fieldsSchema.isValidSync('Job skills') &&
+        fieldsSchema.isValidSync('Job url') &&
+        !isNC2User
+      ) {
+        return [
+          ...acc,
+          'Please select "Job" or skip "Job skills" and "Job url"'
+        ];
+      }
+      if (
+        !fieldsSchema.isValidSync('Job') &&
+        fieldsSchema.isValidSync('Job skills') &&
+        !isNC2User
+      ) {
+        return [...acc, 'Please select "Job" or skip "Job skills"'];
+      }
+      if (
+        !fieldsSchema.isValidSync('Job') &&
+        fieldsSchema.isValidSync('Job url') &&
+        !isNC2User
+      ) {
+        return [...acc, 'Please select "Job" or skip "Job url"'];
+      }
+      return !fieldsSchema.isValidSync(cur)
+        ? [...acc, `Please select required columns: ${cur}`]
+        : [...acc];
+    }, []);
   };
 
   const form = useFormik({
     initialValues: importStore.formState,
     validateOnBlur: false,
     validateOnChange: true,
-
     onSubmit: handleSubmit
   });
+
   const { disabledTabs, isContinueDisabled } = React.useMemo(
     () =>
       getDisabledInfo({
@@ -209,11 +218,7 @@ export const ImportModal: React.FC<Props> = props => {
 
   const handleCheckRequiredFieldsErr = React.useCallback(
     (selectedTab: string | number) => {
-      const onlyIfErrors = [
-        checkEmailOrCompany(),
-        checkSequenceOrStatus(),
-        checkJob()
-      ].filter(Boolean);
+      const onlyIfErrors = [...new Set(checkRequiredField())];
       const errorsArray: JSX.Element[] = snackBarErrors.concat(
         SnackErrorBarData(onlyIfErrors)
       );

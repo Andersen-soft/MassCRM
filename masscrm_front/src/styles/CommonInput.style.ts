@@ -73,7 +73,9 @@ export const inputStyle = makeStyles(() =>
     error: {
       color: '#FD5757',
       marginTop: '4px',
-      fontSize: '0.85em',
+      fontSize: '0.85em'
+    },
+    positionAbsolute: {
       position: 'absolute'
     },
     dialogError: {

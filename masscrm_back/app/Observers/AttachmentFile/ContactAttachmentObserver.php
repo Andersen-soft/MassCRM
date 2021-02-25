@@ -2,51 +2,37 @@
 
 namespace App\Observers\AttachmentFile;
 
-use App\Models\AttachmentFile\ContactAttachment;
+use App\Models\ActivityLog\AbstractActivityLog;
 use App\Models\ActivityLog\ActivityLogContact;
-use ReflectionClass;
+use App\Models\AttachmentFile\ContactAttachment;
+use App\Services\ActivityLog\ActivityLog;
 
 class ContactAttachmentObserver
 {
+    use ActivityLog;
+
+    private $activeLogClass = ActivityLogContact::class;
+
     private const FIELD_FILE_NAME = 'file_name';
 
     public function created(ContactAttachment $contactAttachment): void
     {
-        (new ActivityLogContact())
-            ->setContactId($contactAttachment->getContactId())
-            ->setUserId($contactAttachment->getUserId())
-            ->setActivityType(ActivityLogContact::STORE_ATTACHMENT_FILE_EVENT)
-            ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
-            ->setModelField(self::FIELD_FILE_NAME)
-            ->setDataNew($contactAttachment->getFileName())
-            ->setLogInfo($contactAttachment->getRawOriginal())
-            ->save();
+        $this->createEvent($contactAttachment, self::FIELD_FILE_NAME);
     }
 
     public function updated(ContactAttachment $contactAttachment): void
     {
-        (new ActivityLogContact())
-            ->setContactId($contactAttachment->getContactId())
-            ->setUserId($contactAttachment->getUserId())
-            ->setActivityType(ActivityLogContact::UPDATE_ATTACHMENT_FILE_EVENT)
-            ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
-            ->setModelField(self::FIELD_FILE_NAME)
-            ->setDataOld($contactAttachment->getOriginal(self::FIELD_FILE_NAME))
-            ->setDataNew($contactAttachment->getFileName())
-            ->setLogInfo($contactAttachment->getRawOriginal())
-            ->save();
+        ($this->createLog(
+            $contactAttachment,
+            AbstractActivityLog::UPDATE_ATTACHMENT_FILE_EVENT,
+            self::FIELD_FILE_NAME,
+            $contactAttachment->getFileName(),
+            $contactAttachment->getOriginal(self::FIELD_FILE_NAME)
+        ))->save();
     }
 
     public function deleting(ContactAttachment $contactAttachment): void
     {
-        (new ActivityLogContact())
-            ->setContactId($contactAttachment->getContactId())
-            ->setUserId($contactAttachment->getUserId())
-            ->setActivityType(ActivityLogContact::DELETE_ATTACHMENT_FILE_EVENT)
-            ->setModelName((new ReflectionClass($contactAttachment))->getShortName())
-            ->setModelField(self::FIELD_FILE_NAME)
-            ->setDataOld($contactAttachment->getOriginal(self::FIELD_FILE_NAME))
-            ->setLogInfo($contactAttachment->getRawOriginal())
-            ->save();
+        $this->deleteEvent($contactAttachment, self::FIELD_FILE_NAME);
     }
 }

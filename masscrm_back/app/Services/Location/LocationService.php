@@ -49,10 +49,25 @@ class LocationService
         return null;
     }
 
-    public function findLocations(string $location): ?Location
+    public function findLocations(string $location, array $options = []): ?Location
     {
         $loc = new Location();
-        $city = $this->locationRepository->getCityByName($location);
+        $citiesCount = $this->locationRepository->countCitiesByName($location);
+
+        if ($citiesCount > 1) {
+            $city = null;
+
+            if (isset($options['region'])) {
+                $city = $this->locationRepository->getCityByNameAndRegionName($location, $options['region']);
+            }
+
+            if (!$city instanceof City && isset($options['country'])) {
+                $city = $this->locationRepository->getCityByNameAndCountryName($location, $options['country']);
+            }
+        } else {
+            $city = $this->locationRepository->getCityByName($location);
+        }
+
         if ($city instanceof City) {
             $loc->setCity($city)
                 ->setRegion($city->region)

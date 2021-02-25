@@ -6,6 +6,7 @@ use App\Models\Company\Fields\CompanyFields;
 use App\Models\Contact\Contact;
 use App\Models\Industry;
 use App\Models\User\User;
+use App\Scopes\disableTimestampsScope;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -34,6 +35,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Company extends CompanyFields
 {
+    use disableTimestampsScope;
+
     public const SIZE_FIELD = 'comp_size';
     public const TYPE_COMPANY_SUBSIDIARY = 'Subsidiary';
     public const TYPE_COMPANY_HOLDING = 'Holding';

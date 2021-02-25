@@ -11,20 +11,19 @@ import {
   DateRange,
   CustomMultiInput,
   ContactCompany,
-  ContactJobInput
-} from 'src/components/common/index';
+  ContactJobInput,
+  IndustryInput,
+  CompanyTypeInput,
+  CompanySizeInput
+} from 'src/components/common';
 import { format, parse } from 'date-fns';
-import { Dialog } from '@material-ui/core';
 import { IContactForm } from '../interfaces';
 import {
   CountryInput,
   CityInput,
   CompanyInput,
-  CompanySizeInput,
-  IndustryInput,
   OriginInput,
-  RegionInput,
-  CompanyTypeInput
+  RegionInput
 } from '.';
 import style from '../ContactForm.scss';
 
@@ -83,9 +82,6 @@ export const ContactFormModalUI = connect<IContactForm & any>(
     handleChangeFirstLastName,
     setFieldValueHandler,
     setFieldValues,
-    errorDialog,
-    errorsList,
-    closePopup,
     autoFocus
   }) => {
     const onChangeConfidence = (val: number) =>
@@ -333,6 +329,7 @@ export const ContactFormModalUI = connect<IContactForm & any>(
                 <CompanyTypeInput
                   onChange={setFieldValueHandler}
                   value={company_type}
+                  name='company_type'
                 />
               )}
             </div>
@@ -406,9 +403,6 @@ export const ContactFormModalUI = connect<IContactForm & any>(
             onClickHandler={handleSubmit}
           />
         </div>
-        <Dialog maxWidth='sm' open={errorsList.open} onClose={closePopup}>
-          {errorDialog(handleSubmit)}
-        </Dialog>
       </form>
     );
   }

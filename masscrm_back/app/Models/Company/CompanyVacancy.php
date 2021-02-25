@@ -1,7 +1,10 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace App\Models\Company;
 
+use App\Scopes\disableTimestampsScope;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -21,10 +24,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class CompanyVacancy extends Model
 {
+    use disableTimestampsScope;
+
+    public const ACTIVE = true;
+    public const IN_ACTIVE = false;
     public const JOBS = 'jobs';
     public const VACANCY = 'vacancy';
     public const SKILLS = 'skills';
     public const LINK = 'link';
+    public const FIELD_ACTIVE = 'active';
 
     protected $fillable = [
         'id',

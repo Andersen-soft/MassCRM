@@ -4,16 +4,19 @@ export const mainFilterStyle = makeStyles(() =>
   createStyles({
     filterWrapper: {
       display: 'flex',
-      alignItems: 'center',
+      flexFlow: 'row wrap',
+      alignItems: 'baseline',
       position: 'relative'
     },
     title: {
       fontSize: '18px',
       lineHeight: '18px',
-      marginRight: '55px'
+      minWidth: '100px'
     },
-    littleInput: {
-      width: '160px'
+    inputWrapper: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      alignItems: 'center'
     },
     normalInput: {
       width: '230px'
@@ -22,7 +25,28 @@ export const mainFilterStyle = makeStyles(() =>
       '& .MuiOutlinedInput-root': {
         paddingRight: '0px !important'
       },
-      marginRight: '16px'
+      margin: '8px 0 8px 16px'
+    },
+    resetButton: {
+      marginLeft: '24px'
+    },
+    dropButton: {
+      display: 'flex',
+      alignItems: 'center',
+      border: 'none',
+      outline: 'none',
+      cursor: 'pointer',
+      backgroundColor: 'transparent',
+      color: '#78829D',
+      fontSize: '12px',
+      marginLeft: '10px'
+    },
+    dropWrapper: {
+      width: '100%',
+      marginLeft: '100px'
+    },
+    hiddenFilterWrapper: {
+      maxWidth: '750px'
     }
   })
 );

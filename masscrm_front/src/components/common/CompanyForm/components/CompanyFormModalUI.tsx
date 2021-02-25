@@ -8,11 +8,13 @@ import {
   CommonButton,
   DateRange,
   ContactCompany,
-  ContactJobInput
+  ContactJobInput,
+  IndustryInput,
+  CompanyTypeInput,
+  CompanySizeInput
 } from 'src/components/common';
 import { format, parse } from 'date-fns';
 import { ICompanyForm } from '../interfaces';
-import { CompanySizeInput, IndustryInput, CompanyTypeInput } from '.';
 
 import style from '../CompanyForm.scss';
 
@@ -129,6 +131,7 @@ export const CompanyFormModalUI = connect<ICompanyForm & any>(
                 <CompanyTypeInput
                   onChange={setFieldValueHandler}
                   value={type}
+                  name='type'
                 />
               )}
             </div>

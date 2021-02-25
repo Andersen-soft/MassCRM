@@ -25,7 +25,7 @@ export const Contact: FC<{
   const dataLength = useSelector(getContactsLength);
   const showContact = useSelector(getShowContact);
   const isFullTable = !!userRole?.manager || !!userRole?.superAdmin;
-  const rowsForJob = Boolean(userRole?.nc1);
+  const rowsForJob = Boolean(userRole?.nc2);
   const title = useMemo(
     () => (userRole?.nc1 || userRole?.nc2 ? 'My contacts' : 'All contacts'),
     [userRole]
@@ -51,7 +51,9 @@ export const Contact: FC<{
       addContactsPage && (
         <>
           <DailyPlan />
-          <ContactForm />
+          <ContactForm
+            shouldGetFiltersData={!(addContactsPage || myContactPage)}
+          />
         </>
       ),
     [addContactsPage, isFullTable]
@@ -65,7 +67,7 @@ export const Contact: FC<{
 
   return (
     <>
-      <Header daily={addContactsPage} myContact={myContactPage} />
+      <Header daily={addContactsPage} myContacts={myContactPage} />
       <div className='container'>
         <div className={sn('add-contact')}>
           {tools}
@@ -75,7 +77,7 @@ export const Contact: FC<{
               daily={addContactsPage}
               isFullTable={isFullTable}
               rowsForJob={rowsForJob}
-              myContact={myContactPage}
+              myContacts={myContactPage}
             />
           </div>
         </div>

@@ -88,6 +88,7 @@ export const TableCellText: FC<ITableCellText> = ({
           onCancel={handleClose}
           type={type}
           switchValue={switchValue}
+          isDoubleClick
         />
       </Popover>
     </>

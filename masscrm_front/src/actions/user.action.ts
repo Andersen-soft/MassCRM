@@ -6,17 +6,19 @@ import patchEditUser from 'src/services/patchEditUser';
 import getRolesReq from 'src/services/getRolesReq';
 import qs from 'qs';
 import Cookies from 'js-cookie';
-import HTTP from '../utils/http';
+import HTTP from 'src/utils/http';
 import {
   IFilter,
   IStoreState,
   IUser,
   IUsersFiltersRequestValues
-} from '../interfaces';
-import { IAddUserFormInputs } from '../components/UsersCRM/AddUserForm';
+} from 'src/interfaces';
+import { IAddUserFormInputs } from 'src/components/UsersCRM/AddUserForm';
+import { SnackErrorBarData } from 'src/utils/errors';
+import { BACKEND_COMMON_ERROR } from 'src/constants/errors';
+import { store } from 'src/store/configureStore';
 import { setLoaderAction } from './loader.action';
-import { SnackErrorBarData } from '../utils/errors';
-import { BACKEND_COMMON_ERROR } from '../constants/errors';
+import { setAutocompleteAction } from '.';
 
 export const setUserDataAction = createAction('SET_USER_DATA');
 export const setError = createAction('SET_ERROR');
@@ -27,6 +29,7 @@ export const onClearFilter = createAction('CLEAR_FILTER_USERS');
 export const getRolesAction = createAction('GET_ROLES');
 export const getSearchUsers = createAction('GET_SEARCH_USERS');
 export const deleteInactiveUserAction = createAction('DELETE_INACTIVE_USER');
+export const resetUsersFullName = createAction('RESET_USERS_FULL_NAME');
 
 export const getUserData = (payload: {
   login: string;
@@ -128,8 +131,9 @@ export const searchUsers = (filter: IFilter) => async (dispatch: Dispatch) => {
   dispatch(getSearchUsers({ searchUsers: data, fullName }));
 };
 
-export const getAutocompleteData = async (filter: IFilter) => {
+export const getUsersAutocompleteData = async (filter: IFilter) => {
   try {
+    store.dispatch(setAutocompleteAction({ isPending: true }));
     return await HTTP.get(`users`, {
       params: filter,
       paramsSerializer(params) {
@@ -137,7 +141,10 @@ export const getAutocompleteData = async (filter: IFilter) => {
       }
     });
   } catch (error) {
+    store.dispatch(setAutocompleteAction({ isPending: false }));
     throw new Error(JSON.stringify(error.response.data));
+  } finally {
+    store.dispatch(setAutocompleteAction({ isPending: false }));
   }
 };
 

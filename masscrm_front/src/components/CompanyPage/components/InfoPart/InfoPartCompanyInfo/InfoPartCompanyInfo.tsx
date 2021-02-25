@@ -99,7 +99,7 @@ export const InfoPartCompanyInfo: FC<{ companyData: ICompany }> = ({
     },
     {
       title: 'Company Linkedin',
-      value: linkedin && <LinkedinField link={linkedin} linkType='linkedin' />
+      value: <LinkedinField link={linkedin} linkType='linkedin' />
     },
     {
       title: 'Industry',

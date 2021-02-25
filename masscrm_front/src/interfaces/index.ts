@@ -30,3 +30,4 @@ export * from './IMinMax';
 export * from './ISort';
 export * from './IInfoItem';
 export * from './ILinkedinField';
+export * from './IMainFiltersConfig';

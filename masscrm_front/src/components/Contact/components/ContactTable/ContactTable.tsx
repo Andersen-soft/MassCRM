@@ -11,13 +11,17 @@ import { styleNames } from 'src/services';
 import {
   deleteContactList,
   getAddContactList,
-  getAutocompleteDate,
+  getAutocompleteData,
   setFilterSettings,
   setPage,
   setFilterValues,
   setMultiFilterValues,
-  getAutocompleteData,
-  getUsersById
+  getUsersAutocompleteData,
+  getUsersById,
+  setSelectedContacts,
+  setSelectedAllContactsAction,
+  setSelectedAddContactsAction,
+  setSelectedMyContactsAction
 } from 'src/actions';
 import {
   getContacts,
@@ -27,9 +31,11 @@ import {
   getMultiFilterValues,
   getCompanySizeFilter,
   getCompanyTypesFilter,
+  getRolesFilter,
   getLoader,
   getFilterValues,
-  getSortBy
+  getSortBy,
+  getSelectedContacts
 } from 'src/selectors';
 import {
   addContactMapCallback,
@@ -39,6 +45,7 @@ import {
   deleteItemFilter,
   addItemFilter
 } from 'src/utils/table/add.table';
+import { setLocalStorageItem } from 'src/utils/localStorage';
 import { TableBase, Loader, ContactEdit } from 'src/components/common';
 import {
   IContactResult,
@@ -60,6 +67,9 @@ import {
 } from 'src/reducers/tableFilters.reducer';
 import { getOtherHeight, INITIAL_IS_BIG_SCREEN } from 'src/utils/table';
 import { FilterContext } from 'src/context';
+import { getSelectedEntity } from 'src/utils/selectedEntity';
+import { useLocation, useHistory } from 'react-router-dom';
+import { TABLE_DEFAULT_INIT_URL } from 'src/constants';
 import { TableConfigCallBack } from './configs/AddContactTable.config';
 import style from '../../Contact.scss';
 import { TableTools } from '../TableTools';
@@ -77,18 +87,32 @@ export const ContactTable: FC<{
   daily?: boolean;
   isFullTable: boolean;
   rowsForJob: boolean;
-  myContact?: boolean;
-}> = ({ daily, isFullTable, rowsForJob, myContact }) => {
+  myContacts?: boolean;
+}> = ({ daily, isFullTable, rowsForJob, myContacts }) => {
   const TOTAL_COUNT = useSelector((state: IStoreState) => state.contacts.total);
   const companySizeAutocomplete = useSelector(getCompanySizeFilter);
   const originsAutocomplete = useSelector(getOriginsFilter);
   const companyTypesAutocomplete = useSelector(getCompanyTypesFilter);
+  const userRolesAutocomplete = useSelector(getRolesFilter);
   const filtersState = useSelector(getFilterValues);
   const multiFiltersState = useSelector(getMultiFilterValues);
   const filtersSettings = useSelector(getFilterSettings);
+
+  const selectedContacts = useSelector(
+    getSelectedContacts(
+      getSelectedEntity({
+        addContactsVal: 'selectedAddContacts',
+        myContactsVal: 'selectedMyContacts',
+        allContactsVal: 'selectedAllContacts',
+        addContactsCompProp: daily,
+        myContactsCompProp: myContacts
+      })
+    )
+  );
+
   const sortBy = useSelector(getSortBy);
-  const { requestValues } = useContext(FilterContext);
-  const filtersObject = requestValues({ daily, myContact });
+  const { getRequestValues } = useContext(FilterContext);
+  const requestValues = getRequestValues({ daily, myContacts });
   const { listField } = filtersSettings;
   const [isBigScreen, setIsBigScreen] = useState<boolean>(
     INITIAL_IS_BIG_SCREEN
@@ -97,7 +121,10 @@ export const ContactTable: FC<{
 
   const currentPage: number = useSelector(getCurrentPage);
 
-  const otherHeightWithoutDaily = myContact
+  const { search: filterQueriesString } = useLocation();
+  const history = useHistory();
+
+  const otherHeightWithoutDaily = myContacts
     ? getOtherHeight(isBigScreen).myContactTable
     : getOtherHeight(isBigScreen).contactTable;
 
@@ -135,7 +162,7 @@ export const ContactTable: FC<{
 
   const paramURL = new URLSearchParams(window.location.search);
 
-  const contact: Array<IContactResult> = useSelector(getContacts) || [];
+  const contacts: Array<IContactResult> = useSelector(getContacts) || [];
   const [open, setOpen] = useState<TOpen>(false);
   const [editContact, setEditContact] = useState<IContactResult>();
 
@@ -150,7 +177,7 @@ export const ContactTable: FC<{
     ? tableConfigRows.filter(({ code }) => !code || listField?.includes(code))
     : tableConfigRows;
 
-  const dataTable = contact?.map(
+  const dataTable = contacts?.map(
     addContactMapCallback(isFullTable, rowsForJob, !daily, listField)
   );
 
@@ -159,13 +186,13 @@ export const ContactTable: FC<{
   const onChangeData = () => false;
 
   const getData = useCallback(
-    () => dispatch(getAddContactList(filtersObject)),
-    [requestValues]
+    () => dispatch(getAddContactList(requestValues)),
+    [getRequestValues]
   );
 
   const deleteData = (ids: Array<number>) => {
     if (new URLSearchParams(window.location.search).get('selectAll') === 'on') {
-      deleteContactList([], filtersObject).then(getData);
+      deleteContactList([], requestValues).then(getData);
     } else {
       deleteContactList(ids).then(getData);
     }
@@ -195,7 +222,7 @@ export const ContactTable: FC<{
     debounce((value: string, name: string) => {
       if (!value.length) return;
       const isResponsible = name === 'Responsible';
-      const isSkipResponsible: number = daily || myContact ? 0 : 1;
+      const isSkipResponsible: number = daily || myContacts ? 0 : 1;
       const objectRequest = isResponsible
         ? { search: { fullName: value } }
         : MAP_AUTOCOMPLETE_RESPONSE[name](
@@ -204,10 +231,10 @@ export const ContactTable: FC<{
             isSkipResponsible
           );
       if (isResponsible) {
-        getAutocompleteData(objectRequest).then(onResponsibleFullfilled);
+        getUsersAutocompleteData(objectRequest).then(onResponsibleFullfilled);
         return;
       }
-      getAutocompleteDate(objectRequest).then(onOtherfulfilled);
+      getAutocompleteData(objectRequest).then(onOtherfulfilled);
     }, 300),
     [loadedAutocomplete]
   );
@@ -282,7 +309,10 @@ export const ContactTable: FC<{
       'In work': ['Yes', 'No'],
       blacklist: ['Yes', 'No'],
       Bounces: ['Yes', 'No'],
-      noEmail: ['Exclude', 'Include', 'Only']
+      noEmail: ['Exclude', 'Include', 'Only'],
+      responsibleRoles: userRolesAutocomplete,
+      hasJobs: ['Exist', 'Absent', 'Disabled'],
+      vacancyStatus: ['Active', 'Archive', 'All']
     }),
     [autocompleteCallback, loadedAutocomplete]
   );
@@ -351,27 +381,67 @@ export const ContactTable: FC<{
   };
 
   const handleEdit = (idContact: number, type: TOpen = 'edit') => {
-    setEditContact(contact.find(({ id }) => idContact === id));
+    setEditContact(contacts.find(({ id }) => idContact === id));
     setOpen(type);
   };
 
   const count = TOTAL_COUNT && Math.ceil(TOTAL_COUNT / ROWS_COUNT);
 
+  const initialLocalStorageValues = (localStorageKey: string) => {
+    const localStorageFilters = localStorage.getItem(localStorageKey);
+
+    return localStorageFilters ? JSON.parse(localStorageFilters) : {};
+  };
+
+  const setLocalStorageFilters = setLocalStorageItem(
+    'filterQueriesString',
+    filterQueriesString
+  );
+
+  const localStorageBasicConfig = {
+    addContactsCompProp: daily,
+    myContactsCompProp: myContacts,
+    addContactsVal: 'addContacts',
+    myContactsVal: 'myContacts',
+    allContactsVal: 'allContacts'
+  };
+
+  const currPageName = getSelectedEntity(localStorageBasicConfig);
+
+  const setLocalStorage = (updateStorageFunc: Function) => {
+    updateStorageFunc(currPageName);
+  };
+
   useEffect(() => {
-    dispatch(setFilterSettings(requestValues({ daily, myContact })));
+    if (filterQueriesString) {
+      if (!filterQueriesString.includes(TABLE_DEFAULT_INIT_URL)) {
+        return setLocalStorage(setLocalStorageFilters);
+      }
+      return localStorage.removeItem(currPageName);
+    }
+    const storageFilterQueriesString = initialLocalStorageValues(currPageName)
+      ?.filterQueriesString;
+
+    return (
+      storageFilterQueriesString &&
+      history.push({
+        search: storageFilterQueriesString
+      })
+    );
+  }, [filterQueriesString]);
+
+  useEffect(() => {
+    dispatch(setFilterSettings(requestValues));
   }, [currentPage, filtersState, sortBy]);
 
   useEffect(() => {
-    if (
-      JSON.stringify(requestValues({ daily, myContact })) !==
-      JSON.stringify(filtersSettings)
-    ) {
+    if (JSON.stringify(requestValues) !== JSON.stringify(filtersSettings)) {
       getData();
     }
-  }, [requestValues]);
+  }, [getRequestValues]);
 
   useEffect(() => {
-    if (contact?.length) setVisibleTable(true);
+    if (contacts?.length) setVisibleTable(true);
   }, [dataTable]);
 
   useEffect(() => {
@@ -412,7 +482,8 @@ export const ContactTable: FC<{
       filtersState,
       multiFiltersState,
       autocompleteValues,
-      onChangeFilter
+      onChangeFilter,
+      rowsForJob
     }),
     [filtersState, multiFiltersState, getAutocompleteObj]
   );
@@ -427,10 +498,41 @@ export const ContactTable: FC<{
     };
   }, []);
 
+  const getSelectedEntitiesBasicConfig = {
+    addContactsCompProp: daily,
+    myContactsCompProp: myContacts
+  };
+
+  const handleSetSelectedContacts = useMemo(
+    () =>
+      setSelectedContacts(
+        getSelectedEntity({
+          addContactsVal: 'selectedAddContacts',
+          myContactsVal: 'selectedMyContacts',
+          allContactsVal: 'selectedAllContacts',
+          ...getSelectedEntitiesBasicConfig
+        }),
+        getSelectedEntity({
+          addContactsVal: setSelectedAddContactsAction,
+          myContactsVal: setSelectedMyContactsAction,
+          allContactsVal: setSelectedAllContactsAction,
+          ...getSelectedEntitiesBasicConfig
+        })
+      ),
+    [
+      setSelectedAllContactsAction,
+      setSelectedAddContactsAction,
+      setSelectedMyContactsAction,
+      daily,
+      myContacts,
+      selectedContacts
+    ]
+  );
+
   return (
     <>
       {!daily ? (
-        <TableTools {...mainFiltersProps} />
+        <TableTools {...mainFiltersProps} selectedContacts={selectedContacts} />
       ) : (
         <div className={sn('main-filter-wrapper')}>
           <MainFilters {...mainFiltersProps} />
@@ -445,7 +547,7 @@ export const ContactTable: FC<{
             changeFilter={onChangeFilter}
             resetFilter={resetFilter}
             data={dataTable}
-            requestValues={filtersObject}
+            requestValues={requestValues}
             changeInput={handleChangeInput}
             onChangeData={onChangeData}
             onDeleteData={deleteData}
@@ -454,6 +556,9 @@ export const ContactTable: FC<{
             count={count}
             otherHeight={otherHeight}
             isFullTable={isFullTable}
+            isMyContacts={myContacts}
+            setSelectedContacts={handleSetSelectedContacts}
+            selectedContacts={selectedContacts}
           />
         ) : (
           <div className={sn('data-mess')}>No data to display</div>

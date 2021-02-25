@@ -120,7 +120,7 @@ class ImportService
             ]);
 
             ImportContactsJob::dispatch(
-                new ImportContactsDto($command, $filePath, $process)
+                new ImportContactsDto($command, $filePath, $process, $command->getToken())
             );
 
         } catch (ImportException $e) {

@@ -135,15 +135,16 @@ class ImportCompany
             return $sizes;
         }
 
-        list($size) = explode(' ', $size);
+        $replace = ['+', '.', ',', '-',' '];
+
         if (strpos($size, '+') !== false) {
-            $sizes['min'] = (int)str_replace(['+', '.', ','], '', $size);
+            $sizes['min'] = (int)str_replace(['+', '.', ',',' '], '', $size);
         } elseif (strpos($size, '-') !== false) {
-            list($min, $max) = explode('-', $size);
-            $sizes['min'] = (int)$min;
-            $sizes['max'] = (int)$max;
+            [$min, $max] = explode('-', $size);
+            $sizes['min'] = (int)str_replace($replace, '', $min);
+            $sizes['max'] = (int)str_replace($replace, '', $max);
         } else {
-            $sizes['max'] = (int)str_replace(['+', '.', ',', '-'], '', $size);
+            $sizes['max'] = (int)str_replace($replace, '', $size);
         }
 
         return $sizes;

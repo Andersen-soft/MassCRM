@@ -1,13 +1,9 @@
-import React, { ChangeEvent, FC, useEffect, useState } from 'react';
+import React, { ChangeEvent, FC, useEffect, useState, useRef } from 'react';
 import { TableContainer, TableBody, Table, Paper } from '@material-ui/core';
 import { Pagination } from '@material-ui/lab';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  getContactListRequest,
-  setPage,
-  setSelectedContacts
-} from 'src/actions';
-import { getCurrentPage, getLoader, getSelectedContacts } from 'src/selectors';
+import { getContactListRequest, setPage } from 'src/actions';
+import { getCurrentPage, getLoader, getUser } from 'src/selectors';
 import { useLocation } from 'react-router-dom';
 import { AxiosResponse } from 'axios';
 import { TableHeader, TableRowItem } from './components';
@@ -30,31 +26,48 @@ export const TableBase: FC<ITableProps> = ({
   clearAutocompleteList,
   otherHeight,
   isFullTable,
-  requestValues
+  requestValues,
+  setSelectedContacts,
+  selectedContacts,
+  isMyContacts
 }) => {
   const dispatch = useDispatch();
   const location = useLocation();
+  const scrollRef = useRef<HTMLTableElement>(null);
   const load = useSelector(getLoader);
-  const selectedContacts = useSelector(getSelectedContacts);
+  const currentUser = useSelector(getUser);
   const style = tableStyle({ otherHeight });
 
   const [filteredBy, setFilteredBy] = useState<Array<string>>([]);
   const currentPage = useSelector(getCurrentPage);
 
-  const onDeleteSelected = (id?: number) =>
-    onDeleteData && (id ? onDeleteData([id]) : onDeleteData(selectedContacts));
+  const isNC2myContacts =
+    Object.keys(currentUser.roles).includes('nc2') && isMyContacts;
 
   const onSelectRow = (item: number) =>
-    dispatch(setSelectedContacts({ id: item }));
+    setSelectedContacts && dispatch(setSelectedContacts({ id: item }));
 
-  const onSelectAll = () => dispatch(setSelectedContacts({ data }));
+  const handleDeleteMultipleContacts = () => {
+    onDeleteData && selectedContacts && onDeleteData(selectedContacts);
+    setSelectedContacts && dispatch(setSelectedContacts({}));
+  };
+
+  const onDeleteSelected = (id?: number) =>
+    onDeleteData && (id ? onDeleteData([id]) : handleDeleteMultipleContacts());
+
+  const onSelectAll = () =>
+    setSelectedContacts && dispatch(setSelectedContacts({ data }));
 
   const onFilteredBy = () => {
     return setFilteredBy(state => state.filter(id => !filteredBy.includes(id)));
   };
 
+  const tableScrollUp = () =>
+    scrollRef.current && scrollRef.current.scrollIntoView();
+
   const onChangePage = (event: ChangeEvent<unknown>, page: number) => {
     dispatch(setPage(page));
+    tableScrollUp();
   };
 
   const tableConfig: ITableConfig = {
@@ -77,16 +90,27 @@ export const TableBase: FC<ITableProps> = ({
     const param = new URLSearchParams(location.search);
     const selectAll = param.get('selectAll');
     const selectAllOnPage = param.get('selectAllOnPage');
-    if (selectAll || selectAllOnPage === String(currentPage)) {
-      dispatch(setSelectedContacts({ data }));
-    }
-    if (selectAllOnPage && selectAllOnPage !== String(currentPage)) {
+    const page = param.get('page');
+
+    const handleSelectedContacts = (pageNumber: string | null) => {
       getContactListRequest({
         ...requestValues,
-        page: Number(selectAllOnPage)
-      }).then((contactList: AxiosResponse) =>
-        dispatch(setSelectedContacts({ data: contactList.data }))
+        page: Number(pageNumber)
+      }).then(
+        (contactList: AxiosResponse) =>
+          setSelectedContacts &&
+          dispatch(setSelectedContacts({ data: contactList.data }))
       );
+    };
+
+    if (selectAll) {
+      handleSelectedContacts(page);
+    }
+    if (selectAllOnPage && selectAllOnPage === String(currentPage)) {
+      handleSelectedContacts(selectAllOnPage);
+    }
+    if (selectAllOnPage && selectAllOnPage !== String(currentPage)) {
+      setSelectedContacts && dispatch(setSelectedContacts({}));
     }
   }, [location]);
 
@@ -96,7 +120,7 @@ export const TableBase: FC<ITableProps> = ({
         component={Paper}
         classes={{ root: `${style.customTable} ${style.tableHeight}` }}
       >
-        <Table stickyHeader aria-label='sticky table'>
+        <Table stickyHeader aria-label='sticky table' ref={scrollRef}>
           <TableHeader
             data={data}
             changeInput={changeInput}
@@ -108,6 +132,8 @@ export const TableBase: FC<ITableProps> = ({
             clearAutocompleteList={clearAutocompleteList}
             isFullTable={isFullTable}
             currentPage={currentPage}
+            setSelectedContacts={setSelectedContacts}
+            isNC2myContacts={isNC2myContacts}
           />
           <TableBody
             classes={{ root: `${style.customBody} ${load && style.tableBlur}` }}
@@ -121,6 +147,7 @@ export const TableBase: FC<ITableProps> = ({
                   data={tableConfig.body}
                   currentPage={currentPage}
                   fetchUsers={fetchUsers}
+                  isNC2myContacts={isNC2myContacts}
                 />
               ))}
             {load && <Loader />}

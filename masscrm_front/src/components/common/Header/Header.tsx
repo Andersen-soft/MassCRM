@@ -26,6 +26,10 @@ import {
 } from 'src/actions';
 import { INotification, INotificationPayload } from 'src/interfaces';
 import { FilterContext } from 'src/context';
+import {
+  localStorageContactPageNames,
+  removeLocalStorageItems
+} from 'src/utils/localStorage';
 import { Logo } from '../Logo';
 import style from './Header.scss';
 import { ExitIcon } from '../ExitIcon';
@@ -42,19 +46,20 @@ function Alert(props: AlertProps) {
   return <MuiAlert elevation={6} variant='filled' {...props} />;
 }
 
-export const Header: FC<{ daily?: boolean; myContact?: boolean }> = ({
+export const Header: FC<{ daily?: boolean; myContacts?: boolean }> = ({
   daily,
-  myContact
+  myContacts
 }) => {
   const [open, setOpen] = useState(false);
-  const [openModal, setOpenModal] = useState<boolean>(false);
+  const [openModal, setOpenModal] = useState(false);
+
   const onClose = () => setOpenModal(false);
   const { location } = window;
   const userRole = useSelector(getUserRoles);
   const roles = Object.keys(userRole);
   const classes = useStyles();
   const dispatch = useDispatch();
-  const { requestValues } = useContext(FilterContext);
+  const { getRequestValues } = useContext(FilterContext);
 
   const RESULT: { [key: string]: Function } = {
     export_blacklist_finished: (id: number, data: INotificationPayload) => {
@@ -80,7 +85,7 @@ export const Header: FC<{ daily?: boolean; myContact?: boolean }> = ({
       setOpenModal(true);
     },
     is_in_work_updated: (id: number, data: INotificationPayload) => {
-      dispatch(getAddContactList(requestValues({ daily, myContact })));
+      dispatch(getAddContactList(getRequestValues({ daily, myContacts })));
       if (data.new) {
         changeViewed(id).then(() => dispatch(getNotification()));
       }
@@ -94,6 +99,8 @@ export const Header: FC<{ daily?: boolean; myContact?: boolean }> = ({
     logout().then(() => {
       Cookies.remove('token');
       location.href = '/';
+
+      removeLocalStorageItems(localStorageContactPageNames);
     });
   }, []);
 
@@ -105,6 +112,7 @@ export const Header: FC<{ daily?: boolean; myContact?: boolean }> = ({
     if (roles.length > 0) {
       return rolesConfig.availablePages[roles[0]]?.map(url => {
         const name = header[url.split('/')[1]];
+
         return (
           name && (
             <Link

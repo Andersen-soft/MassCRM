@@ -15,6 +15,7 @@ import { blacklistReducer } from './blacklist.reducer';
 import { exportReducer } from './export.reducer';
 import { errorReducer } from './error.reducer';
 import { importDataReducer } from './import.table.reducer';
+import { autocompleteReducer } from './autocomplete.reducer';
 
 const rootReducer = combineReducers<IStoreState>({
   users: usersReducer,
@@ -31,7 +32,8 @@ const rootReducer = combineReducers<IStoreState>({
   blacklist: blacklistReducer,
   exportData: exportReducer,
   errorData: errorReducer,
-  importData: importDataReducer
+  importData: importDataReducer,
+  autocomplete: autocompleteReducer
 });
 
 export default rootReducer;

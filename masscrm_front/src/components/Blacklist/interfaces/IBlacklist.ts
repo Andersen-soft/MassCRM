@@ -5,11 +5,13 @@ export interface IPropsAddForm {
 
 export interface IPropsTablePanel {
   showTable?: boolean;
+  blacklistPage: boolean;
   changeShowTable: () => void;
 }
 
 export interface IPropsBlacklistTable {
   showCount: number;
+  blacklistPage: boolean;
 }
 
 export interface IInitialAdd {

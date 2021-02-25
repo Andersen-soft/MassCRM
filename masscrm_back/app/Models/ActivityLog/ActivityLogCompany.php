@@ -6,6 +6,7 @@ use App\Models\User\User;
 use App\Search\ActivityLog\Company\ActivityLogCompanyIndexConfigurator;
 use App\Search\ActivityLog\Company\Rules\ActivityLogCompanySearchRule;
 use App\Search\ActivityLog\Company\Transformers\ActivityLogCompanyTransformer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use ScoutElastic\Searchable;
 
@@ -75,5 +76,12 @@ class ActivityLogCompany extends AbstractActivityLog
     public function toSearchableArray(): array
     {
         return (new ActivityLogCompanyTransformer())->transform($this);
+    }
+
+    public function setIdChangedModel(Model $model, int $id = null): AbstractActivityLog
+    {
+        $this->setCompanyId($model->company_id ?? $model->parent_id ?? $id);
+
+        return $this;
     }
 }

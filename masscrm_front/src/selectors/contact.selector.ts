@@ -60,3 +60,14 @@ export const getActivityLogSelector = createSelector(
     contacts?.activity_log || ({} as IActivityLog),
   plan => plan
 );
+
+export const getContactForBindingToCompany = createSelector(
+  ({ contacts }: IStoreState) =>
+    contacts?.contactForBindingToCompany || ({} as any),
+  contacts => contacts
+);
+
+export const getIsContactForBindingToCompanyUpdated = createSelector(
+  ({ contacts }: IStoreState) => contacts?.isContactForBindingToCompanyUpdated,
+  contacts => contacts
+);

@@ -3,8 +3,9 @@ import { IJob } from 'src/interfaces/IJob';
 const HTTP_REG_EXP = /https?:\/\//;
 
 export const checkUrl = (value: string) => {
-  const includesHttp = HTTP_REG_EXP.test(value);
-  return includesHttp ? value : `https://${value}`;
+  const checkedSpace = value.replace(/\s+/g, '');
+  const includesHttp = HTTP_REG_EXP.test(checkedSpace);
+  return includesHttp ? checkedSpace : `https://${checkedSpace}`;
 };
 
 export const checkJobUrl = (obj: IJob) => {

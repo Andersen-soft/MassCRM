@@ -52,9 +52,9 @@ export const LocationInput: FC<{
 
       onChange({
         country: isCountry ? val : locationValue?.country,
-        countryCode: countryItem?.code || locationValue?.countryCode,
-        countryId: countryItem?.id || locationValue?.countryId,
-        region: !isCountry ? val : '',
+        countryCode: isCountry ? countryItem?.code : locationValue?.countryCode,
+        countryId: isCountry ? countryItem?.id : locationValue?.countryId,
+        region: isCountry ? '' : val,
         regionCode: regionItem?.code || '',
         regionId: regionItem?.id || '',
         city: ''

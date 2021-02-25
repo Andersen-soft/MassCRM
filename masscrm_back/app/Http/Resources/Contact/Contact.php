@@ -168,7 +168,7 @@ class Contact extends JsonResource
             'mails' => $this->mail_collection,
             'note' => $this->note_collection,
             'sales' => $this->sale_collection,
-            'company' => !empty($this->company) ? new Company($this->company) : [],
+            'company' =>  (new Company($this->whenLoaded('company'))),
             'is_in_work' => $this->is_in_work,
             'date_of_use' => $this->date_of_use ? $this->date_of_use->format(self::DATE_TIME_FORMAT) : $this->date_of_use
         ];

@@ -3,15 +3,16 @@ import {
   IMultiFilterState,
   FiltersTypes,
   FiltersParamsItemType,
-  FiltersStateType
+  FiltersStateType,
+  IConfigItem
 } from 'src/interfaces';
 import { useDispatch } from 'react-redux';
 import { setMultiFilterValues } from 'src/actions';
 import { initialFiltersState } from 'src/reducers/tableFilters.reducer';
-import { CommonButton } from '../../../../../common/CommonButton';
-import { InputFilter } from '../../../../../common/TableInputFilter';
+import { InputFilter, CommonButton } from 'src/components/common';
 import { mainFilterStyle } from './MainFilter.style';
 import { mainFiltersConfig } from '../../../ContactTable/configs/mainFilters.config';
+import { HiddenFilters } from './HiddenFilters';
 
 interface IMainFiltersProps {
   autocompleteValues: (name: string) => string[];
@@ -21,15 +22,7 @@ interface IMainFiltersProps {
   handleChangeInput: (value: string, name: string) => void;
   resetFilter: (resetObject: FiltersTypes) => void;
   isFullTable?: boolean;
-}
-
-interface IConfigItem {
-  name: string;
-  placeholder: string;
-  littleInput: boolean;
-  mainFilter: boolean;
-  multiSelect: boolean;
-  isMultiFilterState: boolean;
+  rowsForJob?: boolean;
 }
 
 export const MainFilters: FC<IMainFiltersProps> = ({
@@ -39,11 +32,12 @@ export const MainFilters: FC<IMainFiltersProps> = ({
   multiFiltersState,
   handleChangeInput,
   resetFilter,
-  isFullTable
+  isFullTable,
+  rowsForJob
 }) => {
   const style = mainFilterStyle();
   const dispatch = useDispatch();
-  const filtersConfig = mainFiltersConfig(isFullTable);
+  const filtersConfig = mainFiltersConfig(isFullTable, rowsForJob);
   const handleChangeFilter = useCallback(
     (filterParams: {
       name: string;
@@ -75,36 +69,49 @@ export const MainFilters: FC<IMainFiltersProps> = ({
   return (
     <div className={style.filterWrapper}>
       <span className={style.title}>Filter by</span>
-      {filtersConfig.map(
-        ({
-          name,
-          placeholder,
-          mainFilter,
-          multiSelect,
-          isMultiFilterState,
-          littleInput
-        }) => (
-          <InputFilter
-            key={name}
-            className={
-              littleInput
-                ? `${style.littleInput} ${style.input}`
-                : `${style.normalInput} ${style.input}`
-            }
-            mainFilter={mainFilter}
-            multiSelect={multiSelect}
-            value={
-              isMultiFilterState ? multiFiltersState[name] : filtersState[name]
-            }
-            placeholder={placeholder}
-            name={name}
-            changeFilter={handleChangeFilter}
-            changeInput={handleChangeInput}
-            items={autocompleteValues(name)}
-          />
-        )
-      )}
-      <CommonButton text='Reset filter' onClickHandler={resetFilters} />
+      <div className={style.inputWrapper}>
+        {filtersConfig.map(
+          ({
+            name,
+            placeholder,
+            mainFilter,
+            multiSelect,
+            isMultiFilterState,
+            isHidden
+          }) =>
+            !isHidden && (
+              <InputFilter
+                key={name}
+                className={`${style.normalInput} ${style.input}`}
+                mainFilter={mainFilter}
+                multiSelect={multiSelect}
+                value={
+                  isMultiFilterState
+                    ? multiFiltersState[name]
+                    : filtersState[name]
+                }
+                placeholder={placeholder}
+                name={name}
+                changeFilter={handleChangeFilter}
+                changeInput={handleChangeInput}
+                items={autocompleteValues(name)}
+              />
+            )
+        )}
+        <CommonButton
+          text='Reset filter'
+          onClickHandler={resetFilters}
+          className={style.resetButton}
+        />
+      </div>
+      <HiddenFilters
+        filtersConfig={filtersConfig}
+        handleChangeFilter={handleChangeFilter}
+        multiFiltersState={multiFiltersState}
+        autocompleteValues={autocompleteValues}
+        filtersState={filtersState}
+        handleChangeInput={handleChangeInput}
+      />
     </div>
   );
 };

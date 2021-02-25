@@ -5,7 +5,6 @@ import { List, ListItem, ListItemText } from '@material-ui/core';
 import { styleNames } from 'src/services';
 import { MoreInformation, CustomCheckBox } from 'src/components/common';
 import { useDispatch } from 'react-redux';
-import { setSelectedContacts } from 'src/actions';
 import style from './SelectData.scss';
 import { ITableRow } from '../../../interfaces';
 
@@ -16,7 +15,8 @@ export const SelectData: FC<{
   onSelectAll: Function;
   data?: ITableRow[];
   currentPage?: number;
-}> = ({ isCheckedAll, data, currentPage }) => {
+  setSelectedContacts?: Function;
+}> = ({ isCheckedAll, data, currentPage, setSelectedContacts }) => {
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -25,7 +25,7 @@ export const SelectData: FC<{
   const onSelectHandler = useCallback(
     (selection: 'page' | 'all' = 'page') => (value: boolean) => {
       if (!value) {
-        dispatch(setSelectedContacts({}));
+        setSelectedContacts && dispatch(setSelectedContacts({}));
         param.get('selectAllOnPage') && param.delete('selectAllOnPage');
         param.get('selectAll') && param.delete('selectAll');
       }
@@ -82,7 +82,7 @@ export const SelectData: FC<{
 
   return (
     <div className={sn('wrapper')}>
-      <CustomCheckBox value={isCheckedAll} onChange={onSelectHandler()} />
+      <CustomCheckBox value={isCheckedAll} onChange={onSelectHandler('all')} />
       <MoreInformation icon={ArrowDropDown} popperInfo={selectList} autoClose />
     </div>
   );

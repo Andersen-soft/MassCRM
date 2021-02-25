@@ -6,7 +6,9 @@ import {
   getPreviousCompaniesAction,
   getAttachmentsAction,
   getActivityLogAction,
-  getRelatedContacts
+  getRelatedContacts,
+  setContactForBindingToCompany,
+  setIsContactForBindingToCompanyUpdated
 } from 'src/actions';
 import { IContactStore } from 'src/interfaces/store';
 
@@ -47,6 +49,14 @@ export const contactReducer = handleActions(
       ...payload
     }),
     [`${getRelatedContacts}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${setContactForBindingToCompany}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${setIsContactForBindingToCompanyUpdated}`]: (state, { payload }) => ({
       ...state,
       ...payload
     })

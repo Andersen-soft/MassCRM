@@ -8,7 +8,8 @@ import {
   IMultiFilterState,
   ISort,
   IFilter,
-  IUserFiltersValues
+  IUserFiltersValues,
+  IFilterData
 } from 'src/interfaces';
 import {
   initialFiltersState,
@@ -17,6 +18,11 @@ import {
 } from '../reducers/tableFilters.reducer';
 import { initialSortingState } from '../reducers/tableSorting.reducer';
 
+export const getFiltersData = createSelector(
+  ({ filter }: IStoreState): IFilterData => filter?.data || ({} as IFilterData),
+  data => data
+);
+
 export const getCompanySizeFilter = createSelector(
   ({ filter }: IStoreState): Array<ICompanySize> =>
     filter?.data?.company_size || [],
@@ -24,12 +30,17 @@ export const getCompanySizeFilter = createSelector(
 );
 
 export const getCompanyTypesFilter = createSelector(
-  ({ filter }: IStoreState): Array<string> => filter?.data?.company_type || [],
+  ({ filter }: IStoreState): string[] => filter?.data?.company_type || [],
+  data => data
+);
+
+export const getRolesFilter = createSelector(
+  ({ filter }: IStoreState): string[] => filter?.data?.user_roles || [],
   data => data
 );
 
 export const getOriginsFilter = createSelector(
-  ({ filter }: IStoreState): Array<string> => filter?.data?.origin || [],
+  ({ filter }: IStoreState): string[] => filter?.data?.origin || [],
   data => data
 );
 
@@ -85,8 +96,9 @@ export const getUsersFiltersValues = createSelector(
   data => data
 );
 
-export const getSelectedContacts = createSelector(
-  ({ filter: { selectedContacts } }: IStoreState): number[] =>
-    selectedContacts || [],
-  data => data
-);
+export const getSelectedContacts = (key: string) =>
+  createSelector(
+    ({ filter: { [key]: selectedContacts } }: IStoreState): number[] =>
+      selectedContacts || [],
+    data => data
+  );

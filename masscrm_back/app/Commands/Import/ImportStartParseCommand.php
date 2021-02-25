@@ -25,6 +25,7 @@ class ImportStartParseCommand
     protected string $duplicationAction;
     protected string $columnSeparator;
     protected ?string $comment;
+    protected string $token;
 
     public function __construct(
         User $user,
@@ -34,6 +35,7 @@ class ImportStartParseCommand
         bool $isHeader,
         string $duplicationAction,
         string $columnSeparator,
+        string $token,
         string $comment = null
     ) {
         $this->user = $user;
@@ -43,6 +45,7 @@ class ImportStartParseCommand
         $this->isHeader = in_array($isHeader, ['1', 'true']);
         $this->duplicationAction = $duplicationAction;
         $this->columnSeparator = $columnSeparator;
+        $this->token = $token;
         $this->comment = $comment;
     }
 
@@ -84,5 +87,10 @@ class ImportStartParseCommand
     public function isHeader(): bool
     {
         return $this->isHeader;
+    }
+
+    public function getToken(): string
+    {
+        return $this->token;
     }
 }

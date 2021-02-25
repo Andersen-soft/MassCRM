@@ -13,12 +13,12 @@ class CompanyFields extends BaseModel implements FieldsInterface
 {
     public const COMPANY_SALE_PREFIX = 'comp_';
     public const JOIN = 'join';
+
     public const JOIN_COMPANY_TABLE = [
         'table' => 'companies',
         'first' => 'companies.id',
         'second' => 'contacts.company_id'
     ];
-
     public const JOIN_COMPANY_INDUSTRIES_TABLE = [
         self::JOIN_COMPANY_TABLE,
         [
@@ -32,7 +32,6 @@ class CompanyFields extends BaseModel implements FieldsInterface
             'second' => 'companies_industries.industry_id'
         ]
     ];
-
     public const JOIN_COMPANY_VACANCY_TABLE = [
         self::JOIN_COMPANY_TABLE,
         [
@@ -41,7 +40,6 @@ class CompanyFields extends BaseModel implements FieldsInterface
             'second' => 'company_vacancies.company_id'
         ]
     ];
-
     public const JOIN_COMPANY_SUBSIDIARY_TABLE = [
         self::JOIN_COMPANY_TABLE,
         [
@@ -68,6 +66,8 @@ class CompanyFields extends BaseModel implements FieldsInterface
     public const MAX_EMPLOYEES_FIELD = 'max_employees';
     public const COMPANY_SIZE_FIELD = 'company_size';
     public const COMMENT_FIELD = 'comment';
+    public const HAS_JOBS = 'has_jobs';
+    public const JOBS_STATUS = 'jobs_status';
 
     public const INDUSTRIES_COllECTION_FIELD = 'industries_collection';
     public const VACANCIES_COllECTION_FIELD = 'vacancies_collection';
@@ -159,6 +159,20 @@ class CompanyFields extends BaseModel implements FieldsInterface
             self::FIELD => 'companies.min_employees',
             self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE,
             self::JOIN => [self::JOIN_COMPANY_TABLE],
+        ],
+        self::HAS_JOBS => [
+            self::SORT => false,
+            self::SEARCH => true,
+            self::FIELD => 'company.vacancies',
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_EXIST_OR_NOT,
+            self::JOIN => self::JOIN_COMPANY_VACANCY_TABLE,
+        ],
+        self::JOBS_STATUS => [
+            self::SORT => false,
+            self::SEARCH => true,
+            self::FIELD => 'company_vacancies.active',
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_VALUE_SELECT,
+            self::JOIN => self::JOIN_COMPANY_VACANCY_TABLE,
         ],
         Industry::INDUSTRY_FIELD => [
             self::SORT => false,

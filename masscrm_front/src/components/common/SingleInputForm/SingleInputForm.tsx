@@ -2,7 +2,7 @@ import React, { FC, useMemo } from 'react';
 import { useFormik } from 'formik';
 import { Check, Close } from '@material-ui/icons';
 import { styleNames } from 'src/services';
-import { createProperty } from 'src/utils/companySize';
+import { createProperty } from 'src/utils/object';
 import { format, parse } from 'date-fns';
 import {
   CommonInput,
@@ -24,7 +24,8 @@ export const SingleInputForm: FC<ISingleInputFormProps> = ({
   items,
   validation,
   type,
-  isDate
+  isDate,
+  isDoubleClick
 }) => {
   const initialValues: ISingleInputForm = { editInput: value || switchValue };
 
@@ -103,6 +104,7 @@ export const SingleInputForm: FC<ISingleInputFormProps> = ({
           placeholder={placeholder}
           onChangeValue={handleChange}
           errorMessage={errors.editInput as string}
+          isDoubleClick
         />
       )
     };
@@ -114,7 +116,11 @@ export const SingleInputForm: FC<ISingleInputFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className={sn('wrap')}>
+      <div
+        className={
+          isDoubleClick ? `${sn('wrap-double')} ${sn('wrap')}` : sn('wrap')
+        }
+      >
         <div className={sn('search')}>{input}</div>
         <CommonIcon
           onClick={onSubmitHandler}

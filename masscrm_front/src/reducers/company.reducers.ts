@@ -5,12 +5,13 @@ import {
   getCompanyAttachmentsAction,
   getCompanyActivityLogAction
 } from 'src/actions';
+import { ICompany } from 'src/interfaces';
 import { ICompanyStore } from 'src/interfaces/store';
 
 type S = ICompanyStore;
 
 const initialState: ICompanyStore = {
-  data: []
+  data: {} as ICompany
 };
 
 export const companyReducer = handleActions(

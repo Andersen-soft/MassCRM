@@ -5,6 +5,7 @@ namespace App\Services\Reports;
 use App\Models\Company\Fields\CompanyFields;
 use App\Models\Contact\ContactSale;
 use App\Models\Contact\Fields\ContactFields;
+use App\Models\User\Fields\UserFields;
 
 interface SearchType
 {
@@ -23,6 +24,8 @@ interface SearchType
     public const TYPE_SEARCH_HOLDING_COMPANIES = 'Holding company';
     public const TYPE_SEARCH_ROLES_USER = 'Roles users';
     public const TYPE_SEARCH_STATUS_STRICT = 'Status Strict';
+    public const TYPE_SEARCH_FIELD_EXIST_OR_NOT = 'Exist Or Not';
+
 
     public const LIST_FIELDS = [
         'responsible_id' => [
@@ -30,6 +33,11 @@ interface SearchType
             'name' => 'Responsible',
             'field' => 'contacts.responsible_id',
             'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT_STRICT
+        ],
+        'responsible_roles' => [
+            'field' => 'users.roles',
+            'typeSearch' => self::TYPE_SEARCH_ROLES_USER,
+            'join' => [ContactFields::JOIN_USERS_TABLE_BY_RESPONSIBLE]
         ],
         'created' => [
             'path' => 'contacts.getCreatedAtDateTime',
@@ -415,9 +423,20 @@ interface SearchType
                 CompanyFields::JOIN_COMPANY_TABLE
             ]
         ],
+        'has_jobs' => [
+            'field' => 'company.vacancies',
+            'typeSearch' => self::TYPE_SEARCH_FIELD_EXIST_OR_NOT,
+            'join' => CompanyFields::JOIN_COMPANY_VACANCY_TABLE
+        ],
+        'jobs_status' => [
+            'field' => 'company_vacancies.active',
+            'typeSearch' => self::TYPE_SEARCH_FIELD_VALUE_SELECT,
+            'join' => CompanyFields::JOIN_COMPANY_VACANCY_TABLE
+        ],
         'jobs' => [
             'path' => 'getCompanyVacancies',
             'name' => 'Job',
+            'filter' => ['checkVacancyStatus' => 'jobs_status'],
             'field' => 'company_vacancies.vacancy',
             'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT,
             'join' => CompanyFields::JOIN_COMPANY_VACANCY_TABLE
@@ -425,12 +444,14 @@ interface SearchType
         'jobs_skills' => [
             'path' => 'getCompanyVacancies',
             'name' => 'Job skills',
+            'filter' => ['checkVacancyStatus' => 'jobs_status'],
             'field' => 'company_vacancies.skills',
             'typeSearch' => self::TYPE_SEARCH_FIELD_MULTI_SELECT,
             'join' => CompanyFields::JOIN_COMPANY_VACANCY_TABLE
         ],
         'jobs_urls' => [
             'path' => 'getCompanyVacancies',
+            'filter' => ['checkVacancyStatus' => 'jobs_status'],
             'name' => 'Job url',
             'field' => 'company_vacancies.link',
             'typeSearch' => self::TYPE_SEARCH_FIELD_TEXT_LIKE,

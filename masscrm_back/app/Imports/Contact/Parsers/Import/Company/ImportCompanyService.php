@@ -2,9 +2,11 @@
 
 namespace App\Imports\Contact\Parsers\Import\Company;
 
+use App\Exceptions\Import\ImportFileException;
 use App\Models\Company\Company;
 use App\Models\User\User;
 use App\Repositories\Company\CompanyRepository;
+use Illuminate\Support\Facades\Lang;
 
 class ImportCompanyService
 {
@@ -20,7 +22,8 @@ class ImportCompanyService
         ImportSubsidiary $importSubsidiary,
         ImportCompany $importCompany,
         CompanyRepository $companyRepository
-    ) {
+    )
+    {
         $this->importIndustry = $importIndustry;
         $this->importVacancy = $importVacancy;
         $this->importSubsidiary = $importSubsidiary;
@@ -62,18 +65,18 @@ class ImportCompanyService
 
     public function getUnique(array $fields, array $row): ?Company
     {
-        $name = null;
-
-        foreach ($fields as $key => $field) {
-            if ($field === 'company') {
-                $name = trim($row[$key]);
-            }
+        if (!$key = array_search('company', $fields, true)) {
+            return null;
         }
 
-        if (!empty($name)) {
-            return $this->companyRepository->checkUniqueCompany($name);
+        $name = trim((string)$row[$key]);
+
+        if (empty($name)) {
+            throw new ImportFileException([
+                Lang::get('validationModel.company.company_name_required')
+            ]);
         }
 
-        return null;
+        return $this->companyRepository->checkUniqueCompany($name);
     }
 }

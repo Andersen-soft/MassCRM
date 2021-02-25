@@ -5,7 +5,7 @@ exports[`SearchInput NumericRangeFilter should render correctly 1`] = `
   <WithStyles(ForwardRef(FormControl))
     classes={
       Object {
-        "root": "makeStyles-input-1 makeStyles-soloInput-2 makeStyles-search-13 undefined undefined",
+        "root": "makeStyles-input-1 makeStyles-soloInput-2 makeStyles-search-14 undefined undefined",
       }
     }
     style={

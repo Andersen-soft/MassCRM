@@ -95,6 +95,7 @@ class ImportContactsController extends BaseController
             (bool) $request->get('is_headers'),
             $request->get('duplication_action'),
             $request->get('column_separator'),
+            auth()->guard()->getRequest()->bearerToken(),
             $request->get('comment')
         );
 

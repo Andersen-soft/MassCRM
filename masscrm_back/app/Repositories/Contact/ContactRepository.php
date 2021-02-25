@@ -12,7 +12,6 @@ use App\Models\User\User;
 use App\Services\Reports\SearchType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
@@ -60,16 +59,20 @@ class ContactRepository
 
         if (isset($search['contact']['global'])) {
             $data = Contact::search(json_encode($search['contact']['global']))->select([Contact::ID_FIELD])->take(1000)->keys();
-            $query->whereIn(Contact::ID_FIELD, $data);
+            $query->whereIn('contacts.' . Contact::ID_FIELD, $data);
         }
 
         $query = $this->getRelationTablesQuery($search, $query);
 
-        if (!$user->hasRole(User::USER_ROLE_MANAGER) && (
-                isset($search['contact']['skip_responsibility'])
-                && false === (bool) $search['contact']['skip_responsibility']
-            )
-        ) {
+        if ($user->hasRole(User::USER_ROLE_NC2)) {
+            unset($search['contact']['skip_responsibility'], $search['contact']['responsible_id']);
+        }
+
+        $skip_responsible =
+            isset($search['contact']['skip_responsibility']) &&
+            (bool)$search['contact']['skip_responsibility'] === false;
+
+        if ($skip_responsible && (!$user->hasRole(User::USER_ROLE_MANAGER))) {
             $query->where('contacts.responsible_id', $user->getId());
         }
 
@@ -80,6 +83,8 @@ class ContactRepository
         $query = $this->setParamsSearch($search, $query);
 
         $query = $this->setParamSort($sort, $query);
+
+        $query = $query->with('company');
 
         return $query->groupBy('contacts.id');
     }
@@ -138,7 +143,7 @@ class ContactRepository
                     case SearchType::TYPE_SEARCH_FIELD_BOUNCES:
                         $query->where(static function (Builder $query) use ($value, $filterConfig) {
                             foreach ($value as $item) {
-                                $query->orWhere($filterConfig[BaseModel::FIELD],'=', $item);
+                                $query->orWhere($filterConfig[BaseModel::FIELD], '=', $item);
                             }
                         });
                         break;
@@ -181,6 +186,18 @@ class ContactRepository
                                 }, $contactsId)
                             );
                         });
+                        break;
+                    case SearchType::TYPE_SEARCH_ROLES_USER:
+                        $query->where(static function (Builder $query) use ($value, $filterConfig) {
+                            foreach ($value as $item) {
+                                $query->orWhereJsonContains($filterConfig[BaseModel::FIELD], $item);
+                            }
+                        });
+                        break;
+                    case SearchType::TYPE_SEARCH_FIELD_EXIST_OR_NOT:
+                        filter_var($value, FILTER_VALIDATE_BOOLEAN)
+                            ? $query->has($filterConfig[BaseModel::FIELD])
+                            : $query->doesntHave($filterConfig[BaseModel::FIELD]);
                         break;
                 }
             }
@@ -238,7 +255,7 @@ class ContactRepository
 
     private function revertValue(string $value): int
     {
-        return (int) mb_eregi_replace('[^0-9]', '', $value);
+        return (int)mb_eregi_replace('[^0-9]', '', $value);
     }
 
     public function getCounterDailyPlanUser(int $userId): int
@@ -318,7 +335,7 @@ class ContactRepository
     public function changeResponsibleByBuilder(Builder $contact, int $responsibleId): void
     {
         $contact->update([
-             'responsible_id' => $responsibleId
+            'responsible_id' => $responsibleId
         ]);
     }
 

@@ -28,4 +28,7 @@ export interface ITableProps {
   otherHeight?: any;
   isFullTable?: boolean;
   requestValues?: IContactFilter;
+  setSelectedContacts?: Function;
+  selectedContacts?: number[];
+  isMyContacts?: boolean;
 }

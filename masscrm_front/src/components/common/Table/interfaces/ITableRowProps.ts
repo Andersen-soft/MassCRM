@@ -7,4 +7,5 @@ export interface ITableRowProps {
   data: ITableBodyConfig;
   onSelect?: (id: number) => void;
   currentPage?: number;
+  isNC2myContacts?: boolean;
 }

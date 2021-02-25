@@ -10,6 +10,7 @@ use App\Rules\Company\CheckTypeSubsidiariesCompany;
 use App\Rules\Company\UniqueCompanyLinkedIn;
 use App\Rules\Company\UniqueCompanyNameRule;
 use App\Rules\Company\UniqueCompanyWebsite;
+use App\Rules\Company\UniqueVacancyRule;
 use Illuminate\Support\Facades\Lang;
 
 class UpdateCompanyRequest extends AbstractRequest
@@ -55,7 +56,11 @@ class UpdateCompanyRequest extends AbstractRequest
             'comment' => 'nullable|string',
             'industries' => 'array|min:1',
             'industries.*' => 'integer|exists:industries,id',
-            'vacancies' => 'nullable|array',
+            'vacancies' => [
+                'nullable',
+                'array',
+                new UniqueVacancyRule((int) $this->company, $this->vacancies)
+            ],
             'vacancies.*.id' => 'integer|exists:company_vacancies,id',
             'vacancies.*.job' => 'required_with:vacancies|string',
             'vacancies.*.skills' => 'nullable|string',

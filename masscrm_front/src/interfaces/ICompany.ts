@@ -1,6 +1,6 @@
 import { IIndustry } from './IIndustry';
 import { IJob } from './IJob';
-import { IContactsJobs } from './IContactJobInput';
+import { IContacts, IContactsJobs } from './IContactJobInput';
 import { IMinMax } from './IMinMax';
 import { ISort } from './ISort';
 
@@ -28,6 +28,7 @@ export interface ICompany {
   subsidiary?: Array<{ id: number; name: string }>;
   holding?: Array<{ id: number; name: string }>;
   vacancies?: IContactsJobs;
+  contacts?: IContacts;
 }
 
 export interface ICompanySearch {
@@ -43,8 +44,10 @@ export interface ICompanySearch {
   subsidiary?: string;
   holding?: string;
   founded?: IMinMax;
-  jobs?: Array<string>;
-  skills?: Array<string>;
+  jobs?: string[];
+  skills?: string[];
+  has_jobs?: string;
+  jobs_status?: string;
 }
 
 export interface ICompanyFilter {

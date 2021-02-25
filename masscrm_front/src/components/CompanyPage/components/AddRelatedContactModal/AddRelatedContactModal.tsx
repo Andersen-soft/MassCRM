@@ -1,5 +1,5 @@
 import { Dialog, DialogTitle, DialogContent } from '@material-ui/core';
-import React, { FC, useCallback, useState } from 'react';
+import React, { FC, useCallback, useState, useContext } from 'react';
 import {
   CancelEditModal,
   DialogCloseIcon,
@@ -8,8 +8,23 @@ import {
 } from 'src/components/common';
 import { styleNames } from 'src/services';
 import { IContact } from 'src/interfaces';
+import { ErrorEmitterContext } from 'src/context';
+import { getErrorsList } from 'src/utils/errors';
+import {
+  extractSubstring,
+  transformFirstLetterToUpperCase
+} from 'src/utils/string';
 
-import { updateContact } from 'src/actions';
+import {
+  updateContact,
+  setContactForBindingToCompany,
+  setIsContactForBindingToCompanyUpdated
+} from 'src/actions';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  getContactForBindingToCompany,
+  getIsContactForBindingToCompanyUpdated
+} from 'src/selectors';
 import styles from './AddRelatedContactModal.scss';
 import { modalStyles } from './AddRelatedContactModal.style';
 
@@ -19,25 +34,59 @@ interface IAddRelatedContactModal {
   open: boolean;
   handleClose: Function;
   companyId: number;
-  fetchRelatedContacts: Function;
+  fetchCompanyWithRelatedContactsRequest: Function;
+}
+
+interface IGetErrorTitlesArgs {
+  condition: string;
+  errorKey: string;
+  titleToExtract: string;
 }
 
 export const AddRelatedContactModal: FC<IAddRelatedContactModal> = ({
   handleClose,
   open,
   companyId,
-  fetchRelatedContacts
+  fetchCompanyWithRelatedContactsRequest
 }) => {
   const style = modalStyles();
   const [openMessage, setOpenMessage] = useState<boolean>(false);
-  const [chosenContact, setChosenContact] = useState<any>('');
+
+  const { errorsEventEmitter, handleClearErrors } = useContext(
+    ErrorEmitterContext
+  );
+
+  const dispatch = useDispatch();
+  const contactForBindingToCompany = useSelector(getContactForBindingToCompany);
+  const isContactForBindingToCompanyUpdated = useSelector(
+    getIsContactForBindingToCompanyUpdated
+  );
+
+  const closePopup = useCallback(() => {
+    handleClearErrors();
+  }, []);
 
   const handleToggleMessage = useCallback(
     (shouldClose: boolean) => (): void => {
       setOpenMessage(false);
-      shouldClose && handleClose();
+
+      isContactForBindingToCompanyUpdated &&
+        dispatch(
+          setIsContactForBindingToCompanyUpdated({
+            isContactForBindingToCompanyUpdated: false
+          })
+        );
+
+      if (shouldClose) {
+        Object.keys(contactForBindingToCompany).length &&
+          dispatch(
+            setContactForBindingToCompany({ contactForBindingToCompany: {} })
+          );
+
+        handleClose();
+      }
     },
-    []
+    [contactForBindingToCompany, isContactForBindingToCompanyUpdated]
   );
 
   const handleToggle = useCallback(() => {
@@ -50,13 +99,90 @@ export const AddRelatedContactModal: FC<IAddRelatedContactModal> = ({
 
   const onChangeContact = useCallback(
     (setContactFieldValue: (key?: IContact) => void) => (val?: IContact) => {
-      setContactFieldValue(val);
+      dispatch(setContactFieldValue({ contactForBindingToCompany: val }));
     },
     []
   );
 
+  const successCallback = async () => {
+    fetchCompanyWithRelatedContactsRequest();
+
+    isContactForBindingToCompanyUpdated &&
+      dispatch(
+        setIsContactForBindingToCompanyUpdated({
+          isContactForBindingToCompanyUpdated: false
+        })
+      );
+    handleClose();
+    closePopup();
+  };
+
+  const errorCallback = (error: string) => {
+    const arrayTitle: string[] = [];
+    const parseError = JSON.parse(error);
+
+    const createError = (title: string[]) => {
+      errorsEventEmitter.emit('requiredFieldsPopUpErrors', {
+        errorsArray: [JSON.stringify(title)]
+      });
+    };
+
+    const getErrorTitles = (
+      condition: string,
+      errorKey: string,
+      titleToExtract: string
+    ) => {
+      if (getErrorsList(condition, parseError).length) {
+        Object.keys(parseError).forEach((key: string) => {
+          if (key.includes(errorKey)) {
+            arrayTitle.push(
+              titleToExtract === 'position'
+                ? 'Title'
+                : transformFirstLetterToUpperCase(
+                    extractSubstring(parseError[key].toString(), titleToExtract)
+                  )
+            );
+          }
+        });
+      }
+    };
+
+    const getErrorTitlesArgs: { [key: string]: IGetErrorTitlesArgs } = {
+      position: {
+        condition: 'must be',
+        errorKey: 'position',
+        titleToExtract: 'position'
+      },
+      first_name: {
+        condition: 'must be',
+        errorKey: 'first_name',
+        titleToExtract: 'first name'
+      },
+      last_name: {
+        condition: 'must be',
+        errorKey: 'last_name',
+        titleToExtract: 'last name'
+      },
+      country: {
+        condition: 'is required when gender is not present',
+        errorKey: 'location.country',
+        titleToExtract: 'country'
+      }
+    };
+
+    Object.keys(getErrorTitlesArgs).forEach((key: string) => {
+      getErrorTitles(
+        getErrorTitlesArgs[key].condition,
+        getErrorTitlesArgs[key].errorKey,
+        getErrorTitlesArgs[key].titleToExtract
+      );
+    });
+
+    createError(arrayTitle);
+  };
+
   const handleSubmit = useCallback(async () => {
-    if (chosenContact) {
+    if (Object.keys(contactForBindingToCompany).length) {
       // props below were excluded since they interfere with the update in the presented form
       // and they're not required for this specific one
       const {
@@ -64,16 +190,19 @@ export const AddRelatedContactModal: FC<IAddRelatedContactModal> = ({
         mails,
         emails,
         ...neededPropsForContactUpdate
-      } = chosenContact;
+      } = contactForBindingToCompany;
 
-      await updateContact(
-        { ...neededPropsForContactUpdate, company_id: companyId },
-        chosenContact.id
-      );
-      await fetchRelatedContacts();
-      handleClose();
+      try {
+        await updateContact(
+          { ...neededPropsForContactUpdate, company_id: companyId },
+          contactForBindingToCompany.id
+        );
+        successCallback();
+      } catch (error) {
+        errorCallback(error);
+      }
     }
-  }, [chosenContact]);
+  }, [contactForBindingToCompany]);
 
   return (
     <>
@@ -91,9 +220,14 @@ export const AddRelatedContactModal: FC<IAddRelatedContactModal> = ({
           <ContactByEmail
             id={companyId}
             name='email'
-            value={chosenContact ? chosenContact.id : ''}
-            onSelect={onChangeContact(setChosenContact)}
+            value={
+              contactForBindingToCompany ? contactForBindingToCompany.id : ''
+            }
+            onSelect={onChangeContact(setContactForBindingToCompany)}
             placeholder='Contact`s Email'
+            //  force update is required here in order to clear input field ('Contacts Email')
+            // after update of contactForBindingToCompany
+            key={Number(isContactForBindingToCompanyUpdated)}
           />
           <div className={sn('wrapper-btns')}>
             <CommonButton

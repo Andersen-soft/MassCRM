@@ -6,16 +6,16 @@ namespace App\Imports\Contact\Parsers;
 
 use App\Commands\Import\ImportContactsDto;
 use App\Commands\Import\ImportStartParseCommand;
+use App\Events\User\CreateSocketUserImportProgressBarEvent;
+use App\Exceptions\Import\ImportException;
 use App\Imports\Contact\Parsers\Import\Company\ImportCompanyService;
 use App\Imports\Contact\Parsers\Import\Contact\ImportContactService;
 use App\Imports\Contact\Parsers\Mapping\FieldMapping;
 use App\Models\Contact\Contact;
-use App\Models\InformationImport;
 use App\Models\User\User;
 use App\Services\TransferCollection\TransferCollectionCompanyService;
 use App\Services\TransferCollection\TransferCollectionContactService;
 use Illuminate\Support\Facades\Log;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\Company\Company;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -27,6 +27,8 @@ use App\Exceptions\Import\ImportFileException;
  */
 class ParserImportFileService extends ParserMain
 {
+    private const PERCENT_STEP = 5;
+    private const PERCENT = 100;
     protected array $fields = [];
     protected ?string $comment;
     protected string $columnSeparator;
@@ -41,6 +43,8 @@ class ParserImportFileService extends ParserMain
     protected FieldMapping $fieldMapping;
     private TransferCollectionCompanyService $transferCollectionCompanyService;
     private TransferCollectionContactService $transferCollectionContactService;
+    private int $currentElement = 1;
+    private int $currentPercent = 0;
 
     public function __construct(
         ImportCompanyService $importCompanyService,
@@ -80,8 +84,10 @@ class ParserImportFileService extends ParserMain
         return $this->importResult;
     }
 
-    public function parseRow(array $row): void
+    public function parseRow(array $row, ?int $totalRows, int $importId): void
     {
+        $this->percentOfImport($totalRows, $importId, $this->importContactsData->getToken());
+        $this->sendNotificationIfCountLessThenMinimum($totalRows, $importId, $this->importContactsData->getToken());
         $arrayRow = $this->rowToArray($row, count($this->fields));
 
         if (empty(array_filter($arrayRow))) {
@@ -113,7 +119,7 @@ class ParserImportFileService extends ParserMain
 
             $this->importResult->successSaveRow();
             DB::commit();
-        } catch (Exception $exception) {
+        } catch (\Throwable $exception) {
             DB::rollBack();
             $this->importResult->incrementCountErrors();
             $this->importResult->failedSaveRow();
@@ -137,7 +143,6 @@ class ParserImportFileService extends ParserMain
                 app('sentry')->captureException($exception);
             }
         }
-
     }
 
     private function parseCompany(array $data, ?Company $company): ?Company
@@ -222,5 +227,36 @@ class ParserImportFileService extends ParserMain
         }
 
         return $contact;
+    }
+
+    private function percentOfImport(?int $totalRows, $importId, $token): void
+    {
+        if(null === $totalRows){
+            throw new ImportException('File does not have total rows', 400);
+        }
+        $elementPercentStep = ceil($totalRows * self::PERCENT_STEP / self::PERCENT);
+
+        if (($this->currentElement % $elementPercentStep) == 0) {
+            $this->currentPercent += self::PERCENT_STEP;
+            CreateSocketUserImportProgressBarEvent::dispatch(
+                $this->currentPercent,
+                $importId,
+                $token
+            );
+        }
+
+        $this->currentElement ++;
+    }
+
+
+    private function sendNotificationIfCountLessThenMinimum(int $totalRows, int $importId, $token): void
+    {
+        if($this->currentElement === $totalRows && $this->currentElement < self::PERCENT_STEP){
+            CreateSocketUserImportProgressBarEvent::dispatch(
+                self::PERCENT,
+                $importId,
+                $token
+            );
+        }
     }
 }

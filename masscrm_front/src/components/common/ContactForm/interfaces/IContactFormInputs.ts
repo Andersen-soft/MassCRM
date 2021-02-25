@@ -70,6 +70,7 @@ export interface IContactFormInputs {
   min_employees?: number;
   max_employees?: number;
   industries?: number[];
+  skip_validation?: number;
 }
 
 export interface IErrorLink {

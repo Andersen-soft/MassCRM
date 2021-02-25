@@ -8,6 +8,7 @@ use App\Models\AttachmentFile\ContactAttachment;
 use App\Models\Company\Company;
 use App\Models\Contact\Fields\ContactFields;
 use App\Models\User\User;
+use App\Scopes\disableTimestampsScope;
 use App\Search\Contact\ContactIndexConfigurator;
 use App\Search\Contact\Rules\ContactSearchRule;
 use App\Search\Contact\Transformers\ContactTransformer;
@@ -68,7 +69,7 @@ use ScoutElastic\Searchable;
  */
 class Contact extends ContactFields
 {
-    use Searchable;
+    use Searchable, disableTimestampsScope;
 
     public const CONTACT = 'contact';
     public const EXCEPT_EMAIL_TEMPLATE = 'noemail@noemail.com';
@@ -114,6 +115,8 @@ class Contact extends ContactFields
         self::IS_UPLOAD_COLLECTION_FIELD,
         self::USER_ID_FIELD,
         self::IN_BLACKLIST_FIELD,
+        self::IS_IN_WORK_FIELD,
+        self::DATE_OF_USE_FIELD
     ];
 
     protected $casts = [
@@ -157,6 +160,7 @@ class Contact extends ContactFields
         self::USER_ID_FIELD => 'integer',
         self::RESPONSIBLE_ID_FIELD => 'integer',
         self::IN_BLACKLIST_FIELD => 'boolean',
+        self::IS_IN_WORK_FIELD => 'boolean'
     ];
 
     protected string $indexConfigurator = ContactIndexConfigurator::class;
@@ -713,12 +717,15 @@ class Contact extends ContactFields
 
     public function updateIsInWorkAndDate(Builder $contacts): void
     {
-        $contacts->update(
-            [
-                'is_in_work' => true,
-                'date_of_use' => Carbon::now()
-            ]
-        );
+        $contacts->each(function ($item) {
+            /** @var self $item */
+            $item->scopeWithoutTimestamps()->update(
+                [
+                    'is_in_work' => true,
+                    'date_of_use' => Carbon::now()
+                ]
+            );
+        });
     }
 
     public function createAssociate(string $field, string $value): Contact
@@ -809,10 +816,18 @@ class Contact extends ContactFields
 
     public function updateContact(self $contact, array $fields, User $user, array $origin = null): self
     {
-        $contact->update($fields);
+        $updateData = [
+            $contact->user()->getForeignKeyName() => $user->id,
+        ];
+
+        if ($user->hasRole(User::USER_ROLE_NC2) && $contact->responsibleUser->hasRole(User::USER_ROLE_NC1)) {
+            $updateData[$contact->responsibleUser()->getForeignKeyName()] = $user->id;
+        }
+
+        $updateData = array_merge($fields, $updateData);
+        $contact->update($updateData);
         $contact->setUpdatedAt(Carbon::now());
-        $contact->user()->associate($user);
-        $contact->save();
+
         if ($origin !== null) {
             $contact->origin = implode(';', $origin);
         }
