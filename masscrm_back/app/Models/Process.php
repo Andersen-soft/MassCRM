@@ -68,4 +68,14 @@ class Process extends Model
     {
         return $this->belongsTo(InformationImport::class, 'operation_id');
     }
+
+    public function getFileName(): ?string
+    {
+        if ($this->file_path) {
+            $array = explode('/', $this->file_path);
+            return end($array);
+        }
+
+        return null;
+    }
 }

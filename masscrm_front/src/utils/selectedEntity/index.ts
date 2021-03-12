@@ -9,14 +9,17 @@ export const getSelectedEntity = ({
   myContactsVal,
   allContactsVal,
   blacklistVal,
+  reportVal,
   addContactsCompProp,
   myContactsCompProp,
-  blacklistCompProp
+  blacklistCompProp,
+  reportCompProp
 }: IGetSelectedEntities) => {
   const selectedContactsEntities = {
     [createProperty('addContacts', addContactsCompProp)]: addContactsVal,
     [createProperty('myContacts', myContactsCompProp)]: myContactsVal,
     [createProperty('blacklist', blacklistCompProp)]: blacklistVal,
+    [createProperty('report', reportCompProp)]: reportVal,
     default: allContactsVal
   };
 

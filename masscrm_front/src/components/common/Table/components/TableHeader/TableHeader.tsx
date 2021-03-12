@@ -48,9 +48,15 @@ export const TableHeader: FC<ITableHeaderProps> = ({
   clearAutocompleteList,
   isFullTable,
   data,
-  currentPage,
+  currentPageStringified,
   setSelectedContacts,
-  isNC2myContacts
+  selectedContacts = [],
+  isNC2myContacts,
+  param,
+  checkedContacts,
+  selectAllOnPage,
+  checkedContactsArray,
+  contactsIDs
 }) => {
   const dispatch = useDispatch();
   const sortingState = useSelector(getFilterSorting);
@@ -77,7 +83,12 @@ export const TableHeader: FC<ITableHeaderProps> = ({
     rows
   } = config;
 
-  const isCheckedAll = selectedRows && selectedRows?.length > 0;
+  const isCheckedAll =
+    selectedRows &&
+    selectedRows.length &&
+    data
+      ?.map(dataItem => dataItem.id)
+      .some(item => selectedRows.includes(item));
 
   const onDeleteHandler = () =>
     config.column.onDeleteSelected && config.column.onDeleteSelected();
@@ -155,7 +166,7 @@ export const TableHeader: FC<ITableHeaderProps> = ({
   );
 
   return (
-    <TableHead>
+    <TableHead data-testid='table_header'>
       <TableRow>
         {hasSelectAll && onSelectAll && (
           <StyledTableCell
@@ -164,13 +175,27 @@ export const TableHeader: FC<ITableHeaderProps> = ({
             key='select'
             className='smallTD'
           >
-            <SelectData
-              data={data}
-              isCheckedAll={isCheckedAll || false}
-              onSelectAll={onSelectAll}
-              currentPage={currentPage}
-              setSelectedContacts={setSelectedContacts}
-            />
+            <Tooltip
+              id='change-password-tooltip'
+              classes={styleTooltip}
+              title={`selected: ${selectedContacts.length}`}
+              placement='top-end'
+            >
+              <div>
+                <SelectData
+                  data={data}
+                  isCheckedAll={isCheckedAll || false}
+                  onSelectAll={onSelectAll}
+                  currentPageStringified={currentPageStringified}
+                  setSelectedContacts={setSelectedContacts}
+                  param={param}
+                  checkedContacts={checkedContacts}
+                  selectAllOnPage={selectAllOnPage}
+                  checkedContactsArray={checkedContactsArray}
+                  contactsIDs={contactsIDs}
+                />
+              </div>
+            </Tooltip>
           </StyledTableCell>
         )}
         {hasDelete && !isNC2myContacts && (
@@ -202,15 +227,25 @@ export const TableHeader: FC<ITableHeaderProps> = ({
             hasMultiSelectFilter,
             hasDataRangeFilter,
             hasSorting,
-            hasNumericRangeFilter
+            hasNumericRangeFilter,
+            IconComponent
           }: ITableHeaderItem) => (
             <StyledTableCell
               component='th'
               scope='row'
               key={name}
               onClick={onClickFilter(name)}
+              data-testid={`table_${name
+                .split(' ')
+                .join('')
+                .toLowerCase()}_row`}
             >
               <Box className={style.customCell}>
+                {!!IconComponent && (
+                  <div className={style.iconWrapper}>
+                    <CommonIcon IconComponent={IconComponent} />
+                  </div>
+                )}
                 {name}
                 {hasFilter && (hasInputFilter || hasMultiSelectFilter) && (
                   <MoreInformation
@@ -331,6 +366,7 @@ export const TableHeader: FC<ITableHeaderProps> = ({
             key='info'
           >
             <Tooltip
+              id='change-password-tooltip'
               classes={styleTooltip}
               title={TooltipMessage}
               placement='top-end'

@@ -42,6 +42,7 @@ export const StatusPage: FC<{ isImport?: boolean }> = ({ isImport }) => {
   const currentConfig = isImport
     ? configs.importMethods
     : configs.exportMethods;
+
   return (
     <>
       <Header />

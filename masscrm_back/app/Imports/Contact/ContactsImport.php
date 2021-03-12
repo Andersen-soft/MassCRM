@@ -13,6 +13,7 @@ use Maatwebsite\Excel\Row;
 
 /**
  * Class ContactsImport
+ *
  * @package App\Imports
  */
 class ContactsImport implements
@@ -31,14 +32,16 @@ class ContactsImport implements
      */
     public ImportContactsDto $importContacts;
 
-
     /**
      * ContactsImport constructor.
-     * @param ImportContactsDto $importContacts
-     * @param ParserImportFileService $parserImportFileService
+     *
+     * @param  ImportContactsDto  $importContacts
+     * @param  ParserImportFileService  $parserImportFileService
      */
-    public function __construct(ImportContactsDto $importContacts, ParserImportFileService $parserImportFileService)
-    {
+    public function __construct(
+        ImportContactsDto $importContacts,
+        ParserImportFileService $parserImportFileService
+    ) {
         $this->importContacts = $importContacts;
         $this->parserImportFileService = $parserImportFileService;
     }

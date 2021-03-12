@@ -10,6 +10,7 @@ interface IRoute {
     addContactsPage?: boolean;
     blacklistPage?: boolean;
     isImport?: boolean;
+    reportPage?: boolean;
   };
 }
 
@@ -22,6 +23,7 @@ const ContactPage = lazy(() => import('../components/ContactPage/ContactPage'));
 const StatusPage = lazy(() => import('../components/StatusPage/StatusPage'));
 const ErrorPage = lazy(() => import('../components/ErrorPage/ErrorPage'));
 const ReviewPage = lazy(() => import('../components/ReviewPage/ReviewPage'));
+const ReportPage = lazy(() => import('../components/ReportPage/ReportPage'));
 
 export const HOME_PATH: string = '/';
 export const SET_PASSWORD_PATH: string = '/set_password';
@@ -36,6 +38,7 @@ export const EXPORT_PATH: string = '/export';
 export const IMPORT_PATH: string = '/import';
 export const ERROR_PATH: string = '/error';
 export const REVIEW_PAGE_PATH: string = '/review';
+export const REPORT_PAGE_PATH: string = '/report';
 
 export const ROUTES: IRoute[] = [
   {
@@ -124,5 +127,12 @@ export const AUTH_ROUTES: IRoute[] = [
     component: ReviewPage,
     exact: true,
     additionalProps: {}
+  },
+  {
+    key: 10,
+    path: REPORT_PAGE_PATH,
+    component: ReportPage,
+    exact: true,
+    additionalProps: { reportPage: true }
   }
 ];

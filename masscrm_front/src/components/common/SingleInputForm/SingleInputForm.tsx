@@ -4,6 +4,7 @@ import { Check, Close } from '@material-ui/icons';
 import { styleNames } from 'src/services';
 import { createProperty } from 'src/utils/object';
 import { format, parse } from 'date-fns';
+import { INVALID_CHARACTERS_OR_FORMAT } from 'src/constants';
 import {
   CommonInput,
   CommonIcon,
@@ -31,12 +32,16 @@ export const SingleInputForm: FC<ISingleInputFormProps> = ({
 
   const validate = (values: ISingleInputForm) => {
     const error: { editInput?: string } = {};
-    if (!values.editInput) error.editInput = 'required field';
+    if (!values.editInput) error.editInput = 'Required field';
+
     const validMess =
-      validation && !validation(values.editInput || '')
-        ? 'Invalid link'
-        : undefined;
+      validation &&
+      !validation(values.editInput || '') &&
+      !error.editInput &&
+      `${INVALID_CHARACTERS_OR_FORMAT}`;
+
     if (validMess) error.editInput = validMess;
+
     return error;
   };
 

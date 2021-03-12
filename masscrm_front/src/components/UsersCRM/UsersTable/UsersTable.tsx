@@ -20,6 +20,7 @@ import {
 } from 'src/actions';
 import { addItemFilter, deleteItemFilter, OTHER_HEIGHT } from 'src/utils/table';
 import { initialUsersFilterState } from 'src/reducers/tableFilters.reducer';
+import { ROWS_COUNT } from 'src/constants';
 import {
   STATUSES,
   tableConfig,
@@ -29,7 +30,6 @@ import {
 } from './utilsUserTable';
 
 export const UsersTable: FC = () => {
-  const ROWS_COUNT = 50;
   const TOTAL_COUNT = useSelector(getTotalCount);
   const load = useSelector(getLoader);
   const users = useSelector(getUsersSelector);

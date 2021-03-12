@@ -17,12 +17,6 @@ export interface IPropsBlacklistTable {
 export interface IInitialAdd {
   emails: string;
 }
-
-export interface IShowCountItem {
-  title: string;
-  value: number;
-}
-
 export interface IResetFilter {
   [index: string]: () => void;
   blacklist: () => void;

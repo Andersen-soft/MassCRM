@@ -27,6 +27,7 @@ export const AddFormUI = connect<any>(
       <form>
         <CustomTextarea
           name='emails'
+          dataTestId='add-contact-textarea'
           onChange={handleChange}
           className={tall ? sn('add-textarea-tall') : sn('add-textarea-low')}
           value={emails || initialValues.emails}
@@ -37,11 +38,13 @@ export const AddFormUI = connect<any>(
           <CommonButton
             text='Clear'
             type='reset'
+            dataTestId='add-contact-clear'
             onClickHandler={handleReset}
           />
           <CommonButton
             text='Submit'
             color='yellow'
+            dataTestId='add-contact-submit'
             onClickHandler={handleSubmit}
           />
         </div>

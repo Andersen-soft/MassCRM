@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useMemo, FC } from 'react';
 import { Publish } from '@material-ui/icons';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
 import { styleNames } from 'src/services';
 import {
   CommonIcon,
@@ -27,15 +26,12 @@ export const DownloadReport: FC<IDownloadReportProps> = ({
 }) => {
   const filterSettings = useSelector(getFilterSettings);
   const totalContactsLength = useSelector(getContactsLength);
-  const location = useLocation();
   const [disabled, setDisabled] = useState<boolean>(false);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [showPreReportModal, setShowPreReportModal] = useState<boolean>(false);
   const [inWork, setInWork] = useState<boolean>(false);
   const [exportCount, setExportCount] = useState<number>(0);
   const total = useSelector(getContactsLength);
-
-  const urlParams = new URLSearchParams(location.search);
 
   const closePopup = useCallback(() => setShowReportModal(false), []);
 
@@ -109,7 +105,7 @@ export const DownloadReport: FC<IDownloadReportProps> = ({
 
   const filterParams = {
     ...filterSettings,
-    ids: urlParams.get('selectAll') ? [] : selectedContacts,
+    ids: selectedContacts,
     limit: total,
     sort: {
       fieldName: 'created',
@@ -153,7 +149,7 @@ export const DownloadReport: FC<IDownloadReportProps> = ({
 
   return (
     <>
-      <div className={sn('tooltip')}>
+      <div className={sn('tooltip')} data-testid='export_button'>
         <CommonIcon
           IconComponent={Publish}
           className={sn('table-tools__icon')}

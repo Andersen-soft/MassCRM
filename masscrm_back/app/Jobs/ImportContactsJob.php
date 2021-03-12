@@ -13,10 +13,10 @@ use App\Models\User\UsersNotification;
 use App\Services\Process\ProcessService;
 use Exception;
 use Illuminate\Bus\Queueable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Lang;
 use Throwable;
 
@@ -35,6 +35,7 @@ class ImportContactsJob implements ShouldQueue
      * @var ProcessService $processService
      */
     private ProcessService $processService;
+    private ParserImportFileService  $parserImportFileService;
 
     private string $path;
 
@@ -47,18 +48,19 @@ class ImportContactsJob implements ShouldQueue
 
     /**
      * Execute the job.
+     *
+     * @param  ProcessService  $processService
+     * @param  ParserImportFileService  $parserImportFileService
      */
-    public function handle(): void
+    public function handle(ProcessService $processService, ParserImportFileService $parserImportFileService): void
     {
-        try {
-            /** @var ProcessService $this->processService */
-            $this->processService = app()->make(ProcessService::class);
-            /** @var ParserImportFileService $parserImportFileService */
-            $parserImportFileService = app()->make(ParserImportFileService::class);
+        $this->processService = $processService;
+        $this->parserImportFileService = $parserImportFileService;
 
+        try {
             $this->setProcessStatus(Process::TYPE_STATUS_PROCESS_IN_PROGRESS);
 
-            $parserImportFileService->setParamsImport($this->importContacts);
+            $this->parserImportFileService->setParamsImport($this->importContacts);
 
             $import = new ContactsImport($this->importContacts, $parserImportFileService);
             $this->importContacts->setTotalRows($this->getTotalCount($import, $this->path));
@@ -78,14 +80,8 @@ class ImportContactsJob implements ShouldQueue
         }
     }
 
-    public function failed(Throwable $exception): void
+    public function setProcessStatus(string $status): void
     {
-        $this->setProcessStatus(Process::TYPE_STATUS_PROCESS_FAILED);
-        $this->notifyError();
-        logger($exception->getMessage());
-    }
-
-    public function setProcessStatus(string $status): void {
         $this->processService->updateStatusProcess(
             $this->importContacts->getProcess(),
             $status
@@ -103,5 +99,12 @@ class ImportContactsJob implements ShouldQueue
             UsersNotification::TYPE_IMPORT_FAILED,
             Lang::get('import.failed')
         );
+    }
+
+    public function failed(Throwable $exception): void
+    {
+        $this->setProcessStatus(Process::TYPE_STATUS_PROCESS_FAILED);
+        $this->notifyError();
+        logger($exception->getMessage());
     }
 }

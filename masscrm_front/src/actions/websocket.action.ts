@@ -1,5 +1,5 @@
 import { createAction } from 'redux-actions';
-import { IWebsocketActions } from 'src/interfaces/IWebsocket';
+import { IStoreState, IWebsocketActions } from 'src/interfaces';
 import { Dispatch } from 'redux';
 
 export const websocketActionTypes = {
@@ -19,7 +19,10 @@ export const websocketActionTypes = {
   WEBSOCKET_EXPORT_CONTACT_FINISHED: 'WEBSOCKET_EXPORT_CONTACT_FINISHED',
   WEBSOCKET_EXPORT_CONTACT_FAILED: 'WEBSOCKET_EXPORT_CONTACT_FAILED',
   WEBSOCKET_CLEAR_WS_DATA: 'WEBSOCKET_CLEAR_WS_DATA',
-  WEBSOCKET_IS_IN_WORK_UPDATED: 'WEBSOCKET_IS_IN_WORK_UPDATED'
+  WEBSOCKET_IS_IN_WORK_UPDATED: 'WEBSOCKET_IS_IN_WORK_UPDATED',
+  WEBSOCKET_SET_EXPORT_PROGRESS_BAR: 'WEBSOCKET_SET_EXPORT_PROGRESS_BAR',
+  WEBSOCKET_SET_IMPORT_PROGRESS_BAR: 'WEBSOCKET_SET_IMPORT_PROGRESS_BAR',
+  WEBSOCKET_CLEAR_PROGRESS_BAR: 'WEBSOCKET_CLEAR_PROGRESS_BAR'
 };
 
 export const websocketPagckageTypes: {
@@ -31,6 +34,8 @@ export const websocketPagckageTypes: {
   export_contacts_failed: 'exportContactFailed',
   export_blacklist_finished: 'exportBlacklistFinished',
   export_blacklist_failed: 'exportBlacklistFailed',
+  export_progress_bar: 'exportProgressBar',
+  import_progress_bar: 'importProgressBar',
   is_in_work_updated: 'isInWorkUpdated',
   initResult: 'initResult'
 };
@@ -62,6 +67,12 @@ export const websocketActions: IWebsocketActions = {
   ),
   isInWorkUpdated: createAction(
     websocketActionTypes.WEBSOCKET_IS_IN_WORK_UPDATED
+  ),
+  exportProgressBar: createAction(
+    websocketActionTypes.WEBSOCKET_SET_EXPORT_PROGRESS_BAR
+  ),
+  importProgressBar: createAction(
+    websocketActionTypes.WEBSOCKET_SET_IMPORT_PROGRESS_BAR
   )
 };
 
@@ -69,5 +80,19 @@ const clearWebsocketDataAction = createAction(
   websocketActionTypes.WEBSOCKET_CLEAR_WS_DATA
 );
 
+const clearWebsocketProgressBarAction = createAction(
+  websocketActionTypes.WEBSOCKET_CLEAR_PROGRESS_BAR
+);
+
 export const clearWebsocketData = (wsData: null) => (dispatch: Dispatch) =>
   dispatch(clearWebsocketDataAction({ wsData }));
+
+export const clearWebsocketProgressBar = (
+  isExportTable: boolean,
+  id?: number
+) => (dispatch: Dispatch, state: () => IStoreState) => {
+  const tableType = isExportTable ? 'exportProgress' : 'importProgress';
+  const progressObject = { ...state().websocket[tableType] };
+  delete progressObject[`${id}`];
+  dispatch(clearWebsocketProgressBarAction({ [tableType]: progressObject }));
+};

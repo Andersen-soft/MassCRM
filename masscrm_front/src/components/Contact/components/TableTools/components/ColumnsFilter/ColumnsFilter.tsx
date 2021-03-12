@@ -56,7 +56,7 @@ export const ColumnsFilter: FC<{ isFullTable: boolean }> = ({
 
   return (
     <span className={sn('table-tools__icon')}>
-      <div className={sn('tooltip')}>
+      <div className={sn('tooltip')} data-testid='configure_fields_button'>
         <MoreInformation
           icon={Tune}
           popperInfo={

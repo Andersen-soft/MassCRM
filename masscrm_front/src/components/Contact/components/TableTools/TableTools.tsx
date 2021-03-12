@@ -73,7 +73,6 @@ export const TableTools: FC<ITableToolsProps> = ({
         onChangeFilter={onChangeFilter}
         rowsForJob={rowsForJob}
       />
-      <div className={sn('table-tools_item')} />
       <div className={sn('table-tools_item')}>
         <ColumnsFilter isFullTable />
         {importStatus === 'processing' ? (
@@ -86,7 +85,7 @@ export const TableTools: FC<ITableToolsProps> = ({
             />
           </div>
         ) : (
-          <div className={sn('tooltip')}>
+          <div className={sn('tooltip')} data-testid='import_button'>
             <CommonIcon
               IconComponent={GetApp}
               className={sn('table-tools__icon')}
@@ -98,7 +97,9 @@ export const TableTools: FC<ITableToolsProps> = ({
           </div>
         )}
         {isFullTable && <DownloadReport selectedContacts={selectedContacts} />}
-        <KebabMenu isFullFunctionality={isFullTable} />
+        <div className={sn('tooltip')} data-testid='kebab_menu'>
+          <KebabMenu isFullFunctionality={isFullTable} />
+        </div>
       </div>
     </div>
   );

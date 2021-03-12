@@ -16,6 +16,7 @@ import { exportReducer } from './export.reducer';
 import { errorReducer } from './error.reducer';
 import { importDataReducer } from './import.table.reducer';
 import { autocompleteReducer } from './autocomplete.reducer';
+import { reportReducer } from './report.reducer';
 
 const rootReducer = combineReducers<IStoreState>({
   users: usersReducer,
@@ -33,7 +34,8 @@ const rootReducer = combineReducers<IStoreState>({
   exportData: exportReducer,
   errorData: errorReducer,
   importData: importDataReducer,
-  autocomplete: autocompleteReducer
+  autocomplete: autocompleteReducer,
+  report: reportReducer
 });
 
 export default rootReducer;

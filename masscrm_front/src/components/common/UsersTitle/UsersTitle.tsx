@@ -22,6 +22,7 @@ export const UsersTitle: FC = () => {
     <div className={sn('users-title')}>
       <div className={sn('users-title-title')}>CRM Users</div>
       <button
+        id='add-user-modal-button'
         className={sn('users-title-btn')}
         type='button'
         onClick={handleClickOpen}

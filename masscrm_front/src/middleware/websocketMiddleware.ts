@@ -21,8 +21,17 @@ function websocketDispatcher(dispatch: Dispatch, event: MessageEvent) {
     const { type, data }: IWebsocketpackage = JSON.parse(wsPackageData);
     const actionType = websocketPagckageTypes[type];
     const action = actionType ? websocketActions[actionType] : null;
+    const progressBarTypes: string[] = [
+      'export_progress_bar',
+      'import_progress_bar'
+    ];
 
-    if (action) {
+    if (action && progressBarTypes.includes(type)) {
+      const { id } = data;
+      dispatch(action({ [`${id}`]: data }));
+    }
+
+    if (action && !progressBarTypes.includes(type)) {
       dispatch(action(data));
     }
   } catch (e) {
@@ -41,6 +50,9 @@ export const websocketMiddleware: Middleware = ({
     websocket: { ws }
   } = getState();
 
+  const wsUrl = `${WS_URL}?token=${Cookies.get('token')}`;
+  const websocket = new WebSocket(wsUrl);
+
   switch (action.type) {
     case websocketActionTypes.WEBSOCKET_CONNECT:
       if (ws !== null) {
@@ -49,9 +61,6 @@ export const websocketMiddleware: Middleware = ({
       }
 
       clearTimeout(closeTimeout);
-
-      const wsUrl = `${WS_URL}?token=${Cookies.get('token')}`;
-      const websocket = new WebSocket(wsUrl);
 
       websocket.onopen = () => {
         dispatch(websocketActions.openAction());

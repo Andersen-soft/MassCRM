@@ -64,4 +64,24 @@ class InformationImport extends Model
     {
         return $this->hasMany(Process::class, 'operation_id');
     }
+
+    public function getDublicatesFileName(): ?string
+    {
+        return self::getFileName($this->file_name_missed_duplicates);
+    }
+
+    public function getErrorsFileName(): ?string
+    {
+        return self::getFileName($this->file_name_unsuccessfully_duplicates);
+    }
+
+    private static function getFileName(string $row): ?string
+    {
+        if (!empty($row)) {
+            $array = explode('/', $row);
+            return end($array);
+        }
+
+        return null;
+    }
 }

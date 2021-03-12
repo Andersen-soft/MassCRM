@@ -2,6 +2,7 @@
 
 exports[`ExitIcon Logo should render correctly 1`] = `
 <span
+  id="logout-button"
   onClick={
     [MockFunction] {
       "calls": Array [

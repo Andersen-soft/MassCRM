@@ -31,6 +31,11 @@ import {
   IContact
 } from '.';
 import { IBlacklistSearch } from './IBlacklist';
+import {
+  IReportTableMapForManager,
+  IReportTableMapForNC1,
+  IReportTableMapForNC2
+} from './IReport';
 
 export type ILocationStore = ILocations;
 
@@ -70,6 +75,7 @@ export interface IContactStore {
   activity_log?: IActivityLog;
   contactForBindingToCompany?: IContact;
   isContactForBindingToCompanyUpdated?: boolean;
+  showCount: number;
 }
 
 export interface IUsersStore {
@@ -132,6 +138,20 @@ export interface IPageStore {
 export interface IErrorStore {
   data?: string;
 }
+export interface IReportStore {
+  data: (
+    | IReportTableMapForNC1
+    | IReportTableMapForNC2
+    | IReportTableMapForManager
+  )[];
+  total?: number;
+  per_page?: number;
+  showCount: number;
+  filterValues: any;
+  // TODO ts
+  filterSettings: any;
+  isFiltersUse: boolean;
+}
 
 export interface IStoreState {
   users: IUsersStore;
@@ -150,4 +170,5 @@ export interface IStoreState {
   errorData: IErrorStore;
   importData: IImportDataStore;
   autocomplete: IAutocompleteStore;
+  report: IReportStore;
 }

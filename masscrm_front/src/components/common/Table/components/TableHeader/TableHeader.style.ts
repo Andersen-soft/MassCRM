@@ -49,6 +49,9 @@ export const headerStyle = makeStyles(() =>
       padding: 0,
       border: 'none',
       outline: 'none'
+    },
+    iconWrapper: {
+      marginRight: '8px'
     }
   })
 );

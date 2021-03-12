@@ -75,6 +75,7 @@ const useStyles = makeStyles(() => ({
 export const CommonButton: FC<ICommonButtonProps> = ({
   text,
   color,
+  dataTestId,
   size,
   onClickHandler,
   disabled,
@@ -92,6 +93,7 @@ export const CommonButton: FC<ICommonButtonProps> = ({
         align ? classes[align] : ''
       } ${className}`}
       onClick={onClickHandler}
+      data-testid={dataTestId}
       disabled={disabled}
       type={type}
     >

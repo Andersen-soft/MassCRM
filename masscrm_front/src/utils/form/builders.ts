@@ -1,39 +1,41 @@
+import { ILocation } from '../../interfaces';
+
 export class ContactBuilder {
-  public responsible: string | undefined;
+  public responsible?: string;
 
-  public first_name: string | undefined;
+  public first_name?: string;
 
-  public last_name: string | undefined;
+  public last_name?: string;
 
-  public gender: string | undefined;
+  public gender?: string;
 
-  public location: any;
+  public location: ILocation;
 
-  public emails: any;
+  public emails: string[];
 
-  public company_id: number | undefined;
+  public company_id?: number;
 
-  public position: string | undefined;
+  public position?: string;
 
-  public skype: string | undefined;
+  public skype?: string;
 
-  public confidence: number | undefined;
+  public confidence?: number;
 
-  public full_name: string | undefined;
+  public full_name?: string;
 
-  public requires_validation: number | string | undefined;
+  public requires_validation?: number | string;
 
-  public birthday: any;
+  public birthday?: string;
 
-  public origin: any;
+  public origin?: string[];
 
-  public linkedin: string | undefined;
+  public linkedin?: string;
 
-  public comment: string | undefined;
+  public comment?: string;
 
-  public social_networks: string[] | undefined;
+  public social_networks?: string[];
 
-  public phones: any;
+  public phones?: string[];
 
   setResponsible(responsible: string | undefined) {
     this.responsible = responsible;
@@ -56,7 +58,7 @@ export class ContactBuilder {
   }
 
   setLocation(
-    location: any,
+    location: ILocation,
     region: string | undefined,
     city: string | undefined
   ) {
@@ -66,7 +68,7 @@ export class ContactBuilder {
     return this;
   }
 
-  setEmails(emails: any) {
+  setEmails(emails: string[] | undefined) {
     this.emails = [...emails];
     return this;
   }
@@ -101,14 +103,14 @@ export class ContactBuilder {
     return this;
   }
 
-  setBirthday(birthday: any) {
+  setBirthday(birthday: string | undefined) {
     if (birthday) {
       this.birthday = birthday.toString();
     }
     return this;
   }
 
-  setOrigin(origin: any) {
+  setOrigin(origin: string[] | undefined) {
     this.origin = origin && [...origin];
     return this;
   }
@@ -123,14 +125,14 @@ export class ContactBuilder {
     return this;
   }
 
-  setSocialNetworks(social_networks: any) {
+  setSocialNetworks(social_networks: string[] | undefined) {
     if (social_networks && social_networks.length) {
-      this.social_networks = [social_networks];
+      this.social_networks = [...social_networks];
     }
     return this;
   }
 
-  setPhones(phones: any) {
+  setPhones(phones: string[] | undefined) {
     if (phones && phones.length) {
       this.phones = [...phones];
     }

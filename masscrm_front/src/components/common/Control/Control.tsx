@@ -80,6 +80,7 @@ export const Control: FC<IControlProps> = ({
         </Tooltip>
       ) : (
         <button
+          id='reset-link-button'
           className={sn('control-btn')}
           type='button'
           onClick={handleClickResetLinkOpen}
@@ -92,9 +93,10 @@ export const Control: FC<IControlProps> = ({
 
   return (
     <div className={sn('control')}>
-      {hasDeleteButton && <DeleteUser id={id} fetchUsers={fetchUsers} />}
+      {hasDeleteButton && <DeleteUser userId={id} fetchUsers={fetchUsers} />}
       {resetPasswordButton}
       <button
+        id={`edit-user${id}-button`}
         className={sn('control-btn')}
         type='button'
         onClick={handleClickOpen}
@@ -107,7 +109,7 @@ export const Control: FC<IControlProps> = ({
       <ResetLinkModal
         open={openResetLink}
         onClose={handleResetLinkClose}
-        id={id || 0}
+        userId={id || 0}
         openAlert={handleClickAlert}
         setUserLogin={setUserLogin}
       />

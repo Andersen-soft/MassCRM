@@ -25,7 +25,7 @@ import style from '../../StatusPage.scss';
 
 const sn = styleNames(style);
 
-enum SORT_STATUS {
+export enum SORT_STATUS {
   'Failed',
   'Done',
   'Waiting',
@@ -173,20 +173,6 @@ export const StatusTable: FC<IStatusTable> = ({
   useEffect(() => {
     dispatch(getFiltersData());
   }, []);
-
-  useEffect(() => {
-    data.sort((a, b) => {
-      const aDate = new Date(a.updated_at?.split(' ')[0]!);
-      const bDate = new Date(b.updated_at?.split(' ')[0]!);
-      const aStatus = a.status as SortStatusType;
-      const bStatus = b.status as SortStatusType;
-
-      return (
-        bDate.getTime() - aDate.getTime() ||
-        SORT_STATUS[bStatus] - SORT_STATUS[aStatus]
-      );
-    });
-  }, [data]);
 
   return (
     <>

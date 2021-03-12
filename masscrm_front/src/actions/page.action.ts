@@ -1,6 +1,6 @@
 import { createAction } from 'redux-actions';
 import { Dispatch } from 'redux';
-import history from '../store/history';
+import history from 'src/utils/history';
 
 export const setPageAction = createAction('SET_PAGE');
 

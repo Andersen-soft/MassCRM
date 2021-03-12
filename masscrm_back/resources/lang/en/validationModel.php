@@ -11,6 +11,8 @@ return [
         'company_linkedIn_regex' => 'The company LinkedIn ":value" format is invalid.',
         'company_type_error' => 'The company type ":value" selected is invalid. Company type can be Subsidiary or Holding',
         'founded_date' => 'The founded is not a valid date.',
+        'company_vacancies_has_active_of_another_user' => 'The company has active vacancies of another user. Try in :days days.',
+        'company_vacancies_timed_out' => 'Vacancies update timed out. Try in :days days.',
     ],
     'industry' => [
         'name_not_exist' => 'The industry name ":value" not exist in database.'
@@ -35,6 +37,7 @@ return [
         'service_id_integer' => 'The ID must be an number',
         'last_touch_date_invalid' => 'The Last touch is not a valid date',
         'added_to_mailing_date_invalid' => 'The Added to mailing is not a valid date',
+        'not_responsible' => 'You are not responsible for this contact.'
     ],
     'contactEmail' => [
         'email_invalid' => 'The contact E-mail :input format is invalid.',
@@ -43,5 +46,6 @@ return [
     ],
     'contactPhone' => [
         'phone_invalid' => 'The contact phone :input format is invalid.'
-    ]
+    ],
+    'not_found' => 'The :model not found',
 ];

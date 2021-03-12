@@ -19,3 +19,6 @@ export const SOCIAL_NETWORKS = [
   'wechat.com',
   'telegram.org'
 ];
+export const NAME_REG_EXP = /^[a-zA-ZäåöüßÄÅÖÜẞа-яА-ЯЁёùûüÿàâæçéèêëïîôœÙÛÜŸÀÂÆÇÉÈÊËÏÎÔŒ]+([\s|-]?[a-zA-ZäåöüßÅÄÖÜẞа-яА-ЯЁёùûüÿàâæçéèêëïîôœÙÛÜŸÀÂÆÇÉÈÊËÏÎÔŒ])*$/g;
+export const POSITION_REG_EXP = /^[a-zA-ZäåöüßÄÅÖÜẞа-яА-ЯЁёùûüÿàâæçéèêëïîôœÙÛÜŸÀÂÆÇÉÈÊËÏÎÔŒ]+((( |&|-)|( & ))?[a-zA-ZäåöüßÅÄÖÜẞа-яА-ЯЁёùûüÿàâæçéèêëïîôœÙÛÜŸÀÂÆÇÉÈÊËÏÎÔŒ])*$/g;
+export const INVALID_CHARACTERS_OR_FORMAT = 'Invalid characters/format';

@@ -6,4 +6,6 @@ return [
     'skype_already_exist' => 'Логин скайпа уже существует.',
     'email_already_exist' => 'E-mail уже существует.',
     'colleague_link_already_exist' => 'Этот профиль LinkedIn уже используется для другого контакта. Контакт будет связан как коллега',
+
+    'required_fields' => 'Поле :attribute должен содержать: :fields.',
 ];

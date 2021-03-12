@@ -12,3 +12,5 @@ export * from './import.selector';
 export * from './export.selector';
 export * from './error.selector';
 export * from './blacklist.selector';
+export * from './websocket.selector';
+export * from './report.selector';

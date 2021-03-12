@@ -12,3 +12,4 @@ export * from './StatusPage';
 export * from './DisplayErrors';
 export * from './ErrorPage';
 export * from './ReviewPage';
+export * from './ReportPage';

@@ -227,6 +227,7 @@ return [
         App\Providers\AttachmentFile\AttachmentFileContactServiceProvider::class,
         App\Providers\ActivityLog\ActivityLogContactServiceProvider::class,
         App\Providers\ActivityLog\ActivityLogCompanyServiceProvider::class,
+        App\Providers\Import\ImportServiceProvider::class,
     ],
 
     /*

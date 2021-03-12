@@ -15,13 +15,13 @@ import {
   setSelectedAddContactsAction,
   setSelectedMyContactsAction
 } from 'src/actions/';
+import history from 'src/utils/history';
 import {
   initialFiltersState,
   initialMultiFilterState,
   initialUsersFilterState
 } from './tableFilters.reducer';
 import { initialSortingState } from './tableSorting.reducer';
-import history from '../store/history';
 
 const currentParam = new URLSearchParams(history.location.search);
 
@@ -30,13 +30,36 @@ const getDataByJson = (param: string) =>
 
 const sortBy = getDataByJson('sort');
 const sorting = getDataByJson('sorting');
+
 const filter = getDataByJson('filter');
+
+// setting 'empty' values (according to the initial type of filter), if some of the default filters are removed
+const getUpdatedFilter = () => {
+  let finalFilter = { ...filter };
+
+  Object.keys(initialFiltersState).forEach(key => {
+    if (!filter?.[key]) {
+      if (
+        typeof initialFiltersState[key] === 'string' &&
+        initialFiltersState[key]
+      ) {
+        finalFilter = { ...finalFilter, [key]: '' };
+      } else if (
+        Array.isArray(initialFiltersState[key]) &&
+        (initialFiltersState[key] as string[]).length
+      ) {
+        finalFilter = { ...finalFilter, [key]: [] };
+      }
+    }
+  });
+  return finalFilter;
+};
 
 const initialState: IFilterStore = {
   data: {},
   settings: {},
   usersSettings: {},
-  values: { ...initialFiltersState, ...filter },
+  values: { ...initialFiltersState, ...(!filter || getUpdatedFilter()) },
   multiValues: initialMultiFilterState,
   usersValues: initialUsersFilterState,
   sort: sorting || initialSortingState,

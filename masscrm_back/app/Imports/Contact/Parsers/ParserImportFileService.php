@@ -11,18 +11,19 @@ use App\Exceptions\Import\ImportException;
 use App\Imports\Contact\Parsers\Import\Company\ImportCompanyService;
 use App\Imports\Contact\Parsers\Import\Contact\ImportContactService;
 use App\Imports\Contact\Parsers\Mapping\FieldMapping;
+use App\Imports\Contact\Users\UserNC2;
+use App\Models\Company\Company;
 use App\Models\Contact\Contact;
 use App\Models\User\User;
 use App\Services\TransferCollection\TransferCollectionCompanyService;
 use App\Services\TransferCollection\TransferCollectionContactService;
 use Illuminate\Support\Facades\Log;
-use App\Models\Company\Company;
 use Illuminate\Support\Facades\DB;
-use Exception;
 use App\Exceptions\Import\ImportFileException;
 
 /**
  * Class ParserImportFileService
+ *
  * @package App
  */
 class ParserImportFileService extends ParserMain
@@ -53,7 +54,8 @@ class ParserImportFileService extends ParserMain
         FieldMapping $fieldMapping,
         TransferCollectionCompanyService $transferCollectionCompanyService,
         TransferCollectionContactService $transferCollectionContactService
-    ) {
+    )
+    {
         $this->importCompanyService = $importCompanyService;
         $this->importContactService = $importContactService;
         $this->importResult = $importResult;
@@ -80,7 +82,8 @@ class ParserImportFileService extends ParserMain
         return $this;
     }
 
-    public function getImportResult(): ImportResult {
+    public function getImportResult(): ImportResult
+    {
         return $this->importResult;
     }
 
@@ -97,7 +100,6 @@ class ParserImportFileService extends ParserMain
         try {
             DB::beginTransaction();
             $data = $this->fieldMapping->mappingFields($row, $this->fields, $this->columnSeparator);
-
             $company = $this->importCompanyService->getUnique($this->fields, $row);
             $contact = $this->importContactService->getUnique($this->fields, $data);
 
@@ -109,8 +111,54 @@ class ParserImportFileService extends ParserMain
                 return;
             }
 
+            if ($this->action === ImportStartParseCommand::DUPLICATION_ACTION_MERGE
+                && ($company || $contact)
+                && $this->user->hasRole(User::USER_ROLE_NC2)) {
+
+                $userData = $this->fieldMapping->mappingFieldsByUser($data, UserNC2::FIELDS);
+
+                if ($company) {
+                    $this->importCompanyService->validateNC2($company, $this->user);
+                }
+
+                if ($company && $contact) {
+                    $this->transferCollectionCompanyService->updateCollectionCompany(
+                        $company = $this->parseCompany($userData, $company)
+                    );
+
+                    $this->transferCollectionContactService->updateCollectionContact(
+                        $contact = $this->parseContact($userData, $contact, $company)
+                    );
+                }
+
+                if ($contact && !$company) {
+                    $this->transferCollectionCompanyService->updateCollectionCompany(
+                        $company = $this->parseCompany($data, $company)
+                    );
+
+                    $this->transferCollectionContactService->updateCollectionContact(
+                        $contact = $this->parseContact($userData, $contact, $company)
+                    );
+                }
+
+                if (!$contact && $company) {
+                    $this->transferCollectionCompanyService->updateCollectionCompany(
+                        $company = $this->parseCompany($userData, $company)
+                    );
+
+                    $this->transferCollectionContactService->updateCollectionContact(
+                        $contact = $this->parseContact($data, $contact, $company)
+                    );
+                }
+
+                $this->importResult->successSaveRow();
+                DB::commit();
+                return;
+            }
+
             $company = $this->parseCompany($data, $company);
             $contact = $this->parseContact($data, $contact, $company);
+
             $this->transferCollectionContactService->updateCollectionContact($contact);
 
             if ($company) {
@@ -157,6 +205,24 @@ class ParserImportFileService extends ParserMain
         return $company;
     }
 
+    private function workWithCompanyAction(Company $company, array $row): Company
+    {
+        switch ($this->action) {
+            case ImportStartParseCommand::DUPLICATION_ACTION_MERGE:
+                $company = $this->importCompanyService->merge($company, $row, $this->user);
+                $this->importResult->incrementSucImportDuplicateCompany();
+                break;
+            case ImportStartParseCommand::DUPLICATION_ACTION_REPLACE:
+                $company = $this->importCompanyService->replace($company, $row, $this->user);
+                $this->importResult->incrementSucImportDuplicateCompany();
+                break;
+            default:
+                break;
+        }
+
+        return $company;
+    }
+
     private function parseContact(array $arrayRow, ?Contact $contact, ?Company $company): Contact
     {
         if ($contact) {
@@ -177,24 +243,6 @@ class ParserImportFileService extends ParserMain
         return $contact;
     }
 
-    private function workWithCompanyAction(Company $company, array $row): Company
-    {
-        switch ($this->action) {
-            case ImportStartParseCommand::DUPLICATION_ACTION_MERGE:
-                $company = $this->importCompanyService->merge($company, $row, $this->user);
-                $this->importResult->incrementSucImportDuplicateCompany();
-                break;
-            case ImportStartParseCommand::DUPLICATION_ACTION_REPLACE:
-                $company = $this->importCompanyService->replace($company, $row, $this->user);
-                $this->importResult->incrementSucImportDuplicateCompany();
-                break;
-            default:
-                break;
-        }
-
-        return $company;
-    }
-
     private function workWithContactAction(Contact $contact, array $row, ?Company $company): Contact
     {
         switch ($this->action) {
@@ -211,7 +259,7 @@ class ParserImportFileService extends ParserMain
                 $this->importResult->incrementSucImportDuplicateContact();
                 break;
             case ImportStartParseCommand::DUPLICATION_ACTION_REPLACE:
-                $contact =  $this->importContactService->replace(
+                $contact = $this->importContactService->replace(
                     $contact,
                     $row,
                     $this->user,
@@ -231,12 +279,12 @@ class ParserImportFileService extends ParserMain
 
     private function percentOfImport(?int $totalRows, $importId, $token): void
     {
-        if(null === $totalRows){
+        if (null === $totalRows) {
             throw new ImportException('File does not have total rows', 400);
         }
         $elementPercentStep = ceil($totalRows * self::PERCENT_STEP / self::PERCENT);
 
-        if (($this->currentElement % $elementPercentStep) == 0) {
+        if (($this->currentElement % $elementPercentStep) == 0 || $this->currentElement == $totalRows) {
             $this->currentPercent += self::PERCENT_STEP;
             CreateSocketUserImportProgressBarEvent::dispatch(
                 $this->currentPercent,
@@ -245,13 +293,12 @@ class ParserImportFileService extends ParserMain
             );
         }
 
-        $this->currentElement ++;
+        $this->currentElement++;
     }
-
 
     private function sendNotificationIfCountLessThenMinimum(int $totalRows, int $importId, $token): void
     {
-        if($this->currentElement === $totalRows && $this->currentElement < self::PERCENT_STEP){
+        if ($this->currentElement === $totalRows && $this->currentElement < self::PERCENT_STEP) {
             CreateSocketUserImportProgressBarEvent::dispatch(
                 self::PERCENT,
                 $importId,

@@ -4,6 +4,13 @@ import { TableCellBaseProps } from '@material-ui/core';
 import { ITableCell, ITableRow } from 'src/components/common/Table/interfaces';
 import { format } from 'date-fns';
 import {
+  LINKEDIN_REG_EXP,
+  SOCIAL_NETWORKS,
+  URL_REGEX,
+  NAME_REG_EXP,
+  POSITION_REG_EXP
+} from 'src/constants';
+import {
   countryCell,
   textCell,
   genderCell,
@@ -19,7 +26,6 @@ import {
 } from './cells';
 import { industryCell } from './cells/ItemsCell/industryCell';
 import { getCompanySize } from '../map';
-import { LINKEDIN_REG_EXP, SOCIAL_NETWORKS, URL_REGEX } from '../../constants';
 import { checkUrl } from '../form/chekUrl';
 
 type FormatterType = (
@@ -118,12 +124,24 @@ export const addContactMapCallback = (
   const isWebsite = (val: string) =>
     URL_REGEX.test(val) && SOCIAL_NETWORKS.every(item => !val.includes(item));
 
-  const textContactTD = (
-    name: string,
-    required?: boolean,
-    isDate?: boolean,
-    formatterFunction?: FormatterType
-  ) =>
+  const nameValidation = (val: string) => !!val.match(NAME_REG_EXP);
+  const positionValidation = (val: string) => !!val.match(POSITION_REG_EXP);
+
+  interface ITextContactTD {
+    name: string;
+    required?: boolean;
+    isDate?: boolean;
+    formatterFunction?: FormatterType;
+    validation?: (val: string) => boolean;
+  }
+
+  const textContactTD = ({
+    name,
+    required,
+    isDate,
+    formatterFunction,
+    validation
+  }: ITextContactTD) =>
     textCell({
       id,
       name,
@@ -131,7 +149,8 @@ export const addContactMapCallback = (
       required,
       isDate,
       contact,
-      formatter: formatterFunction
+      formatter: formatterFunction,
+      validation
     });
 
   const textCompanyTD = (
@@ -169,17 +188,6 @@ export const addContactMapCallback = (
       formatter: formatterFunction
     });
 
-  const contactLink = textCell({
-    id,
-    name: 'first_name',
-    value: first_name,
-    required: true,
-    link: first_name,
-    type: 'link',
-    href: `/contact?id=${id}`,
-    contact
-  });
-
   const personalInfo: Array<ITableCell> = [
     {
       code: 'linkedin',
@@ -193,8 +201,28 @@ export const addContactMapCallback = (
         formatter
       })
     },
-    { code: 'first_name', component: contactLink },
-    { code: 'last_name', component: textContactTD('last_name', true) },
+    {
+      code: 'first_name',
+      component: textCell({
+        id,
+        name: 'first_name',
+        value: first_name,
+        required: true,
+        link: first_name,
+        type: 'link',
+        href: `/contact?id=${id}`,
+        contact,
+        validation: nameValidation
+      })
+    },
+    {
+      code: 'last_name',
+      component: textContactTD({
+        name: 'last_name',
+        required: true,
+        validation: nameValidation
+      })
+    },
     {
       code: 'full_name',
       component: textCell({
@@ -202,7 +230,8 @@ export const addContactMapCallback = (
         name: 'full_name',
         value:
           contact.full_name || `${contact.first_name} ${contact.last_name}`,
-        contact
+        contact,
+        validation: nameValidation
       })
     },
     { code: 'gender', component: genderCell({ id, value: gender }) }
@@ -336,7 +365,13 @@ export const addContactMapCallback = (
             data: (index + 1).toString()
           },
           ...personalInfo,
-          { code: 'position', component: textContactTD('position') },
+          {
+            code: 'position',
+            component: textContactTD({
+              name: 'position',
+              validation: positionValidation
+            })
+          },
           ...companyInfo,
           ...emailInfo,
           ...locationInfo,
@@ -358,7 +393,13 @@ export const addContactMapCallback = (
             data: (index + 1).toString()
           },
           ...personalInfo,
-          { code: 'position', component: textContactTD('position') },
+          {
+            code: 'position',
+            component: textContactTD({
+              name: 'position',
+              validation: positionValidation
+            })
+          },
           ...companyInfo,
           ...emailInfo,
           ...locationInfo,
@@ -403,7 +444,11 @@ export const addContactMapCallback = (
 
   const positionInfo = {
     code: 'position',
-    component: textContactTD('position', true)
+    component: textContactTD({
+      name: 'position',
+      required: true,
+      validation: positionValidation
+    })
   };
 
   const industryInfo = {
@@ -438,7 +483,11 @@ export const addContactMapCallback = (
 
   const birthdayInfo = {
     code: 'birthday',
-    component: textContactTD('birthday', false, true, formatter)
+    component: textContactTD({
+      name: 'birthday',
+      isDate: true,
+      formatterFunction: formatter
+    })
   };
 
   if (isMyContact) {
@@ -528,7 +577,7 @@ export const addContactMapCallback = (
           },
           {
             code: 'service_id',
-            component: textContactTD('service_id', false)
+            component: textContactTD({ name: 'service_id' })
           },
           {
             code: 'added_to_mailing',
@@ -687,8 +736,6 @@ export const addItemFilter = (filter: string[] | string, item: string) => [
 
 export const getBouncesValue = (bounncesValue: string[]) =>
   bounncesValue.map(item => (item === 'Yes' ? 1 : 0));
-
-export const ROWS_COUNT = 50;
 
 export const MAP_AUTOCOMPLETE_VALUES: any = {
   Responsible: (acc: IContactResult, current: IContactResult) =>

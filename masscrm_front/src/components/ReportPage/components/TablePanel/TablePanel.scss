@@ -1,0 +1,78 @@
+.panel {
+  background: #fff;
+  padding: 24px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  &_item {
+    display: flex;
+    align-items: center;
+    margin-right: 60px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  &_title {
+    font-size: 1.3em;
+    margin-right: 24px;
+    margin: 0 auto 0 0;
+  }
+
+  &_label {
+    padding: 5px;
+  }
+
+  &_export-icon {
+    padding: 0 5px;
+    color: #dadada !important;
+    :hover {
+      color: #69738f !important;
+    }
+  }
+}
+
+
+.tooltip {
+  position: relative;
+  margin-left: 30px;
+}
+
+.tooltip .tooltipText {
+  visibility: hidden;
+  font-size: 10px;
+  background-color: white;
+  color: #69738f;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 5px;
+  position: absolute;
+  width: 130px;
+  z-index: 1;
+  bottom: 130%;
+  right: 10%;
+}
+.tooltip .tooltipFilterText {
+  visibility: hidden;
+  font-size: 10px;
+  background-color: white;
+  color: #69738f;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 5px;
+  position: absolute;
+  width: 130px;
+  z-index: 1;
+  bottom: 115%;
+  right: 10%;
+}
+.tooltip:hover .tooltipText{
+  visibility: visible;
+}
+.tooltip:hover .tooltipFilterText{
+  visibility: visible;
+}

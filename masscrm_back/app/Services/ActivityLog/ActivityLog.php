@@ -150,25 +150,32 @@ trait ActivityLog
 
     private function getUser(Model $model): ?int
     {
-        $user = auth()->user();
-        if ($user) {
-            return $user->getId();
-        }
         if (isset($model->user_id)) {
             return $model->user_id;
         }
 
-        return self::findUserId($model);
+        if ($user = $this->findUserId($model)) {
+            return $user;
+        }
+
+        $user = auth()->user();
+        if ($user) {
+            return $user->getId();
+        }
+
+        return null;
     }
 
     private function findUserId($model): ?int
     {
         if ($model->company) {
             return $model->company->user_id;
-        };
+        }
+
         if ($model->contact) {
             return $model->contact->user_id;
         }
+
         return null;
     }
 }

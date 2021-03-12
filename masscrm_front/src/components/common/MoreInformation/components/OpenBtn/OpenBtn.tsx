@@ -11,7 +11,12 @@ export const OpenBtn: FC<{
   icon: FC;
   anchorEl: HTMLElement | null;
 }> = ({ handleClick, icon, anchorEl }) => (
-  <button className={sn('more-btn')} type='button' onClick={handleClick}>
+  <button
+    className={sn('more-btn')}
+    type='button'
+    onClick={handleClick}
+    data-testid='notification_btn'
+  >
     <CommonIcon IconComponent={icon || MoreVert} isActive={!!anchorEl} />
   </button>
 );

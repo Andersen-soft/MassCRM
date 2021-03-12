@@ -58,10 +58,11 @@ export const RolesInfo: FC = () => {
   const open = Boolean(anchorEl);
 
   return (
-    <div className={styles.wrapper}>
+    <div id='roles-info' className={styles.wrapper}>
       <CommonIcon IconComponent={InfoOutlined} onClick={handleClick} />
 
       <Popover
+        id='roles-info-popover'
         open={open}
         anchorEl={anchorEl}
         onClose={handleClose}

@@ -4,7 +4,7 @@ import { styleNames } from 'src/services';
 import { Formik, FormikHelpers } from 'formik';
 import { setPage } from 'src/actions';
 import { addToBlacklist, getBlacklist } from 'src/actions/blacklist.action';
-import { getShowCount } from 'src/selectors/blacklist.selector';
+import { getShowCountBlacklist } from 'src/selectors/blacklist.selector';
 import { SORT } from 'src/utils/table';
 import { ErrorEmitterContext } from 'src/context';
 import style from './AddForm.scss';
@@ -17,7 +17,7 @@ const sn = styleNames(style);
 export const AddForm = ({ changeLines, tall }: IPropsAddForm) => {
   const { errorsEventEmitter } = useContext(ErrorEmitterContext);
   const dispatch = useDispatch();
-  const showCount = useSelector(getShowCount);
+  const showCount = useSelector(getShowCountBlacklist);
   const initialValues: IInitialAdd = {
     emails: ''
   };

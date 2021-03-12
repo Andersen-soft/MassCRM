@@ -1,7 +1,7 @@
 import {
   ITableConfig,
   ITableRow
-} from '../../components/common/Table/interfaces';
+} from 'src/components/common/Table/interfaces';
 import { IBlacklistItem } from '../../interfaces';
 import { IMapRequest } from '../../components/Blacklist/interfaces';
 

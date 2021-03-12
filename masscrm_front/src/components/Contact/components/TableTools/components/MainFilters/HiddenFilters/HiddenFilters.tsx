@@ -44,6 +44,7 @@ export const HiddenFilters: FC<IHiddenFilterProps> = ({
         className={style.dropButton}
         onClick={handleClickDropButton}
         type='button'
+        data-testid='more_filters_btn'
       >
         <span>{show ? 'Hide filters' : 'More filters'}</span>
         {show ? <ArrowDropUpRounded /> : <ArrowDropDownRounded />}

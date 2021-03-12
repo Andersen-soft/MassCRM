@@ -10,6 +10,9 @@ import { setNotification } from './notification.action';
 import { setLoaderAction } from './loader.action';
 import { setAutocompleteAction } from '.';
 
+export const setShowCountContactsAction = createAction(
+  'SET_SHOW_COUNT_CONTACTS'
+);
 export const setContactForBindingToCompany = createAction(
   'SET_CONTACT_FOR_BINDING_TO_COMPANY'
 );
@@ -223,4 +226,10 @@ export const getPreviousCompanies = (id: number) => async (
   } catch (error) {
     setNotification(error);
   }
+};
+
+export const setShowCountContacts = (showCount: number) => async (
+  dispatch: Dispatch
+) => {
+  await dispatch(setShowCountContactsAction({ showCount }));
 };

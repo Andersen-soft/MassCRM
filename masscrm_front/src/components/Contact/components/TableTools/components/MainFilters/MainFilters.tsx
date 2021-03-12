@@ -98,11 +98,13 @@ export const MainFilters: FC<IMainFiltersProps> = ({
               />
             )
         )}
-        <CommonButton
-          text='Reset filter'
-          onClickHandler={resetFilters}
-          className={style.resetButton}
-        />
+        <div data-testid='reset_filter_btn'>
+          <CommonButton
+            text='Reset filter'
+            onClickHandler={resetFilters}
+            className={style.resetButton}
+          />
+        </div>
       </div>
       <HiddenFilters
         filtersConfig={filtersConfig}

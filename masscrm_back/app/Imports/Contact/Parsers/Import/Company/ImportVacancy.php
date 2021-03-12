@@ -5,6 +5,7 @@ namespace App\Imports\Contact\Parsers\Import\Company;
 use App\Helpers\Url;
 use App\Models\Company\Company;
 use App\Models\Company\CompanyVacancy;
+use App\Models\User\User;
 use App\Repositories\Company\VacancyRepository;
 
 class ImportVacancy
@@ -18,7 +19,7 @@ class ImportVacancy
         $this->urlHelper = $urlHelper;
     }
 
-    public function merge(Company $company, array $row): void
+    public function merge(Company $company, array $row, User $user): void
     {
         if (empty($row['companyVacancies'])) {
             return;
@@ -30,6 +31,9 @@ class ImportVacancy
             if (!empty($item['job'])) {
                 $vacancy = $this->vacancyRepository->getFirstVacancyFromName($company, $item['job']);
                 if ($vacancy) {
+                    if ($user->hasRole(User::USER_ROLE_NC2)) {
+                        $item[CompanyVacancy::FIELD_ACTIVE] = CompanyVacancy::ACTIVE;
+                    }
                     $this->updateVacancy($vacancy, $item);
                 } else {
                     $this->createVacancy($company, $item);
@@ -74,10 +78,15 @@ class ImportVacancy
         if (!$vacancy->skills) {
             $vacancy->skills = !empty($vacancies['job_skills']) ? $vacancies['job_skills'] : null;
         }
+
         if (!$vacancy->link) {
             $vacancy->link = !empty($vacancies['job_urls']) ?
                 $this->urlHelper->getUrlWithSchema($vacancies['job_urls']) :
                 null;
+        }
+
+        if (isset($vacancies[CompanyVacancy::FIELD_ACTIVE])) {
+            $vacancy->{CompanyVacancy::FIELD_ACTIVE} = $vacancies[CompanyVacancy::FIELD_ACTIVE];
         }
 
         $vacancy->save();

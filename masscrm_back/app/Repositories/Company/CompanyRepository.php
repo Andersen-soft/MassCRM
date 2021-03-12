@@ -7,6 +7,7 @@ namespace App\Repositories\Company;
 use App\Models\BaseModel;
 use App\Models\Company\Company;
 use App\Models\Company\CompanySubsidiary;
+use App\Models\Company\CompanyVacancy;
 use App\Repositories\FilterRepository;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -137,5 +138,12 @@ class CompanyRepository
         return Company::query()->select('*')->where('is_upload_collection', '=', false)
             ->orderBy('id')
             ->first();
+    }
+
+    public function hasVacanciesByStatus(Company $company, $status): bool
+    {
+        return $company->vacancies()
+            ->where(CompanyVacancy::FIELD_ACTIVE, $status)
+            ->exists();
     }
 }

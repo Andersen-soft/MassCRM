@@ -7,7 +7,10 @@ import {
   LINKEDIN_REG_EXP,
   REGEX_INDUSTRY_NAME,
   SOCIALS_REG_EXP,
-  SOCIAL_NETWORKS
+  SOCIAL_NETWORKS,
+  POSITION_REG_EXP,
+  NAME_REG_EXP,
+  INVALID_CHARACTERS_OR_FORMAT
 } from 'src/constants/form';
 
 const countreisForGender = [
@@ -42,15 +45,20 @@ export const contactFormSchema = (roles: IRoles) =>
   object().shape({
     formCondition: boolean(),
     first_name: string()
+      .matches(NAME_REG_EXP, INVALID_CHARACTERS_OR_FORMAT)
       .required('Required field')
-      .test('isString', 'Must be a string', val => !Number(val)),
+      .test('isString', 'Must be a string', val => !Number(val))
+      .nullable(),
     last_name: string()
+      .matches(NAME_REG_EXP, INVALID_CHARACTERS_OR_FORMAT)
       .required('Required field')
-      .test('isString', 'Must be a string', val => !Number(val)),
+      .test('isString', 'Must be a string', val => !Number(val))
+      .nullable(),
     country: string()
       .required('Required field')
       .nullable(),
     position: string()
+      .matches(POSITION_REG_EXP, INVALID_CHARACTERS_OR_FORMAT)
       .required('Required field')
       .test('isString', 'Must be a string', val => !Number(val))
       .nullable(),

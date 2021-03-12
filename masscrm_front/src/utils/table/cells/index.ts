@@ -13,3 +13,4 @@ export * from './NetworkCell';
 export * from './JobCell';
 export * from './ShowAllTD';
 export * from './DownloadCell';
+export * from './StatusCell';

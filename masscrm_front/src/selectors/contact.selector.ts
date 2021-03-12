@@ -71,3 +71,8 @@ export const getIsContactForBindingToCompanyUpdated = createSelector(
   ({ contacts }: IStoreState) => contacts?.isContactForBindingToCompanyUpdated,
   contacts => contacts
 );
+
+export const getShowCountContacts = createSelector(
+  ({ contacts }: IStoreState) => contacts?.showCount,
+  (showCount: number) => showCount
+);

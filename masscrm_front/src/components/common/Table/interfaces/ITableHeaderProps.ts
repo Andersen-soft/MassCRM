@@ -27,7 +27,13 @@ export interface ITableHeaderProps {
   data?: Array<ITableRow>;
   clearAutocompleteList?: () => void;
   isFullTable?: boolean;
-  currentPage?: number;
+  currentPageStringified: string;
   setSelectedContacts?: Function;
   isNC2myContacts?: boolean;
+  checkedContacts: string | null;
+  selectAllOnPage: string | null;
+  param: URLSearchParams;
+  checkedContactsArray?: number[];
+  contactsIDs: number[];
+  selectedContacts?: number[];
 }

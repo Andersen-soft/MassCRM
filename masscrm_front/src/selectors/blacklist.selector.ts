@@ -41,7 +41,7 @@ export const getFiltersUse = createSelector(
   (useFilters: boolean) => useFilters
 );
 
-export const getShowCount = createSelector(
+export const getShowCountBlacklist = createSelector(
   (state: IStoreState): number => state.blacklist.showCount,
   (showCount: number) => showCount
 );

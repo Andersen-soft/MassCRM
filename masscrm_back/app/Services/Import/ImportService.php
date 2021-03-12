@@ -12,6 +12,7 @@ use App\Exceptions\Import\ImportException;
 use App\Jobs\ImportContactsJob;
 use App\Models\InformationImport;
 use App\Models\Process;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -19,6 +20,8 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class ImportService
 {
+    private const EXCEL_FORMAT = ['Xlsx', 'Xls', 'Xml'];
+
     protected const PREVIEW_LINES = 3;
 
     protected const IMPORT_CONTACT_QUEUE = 'import_contact';
@@ -53,9 +56,12 @@ class ImportService
                 file_get_contents($file->path())
             );
 
+            $fullPath = $fullPath . '/' . $fileName;
+            $this->fileFormatting($fullPath, $fileName);
+
             return [
-                'file_size' => $this->getFileSize($fullPath . '/' . $fileName),
-                'data' => $this->getFirsLines($fullPath . '/' . $fileName),
+                'file_size' => $this->getFileSize($fullPath),
+                'data' => $this->getFirsLines($fullPath),
             ];
         } catch (\Exception $e) {
             throw new ImportException('Import error: ' . $e->getMessage());
@@ -79,6 +85,7 @@ class ImportService
         ];
         $spreadsheet = IOFactory::load($fullPath);
         $rowCount = 0;
+
         foreach ($spreadsheet->getActiveSheet()->getRowIterator() as $row) {
             $index = $row->getRowIndex();
             if ($rowCount === self::PREVIEW_LINES) {
@@ -105,6 +112,51 @@ class ImportService
         }
 
         return $data;
+    }
+
+//    private function fileFormatting($file): UploadedFile
+//    {
+//        $format = ucfirst(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+//        if (in_array($format, self::EXCEL_FORMAT) === false) {
+//            return $file;
+//        }
+//
+//        $spreadsheet = IOFactory::load($file);
+//        for ($index = 0; $index < $spreadsheet->getSheetCount(); $index++) {
+//            if ($spreadsheet->getSheet($index)->getHighestDataRow() < 2) {
+//                $spreadsheet->removeSheetByIndex($index);
+//                $index--;
+//            }
+//        }
+//
+//        $writer = IOFactory::createWriter($spreadsheet, $format);
+//        $writer->setPreCalculateFormulas(false);
+//        $writer->save($file);
+//
+//        return $file;
+//    }
+
+    private function fileFormatting(string $fullPath, string $fileName): void
+    {
+        $format = ucfirst(pathinfo($fileName, PATHINFO_EXTENSION));
+
+        $spreadsheet = IOFactory::load($fullPath);
+        if ($spreadsheet->getSheetCount() < 2) {
+            return;
+        }
+
+        for ($index = 0; $index < $spreadsheet->getSheetCount(); $index++) {
+            if ($spreadsheet->getSheet($index)->getHighestDataRow() < 2) {
+                if ($spreadsheet->getSheet($index)->getHighestDataRow() < 2) {
+                    $spreadsheet->removeSheetByIndex($index);
+                    $index--;
+                }
+            }
+
+            $writer = IOFactory::createWriter($spreadsheet, $format);
+            $writer->setPreCalculateFormulas(false);
+            $writer->save($fullPath);
+        }
     }
 
     public function startParse(ImportStartParseCommand $command): void

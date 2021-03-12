@@ -31,3 +31,6 @@ export * from './ISort';
 export * from './IInfoItem';
 export * from './ILinkedinField';
 export * from './IMainFiltersConfig';
+export * from './IShowCountItem';
+export * from './IContactTableProps';
+export * from './IReport';

@@ -7,4 +7,5 @@ export interface ILabelIconGroupProps {
   icon: FC<SvgIconProps>;
   isActive?: boolean;
   className?: string;
+  dataTestId?: string;
 }

@@ -8,6 +8,7 @@ import { IFilterValue, ITableConfig, ITableRow, TOpen } from '.';
 
 export interface ITableProps {
   config: ITableConfig;
+  data: Array<ITableRow>;
   fetchUsers?: () => void;
   clearAutocompleteList?: () => void;
   currentPage?: number;
@@ -21,7 +22,6 @@ export interface ITableProps {
   changeInput?: (value: string, name: string) => void;
   filtersValues: FiltersStateType;
   inputFilter?: Function;
-  data: Array<ITableRow>;
   onChangeData?: (fun: (item: ITableRow) => boolean) => void;
   onDeleteData?: (ids: Array<number>) => void;
   onEdit?: (id: number, type?: TOpen) => void;

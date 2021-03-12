@@ -35,13 +35,13 @@ import {
   getLoader,
   getFilterValues,
   getSortBy,
-  getSelectedContacts
+  getSelectedContacts,
+  getShowCountContacts
 } from 'src/selectors';
 import {
   addContactMapCallback,
   MAP_AUTOCOMPLETE_RESPONSE,
   MAP_AUTOCOMPLETE_VALUES,
-  ROWS_COUNT,
   deleteItemFilter,
   addItemFilter
 } from 'src/utils/table/add.table';
@@ -49,11 +49,11 @@ import { setLocalStorageItem } from 'src/utils/localStorage';
 import { TableBase, Loader, ContactEdit } from 'src/components/common';
 import {
   IContactResult,
-  IStoreState,
   IAutocomlete,
   IUser,
   IContact,
-  FiltersTypes
+  FiltersTypes,
+  IContactTableProps
 } from 'src/interfaces';
 import { format, max, min } from 'date-fns';
 import debounce from 'lodash.debounce';
@@ -70,6 +70,7 @@ import { FilterContext } from 'src/context';
 import { getSelectedEntity } from 'src/utils/selectedEntity';
 import { useLocation, useHistory } from 'react-router-dom';
 import { TABLE_DEFAULT_INIT_URL } from 'src/constants';
+import { containsAllElems } from 'src/utils/array/filters';
 import { TableConfigCallBack } from './configs/AddContactTable.config';
 import style from '../../Contact.scss';
 import { TableTools } from '../TableTools';
@@ -83,13 +84,13 @@ interface IAutocomleteState {
   other: IContactResult[];
 }
 
-export const ContactTable: FC<{
-  daily?: boolean;
-  isFullTable: boolean;
-  rowsForJob: boolean;
-  myContacts?: boolean;
-}> = ({ daily, isFullTable, rowsForJob, myContacts }) => {
-  const TOTAL_COUNT = useSelector((state: IStoreState) => state.contacts.total);
+export const ContactTable: FC<IContactTableProps> = ({
+  daily,
+  isFullTable,
+  rowsForJob,
+  myContacts,
+  totalCount
+}) => {
   const companySizeAutocomplete = useSelector(getCompanySizeFilter);
   const originsAutocomplete = useSelector(getOriginsFilter);
   const companyTypesAutocomplete = useSelector(getCompanyTypesFilter);
@@ -97,6 +98,7 @@ export const ContactTable: FC<{
   const filtersState = useSelector(getFilterValues);
   const multiFiltersState = useSelector(getMultiFilterValues);
   const filtersSettings = useSelector(getFilterSettings);
+  const showCount = useSelector(getShowCountContacts);
 
   const selectedContacts = useSelector(
     getSelectedContacts(
@@ -117,9 +119,8 @@ export const ContactTable: FC<{
   const [isBigScreen, setIsBigScreen] = useState<boolean>(
     INITIAL_IS_BIG_SCREEN
   );
-  const [visibleTable, setVisibleTable] = useState<boolean>(false);
 
-  const currentPage: number = useSelector(getCurrentPage);
+  const currentPage = useSelector(getCurrentPage);
 
   const { search: filterQueriesString } = useLocation();
   const history = useHistory();
@@ -385,7 +386,7 @@ export const ContactTable: FC<{
     setOpen(type);
   };
 
-  const count = TOTAL_COUNT && Math.ceil(TOTAL_COUNT / ROWS_COUNT);
+  const count = totalCount && Math.ceil(totalCount / showCount);
 
   const initialLocalStorageValues = (localStorageKey: string) => {
     const localStorageFilters = localStorage.getItem(localStorageKey);
@@ -412,15 +413,25 @@ export const ContactTable: FC<{
     updateStorageFunc(currPageName);
   };
 
+  const storageFilterQueriesString = initialLocalStorageValues(currPageName)
+    ?.filterQueriesString;
+
+  const filterQueriesArr = filterQueriesString.split('%');
+  const TABLE_DEFAULT_INIT_URL_ARR = TABLE_DEFAULT_INIT_URL.split('%');
+
+  const areNonDefaultFiltersSet = () =>
+    !(
+      containsAllElems(filterQueriesArr, TABLE_DEFAULT_INIT_URL_ARR) &&
+      containsAllElems(TABLE_DEFAULT_INIT_URL_ARR, filterQueriesArr)
+    );
+
   useEffect(() => {
     if (filterQueriesString) {
-      if (!filterQueriesString.includes(TABLE_DEFAULT_INIT_URL)) {
+      if (areNonDefaultFiltersSet()) {
         return setLocalStorage(setLocalStorageFilters);
       }
       return localStorage.removeItem(currPageName);
     }
-    const storageFilterQueriesString = initialLocalStorageValues(currPageName)
-      ?.filterQueriesString;
 
     return (
       storageFilterQueriesString &&
@@ -431,18 +442,22 @@ export const ContactTable: FC<{
   }, [filterQueriesString]);
 
   useEffect(() => {
-    dispatch(setFilterSettings(requestValues));
-  }, [currentPage, filtersState, sortBy]);
+    if (
+      filterQueriesString &&
+      JSON.stringify(requestValues) !== JSON.stringify(filtersSettings)
+    ) {
+      dispatch(setFilterSettings(requestValues));
+    }
+  }, [currentPage, filtersState, sortBy, filterQueriesString]);
 
   useEffect(() => {
-    if (JSON.stringify(requestValues) !== JSON.stringify(filtersSettings)) {
+    if (
+      filterQueriesString &&
+      JSON.stringify(requestValues) !== JSON.stringify(filtersSettings)
+    ) {
       getData();
     }
   }, [getRequestValues]);
-
-  useEffect(() => {
-    if (contacts?.length) setVisibleTable(true);
-  }, [dataTable]);
 
   useEffect(() => {
     (async () => {
@@ -470,10 +485,13 @@ export const ContactTable: FC<{
           },
           {}
         );
-      dispatch(setFilterValues());
       dispatch(setMultiFilterValues(MultiFiltersParams));
     })();
   }, []);
+
+  useEffect(() => {
+    dispatch(setFilterValues());
+  }, [filterQueriesString]);
 
   const mainFiltersProps = useMemo(
     () => ({
@@ -539,30 +557,29 @@ export const ContactTable: FC<{
         </div>
       )}
       <div className={dataTable.length ? sn('data-table') : sn('data-without')}>
-        {dataTable.length || visibleTable ? (
-          <TableBase
-            config={{ ...tableConfigHeader, rows: newTableConfigRows }}
-            clearAutocompleteList={clearAutocompleteList}
-            filtersValues={filtersState}
-            changeFilter={onChangeFilter}
-            resetFilter={resetFilter}
-            data={dataTable}
-            requestValues={requestValues}
-            changeInput={handleChangeInput}
-            onChangeData={onChangeData}
-            onDeleteData={deleteData}
-            autocompleteValues={autocompleteValues}
-            onEdit={handleEdit}
-            count={count}
-            otherHeight={otherHeight}
-            isFullTable={isFullTable}
-            isMyContacts={myContacts}
-            setSelectedContacts={handleSetSelectedContacts}
-            selectedContacts={selectedContacts}
-          />
-        ) : (
-          <div className={sn('data-mess')}>No data to display</div>
-        )}
+        <TableBase
+          config={{ ...tableConfigHeader, rows: newTableConfigRows }}
+          clearAutocompleteList={clearAutocompleteList}
+          filtersValues={filtersState}
+          changeFilter={onChangeFilter}
+          resetFilter={resetFilter}
+          data={dataTable}
+          requestValues={requestValues}
+          changeInput={handleChangeInput}
+          onChangeData={onChangeData}
+          onDeleteData={deleteData}
+          autocompleteValues={autocompleteValues}
+          onEdit={handleEdit}
+          count={count}
+          otherHeight={otherHeight}
+          isFullTable={isFullTable}
+          isMyContacts={myContacts}
+          setSelectedContacts={handleSetSelectedContacts}
+          selectedContacts={selectedContacts}
+          // force update required here to set filters in the header for the case of
+          // routing back from different page (e.g. import/export-details)
+          key={Number(filterQueriesString)}
+        />
         {editContact && (
           <ContactEdit
             contact={editContact}

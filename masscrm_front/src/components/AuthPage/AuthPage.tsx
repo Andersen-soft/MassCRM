@@ -2,7 +2,7 @@ import React, { FC, useEffect, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { IStoreState, IRoles } from 'src/interfaces';
 import { closeImportModalAction, websocketActions } from 'src/actions';
-import history from 'src/store/history';
+import history from 'src/utils/history';
 import { ImportModal, Authentication } from 'src/components';
 import { rolesConfig } from '../../data/header';
 

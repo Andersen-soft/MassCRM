@@ -10,9 +10,9 @@ import { CommonButton } from '../CommonButton';
 import { CommonAlert } from '../CommonAlert';
 
 export const DeleteUser = memo<{
-  id?: number;
+  userId?: number;
   fetchUsers?: () => void;
-}>(({ id = 0 }) => {
+}>(({ userId = 0 }) => {
   const style = dialogStyle();
 
   const errorsText = useSelector(getErrors);
@@ -38,13 +38,17 @@ export const DeleteUser = memo<{
   };
 
   const deleteUser = async () => {
-    dispatch(deleteInactiveUser(id, errorsEventEmitter));
+    dispatch(deleteInactiveUser(userId, errorsEventEmitter));
     toggleModal();
   };
 
   return (
     <>
-      <DeleteIcon onClick={toggleModal} className={style.deleteIcon} />
+      <DeleteIcon
+        id={`delete-user${userId}-icon`}
+        onClick={toggleModal}
+        className={style.deleteIcon}
+      />
       <Dialog classes={{ root: style.dialog }} open={open}>
         <p className={style.modalText}>
           Are you sure you want to delete the record?

@@ -6,7 +6,7 @@ use App\Commands\Import\ImportContactsCommand;
 use App\Commands\Import\ImportStartParseCommand;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\Import\ImportLoadingFileRequest;
-use App\Http\Requests\Import\ImportStartParsingRequest;
+use App\Http\Requests\Import\StartParsing\ImportStartParsingRequestInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Services\Process\ProcessService;
@@ -85,14 +85,14 @@ class ImportContactsController extends BaseController
      *     @OA\Response(response="404", ref="#/components/responses/404"),
      * )
      */
-    public function startParse(ImportStartParsingRequest $request): JsonResponse
+    public function startParse(ImportStartParsingRequestInterface $request): JsonResponse
     {
         $data = new ImportStartParseCommand(
             $request->user(),
             $request->get('fields'),
             $request->get('origin', []),
-            (int) $request->get('responsible'),
-            (bool) $request->get('is_headers'),
+            (int)$request->get('responsible'),
+            (bool)$request->get('is_headers'),
             $request->get('duplication_action'),
             $request->get('column_separator'),
             auth()->guard()->getRequest()->bearerToken(),
@@ -152,7 +152,7 @@ class ImportContactsController extends BaseController
      */
     public function getStatisticImport(ImportStatisticRequest $request, ImportService $importService): JsonResponse
     {
-        $result = $importService->getStatisticImport((int) $request->get('id'));
+        $result = $importService->getStatisticImport((int)$request->get('id'));
 
         return $this->success([new Statistic($result)]);
     }

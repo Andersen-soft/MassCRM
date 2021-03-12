@@ -6,7 +6,7 @@ import { dialogStyle } from './ResetLinkModal.style';
 interface IModalProps {
   open: boolean;
   onClose: (val: boolean) => void;
-  id: number;
+  userId: number;
   setUserLogin: (val?: string) => void;
   openAlert?: () => void;
 }
@@ -14,7 +14,7 @@ interface IModalProps {
 export const ResetLinkModal: FC<IModalProps> = ({
   open,
   onClose,
-  id,
+  userId,
   openAlert,
   setUserLogin
 }) => {
@@ -28,7 +28,7 @@ export const ResetLinkModal: FC<IModalProps> = ({
     <Dialog classes={{ root: style.dialog }} open={open}>
       <ResetLink
         handleClose={handleClose}
-        id={id}
+        id={userId}
         openAlert={openAlert}
         setUserLogin={setUserLogin}
       />

@@ -11,6 +11,8 @@ export interface IWebsocketActions {
   disconnectAction: ActionFunctionAny<Action<any>>;
   importFinished: ActionFunctionAny<Action<any>>;
   exportBlacklistFinished: ActionFunctionAny<Action<any>>;
+  exportProgressBar: ActionFunctionAny<Action<any>>;
+  importProgressBar: ActionFunctionAny<Action<any>>;
 }
 
 export interface IWebsocketpackage {
@@ -18,6 +20,16 @@ export interface IWebsocketpackage {
   data: {
     [key: string]: any;
   };
+}
+
+export interface IProgress {
+  [key: string]: string | number;
+}
+
+export interface IWSProgressBar {
+  id: number;
+  created_at: Date | string;
+  percent: number;
 }
 
 export interface IWebsocketData {
@@ -31,4 +43,6 @@ export interface IWebsocketData {
 export interface IWebsocketStore {
   wsData: null | IWebsocketData;
   ws: null | WebSocket;
+  importProgress: { [key: string]: IWSProgressBar };
+  exportProgress: { [key: string]: IWSProgressBar };
 }

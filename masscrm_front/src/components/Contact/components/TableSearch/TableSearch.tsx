@@ -112,7 +112,7 @@ export const TableSearch: FC<{ isToday?: boolean }> = ({ isToday }) => {
                 resetDateFilter={resetGlobalDateFilter}
               />
             </div>
-            <div className={sn('table-search__input')}>
+            <div className={sn('table-search__input')} data-testid='search_btn'>
               <CommonButton
                 text='Search'
                 type='submit'

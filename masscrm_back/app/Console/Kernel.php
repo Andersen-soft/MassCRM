@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Console;
 
+use App\Console\Commands\DeleteOldImports;
+use App\Console\Commands\DeactivateCompanyVacancy;
+use App\Console\Commands\DeleteOldExports;
 use App\Console\Commands\ParseFiles;
 use App\Console\Commands\WebSocketServer;
 use App\Console\Commands\LemlistBlacklistCommand;
@@ -28,7 +31,10 @@ class Kernel extends ConsoleKernel
         ReplyBlacklistCommand::class,
         TransferCollectionCompany::class,
         TransferCollectionContact::class,
-        DeleteDuplicateCompanyCommand::class
+        DeleteDuplicateCompanyCommand::class,
+        DeactivateCompanyVacancy::class,
+        DeleteOldExports::class,
+        DeleteOldImports::class
     ];
 
     /**

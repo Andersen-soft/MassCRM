@@ -2,7 +2,7 @@ import { Dispatch } from 'redux';
 import { createAction } from 'redux-actions';
 import qs from 'qs';
 import { deleteEmptyFields } from 'src/utils/form/objectHelpers';
-import history from 'src/store/history';
+import history from 'src/utils/history';
 import { store } from 'src/store/configureStore';
 import { FiltersTypes, IBlacklistSearch, IStoreState } from 'src/interfaces';
 import HTTP from '../utils/http';

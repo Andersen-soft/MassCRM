@@ -11,7 +11,11 @@ import {
 } from 'src/components/common';
 import { ShowAllTD } from 'src/utils/table/cells';
 import copy from 'assets/svg/copy.svg';
-import { ITableCell, ITableRowProps, TOpen } from '../../interfaces';
+import {
+  ITableCell,
+  ITableRowProps,
+  TOpen
+} from 'src/components/common/Table/interfaces';
 
 const INACTIVE_USER = 'Inactive';
 
@@ -23,9 +27,10 @@ export const TableRowItem: FC<ITableRowProps> = ({
   fetchUsers,
   isNC2myContacts
 }) => {
-  const [open, setOpen] = useState<boolean>(false);
+  const [open, setOpen] = useState(false);
   const onSelectHandler = () =>
-    config.onSelectRow && config.onSelectRow(row.id);
+    config.onSelectRow &&
+    config.onSelectRow(row.id)(!data.selectedRows?.includes(row.id));
 
   const handleChangeOpenState = useCallback(
     (value: boolean) => (): void => {
@@ -46,7 +51,13 @@ export const TableRowItem: FC<ITableRowProps> = ({
     () =>
       config.hasSelectAll &&
       onSelectHandler && (
-        <TableCell component='th' scope='row' key='select' className='smallTD'>
+        <TableCell
+          component='th'
+          scope='row'
+          key='select'
+          className='smallTD'
+          data-testid={`table_select_${row.id}`}
+        >
           <CustomCheckBox
             value={data.selectedRows?.includes(row.id)}
             onChange={onSelectHandler}
@@ -60,7 +71,13 @@ export const TableRowItem: FC<ITableRowProps> = ({
     () =>
       config.hasDelete &&
       !isNC2myContacts && (
-        <TableCell className='smallTD' component='th' scope='row' key='delete'>
+        <TableCell
+          className='smallTD'
+          component='th'
+          scope='row'
+          key='delete'
+          data-testid={`table_delete_${row.id}`}
+        >
           <CommonIcon
             IconComponent={Delete}
             onClick={handleChangeOpenState(true)}
@@ -81,7 +98,13 @@ export const TableRowItem: FC<ITableRowProps> = ({
     () =>
       config.hasEdit &&
       !isNC2myContacts && (
-        <TableCell component='th' scope='row' key='edit' className='smallTD'>
+        <TableCell
+          component='th'
+          scope='row'
+          key='edit'
+          className='smallTD'
+          data-testid={`table_edit_${row.id}`}
+        >
           <CommonIcon IconComponent={Edit} onClick={onEditHandler(row.id)} />
         </TableCell>
       ),
@@ -91,7 +114,13 @@ export const TableRowItem: FC<ITableRowProps> = ({
   const canCopy = useMemo(
     () =>
       config.hasCopy && (
-        <TableCell component='th' scope='row' key='copy' className='smallTD'>
+        <TableCell
+          component='th'
+          scope='row'
+          key='copy'
+          className='smallTD'
+          data-testid={`table_copy_${row.id}`}
+        >
           <CommonIcon
             IconComponent={copy}
             onClick={onEditHandler(row.id, 'copy')}
@@ -104,7 +133,12 @@ export const TableRowItem: FC<ITableRowProps> = ({
   const hasInfo = useMemo(
     () =>
       config.hasInfo && (
-        <TableCell component='th' scope='row' key='info'>
+        <TableCell
+          component='th'
+          scope='row'
+          key='info'
+          data-testid={`table_hasinfo_${row.id}`}
+        >
           <MoreInformation
             popperInfo={config.moreInfoRow && config.moreInfoRow(row.id)}
           />
@@ -118,7 +152,13 @@ export const TableRowItem: FC<ITableRowProps> = ({
 
     return (
       config.hasControl && (
-        <TableCell component='th' scope='row' key='edit' className='smallTD'>
+        <TableCell
+          component='th'
+          scope='row'
+          key='edit'
+          className='smallTD'
+          data-testid={`table_cancontrol_${row.id}`}
+        >
           <Control
             id={row.id}
             currentPage={currentPage}

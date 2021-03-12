@@ -50,6 +50,7 @@ interface Props {
   className?: string;
   value?: string;
   name?: string;
+  dataTestId?: string;
   placeholder?: string;
   height?: string;
   minHeight?: string;
@@ -62,6 +63,7 @@ export const CustomTextarea: FC<Props> = ({
   value,
   placeholder,
   name,
+  dataTestId,
   onChange,
   className,
   height,
@@ -73,6 +75,7 @@ export const CustomTextarea: FC<Props> = ({
   return className ? (
     <textarea
       name={name}
+      data-testid={dataTestId}
       value={value}
       onChange={onChange}
       placeholder={placeholder}

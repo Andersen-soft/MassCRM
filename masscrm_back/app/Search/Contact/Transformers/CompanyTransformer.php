@@ -21,8 +21,10 @@ class CompanyTransformer extends SearchableTransform
             CompanyFields::WEBSITE_FIELD => $company->getWebsite(),
             CompanyFields::STO_FULL_NAME_FIELD => $company->getStoFullName(),
             CompanyFields::COMPANY_SIZE_FIELD => [
-                'gte' => $company->getMinEmployees(),
-                'lte' => $company->getMaxEmployees()
+                'gte' => (int)$company->getMinEmployees(),
+                'lte' => (int)$company->getMinEmployees() === self::MIX_MAX_COMPANY_SIZE
+                    ? (int)$company->getMinEmployees() + 1
+                    : $company->getMaxEmployees()
             ],
 
             // Dates

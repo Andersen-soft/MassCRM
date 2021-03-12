@@ -157,7 +157,7 @@ class FieldMapping
             $this->mapEntityFields($item, $valueFields, $entity, $separator, $entityValues);
         }
 
-        $isJobFieldPassed = (bool) array_search('job', $fields);
+        $isJobFieldPassed = (bool)array_search('job', $fields, true);
 
         if ($isJobFieldPassed) {
             $entityValues['companyVacancies']['vacancy'] = $this->formJobData($valueFields);
@@ -259,5 +259,20 @@ class FieldMapping
         }
 
         return $list;
+    }
+
+    public function mappingFieldsByUser(array $data, array $fields): array
+    {
+        $items = [];
+        foreach ($fields as $key => $field) {
+            if (array_key_exists($key, $data)) {
+               foreach ($field as $k ) {
+                   if(array_key_exists($k, $data[$key])) {
+                       $items[$key][$k] = $data[$key][$k];
+                   }
+               }
+            }
+        }
+        return $items;
     }
 }

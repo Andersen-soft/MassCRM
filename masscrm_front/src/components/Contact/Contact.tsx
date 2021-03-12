@@ -78,6 +78,7 @@ export const Contact: FC<{
               isFullTable={isFullTable}
               rowsForJob={rowsForJob}
               myContacts={myContactPage}
+              totalCount={dataLength}
             />
           </div>
         </div>

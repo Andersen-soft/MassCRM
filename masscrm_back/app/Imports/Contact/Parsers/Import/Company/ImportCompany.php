@@ -120,7 +120,9 @@ class ImportCompany
 
     private function setUserToCompany(Company $company, User $user): Company
     {
-        $company->user()->associate($user);
+        if (!$company->getUserId()) {
+            $company->user()->associate($user);
+        }
 
         return $company;
     }
@@ -135,10 +137,10 @@ class ImportCompany
             return $sizes;
         }
 
-        $replace = ['+', '.', ',', '-',' '];
+        $replace = ['+', '.', ',', '-', ' '];
 
         if (strpos($size, '+') !== false) {
-            $sizes['min'] = (int)str_replace(['+', '.', ',',' '], '', $size);
+            $sizes['min'] = (int)str_replace(['+', '.', ',', ' '], '', $size);
         } elseif (strpos($size, '-') !== false) {
             [$min, $max] = explode('-', $size);
             $sizes['min'] = (int)str_replace($replace, '', $min);

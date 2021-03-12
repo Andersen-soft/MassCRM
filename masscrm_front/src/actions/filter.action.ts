@@ -1,6 +1,7 @@
 import { createAction, ActionFunctionAny, Action } from 'redux-actions';
 import { Dispatch } from 'redux';
 import { ITableRow } from 'src/components/common/Table/interfaces';
+import history from 'src/utils/history';
 import HTTP from '../utils/http';
 import { setNotification } from './notification.action';
 import {
@@ -11,7 +12,6 @@ import {
   ISortingObject,
   IStoreState
 } from '../interfaces';
-import history from '../store/history';
 import { initialSortingState } from '../reducers/tableSorting.reducer';
 import { deleteEmptyFields } from '../utils/form/objectHelpers';
 
@@ -42,6 +42,9 @@ export const setSelectedAddContactsAction = createAction(
 );
 export const setSelectedMyContactsAction = createAction(
   'SET_SELECTED_MY_CONTACTS'
+);
+export const setSelectedReportContactsAction = createAction(
+  'SET_SELECTED_REPORT_CONTACTS'
 );
 
 export const getFiltersData = () => async (dispatch: Dispatch) => {

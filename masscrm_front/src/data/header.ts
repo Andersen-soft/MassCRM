@@ -6,7 +6,8 @@ export const header: { [key: string]: string } = {
   all_contacts: 'All contacts',
   my_contacts: 'My contacts',
   blacklist: 'Black list',
-  review: 'Review page'
+  review: 'Review page',
+  report: 'Report page'
 };
 
 export const rolesConfig: IRolesConfig = {
@@ -20,7 +21,8 @@ export const rolesConfig: IRolesConfig = {
       '/export',
       '/import',
       '/company',
-      '/review'
+      '/review',
+      '/report'
     ],
     administrator: ['/users'],
     manager: [
@@ -30,9 +32,24 @@ export const rolesConfig: IRolesConfig = {
       '/export',
       '/import',
       '/company',
-      '/review'
+      '/review',
+      '/report'
     ],
-    nc1: ['/add_contacts', '/my_contacts', '/contact', '/import', '/company'],
-    nc2: ['/add_contacts', '/my_contacts', '/contact', '/import', '/company']
+    nc1: [
+      '/add_contacts',
+      '/my_contacts',
+      '/contact',
+      '/import',
+      '/company',
+      '/report'
+    ],
+    nc2: [
+      '/add_contacts',
+      '/my_contacts',
+      '/contact',
+      '/import',
+      '/company',
+      '/report'
+    ]
   }
 };

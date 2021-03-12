@@ -10,6 +10,7 @@ export const ExitIcon: FC<IExitIconProps> = ({ onClickHandler }) => {
 
   return onClickHandler ? (
     <span
+      id='logout-button'
       onClick={onClickHandler}
       role='button'
       tabIndex={0}

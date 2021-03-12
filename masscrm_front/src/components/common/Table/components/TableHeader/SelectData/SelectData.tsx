@@ -4,55 +4,68 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { List, ListItem, ListItemText } from '@material-ui/core';
 import { styleNames } from 'src/services';
 import { MoreInformation, CustomCheckBox } from 'src/components/common';
-import { useDispatch } from 'react-redux';
+import { ISelectData } from 'src/components/common/Table/interfaces';
+import { getStringifiedItemsWithoutChosenOnes } from 'src/utils/array/filters';
 import style from './SelectData.scss';
-import { ITableRow } from '../../../interfaces';
 
 const sn = styleNames(style);
 
-export const SelectData: FC<{
-  isCheckedAll: boolean;
-  onSelectAll: Function;
-  data?: ITableRow[];
-  currentPage?: number;
-  setSelectedContacts?: Function;
-}> = ({ isCheckedAll, data, currentPage, setSelectedContacts }) => {
+export const SelectData: FC<ISelectData> = ({
+  isCheckedAll,
+  data,
+  currentPageStringified,
+  param,
+  selectAllOnPage,
+  checkedContactsArray,
+  contactsIDs
+}) => {
   const location = useLocation();
   const history = useHistory();
-  const dispatch = useDispatch();
-  const param = new URLSearchParams(location.search);
 
   const onSelectHandler = useCallback(
-    (selection: 'page' | 'all' = 'page') => (value: boolean) => {
-      if (!value) {
-        setSelectedContacts && dispatch(setSelectedContacts({}));
-        param.get('selectAllOnPage') && param.delete('selectAllOnPage');
-        param.get('selectAll') && param.delete('selectAll');
-      }
-      if (selection === 'page' && value) {
-        param.get('selectAll') && param.delete('selectAll');
+    (value: boolean) => {
+      if (value) {
+        const contactsCheckedOnOtherPages = (
+          checkedContactsArray?.filter(
+            (contact: number) => !contactsIDs?.includes(contact)
+          ) || []
+        ).join(',');
+
         // eslint-disable-next-line no-unused-expressions
-        param.get('selectAllOnPage')
-          ? param.delete('selectAllOnPage')
-          : param.set('selectAllOnPage', `${currentPage}`);
+        contactsCheckedOnOtherPages.length
+          ? param.set('selectedContacts', contactsCheckedOnOtherPages)
+          : param.delete('selectedContacts');
+
+        param.set('selectAllOnPage', currentPageStringified);
+      } else {
+        // eslint-disable-next-line no-lonely-if
+        param.delete('selectAllOnPage');
+
+        checkedContactsArray?.some(contact => contactsIDs.includes(contact)) &&
+          param.set(
+            'selectedContacts',
+            getStringifiedItemsWithoutChosenOnes(
+              checkedContactsArray,
+              contactsIDs
+            )
+          );
       }
-      if (selection === 'all' && value) {
-        param.get('selectAllOnPage') && param.delete('selectAllOnPage');
-        param.set('selectAll', 'on');
-      }
+
       history.push({
         search: param.toString()
       });
     },
-    [location]
+    [location, data]
   );
 
   const setDataOfSelection = useCallback(
-    (type: 'page' | 'all') => () => {
-      return type === 'page'
-        ? onSelectHandler(type)(!param.get('selectAllOnPage'))
-        : onSelectHandler(type)(!param.get('selectAll'));
-    },
+    () =>
+      onSelectHandler(
+        !selectAllOnPage ||
+          (selectAllOnPage && selectAllOnPage === currentPageStringified)
+          ? !selectAllOnPage
+          : !!selectAllOnPage
+      ),
     [location, data]
   );
 
@@ -62,18 +75,10 @@ export const SelectData: FC<{
         <ListItem
           button
           component='a'
-          selected={param.get('selectAllOnPage') === String(currentPage)}
-          onClick={setDataOfSelection('page')}
+          selected={selectAllOnPage === currentPageStringified}
+          onClick={setDataOfSelection}
         >
           <ListItemText primary='All on the page' />
-        </ListItem>
-        <ListItem
-          button
-          component='a'
-          selected={param.get('selectAll') === 'on'}
-          onClick={setDataOfSelection('all')}
-        >
-          <ListItemText primary='All contacts' />
         </ListItem>
       </List>
     ),
@@ -82,7 +87,7 @@ export const SelectData: FC<{
 
   return (
     <div className={sn('wrapper')}>
-      <CustomCheckBox value={isCheckedAll} onChange={onSelectHandler('all')} />
+      <CustomCheckBox value={isCheckedAll} onChange={onSelectHandler} />
       <MoreInformation icon={ArrowDropDown} popperInfo={selectList} autoClose />
     </div>
   );

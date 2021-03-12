@@ -29,7 +29,8 @@ class ImportContactService
         ImportMail $parserImportMail,
         ImportNote $parserImportNote,
         ImportPhone $parserImportPhone
-    ) {
+    )
+    {
         $this->contactRepository = $contactRepository;
         $this->parserImportCampaign = $parserImportCampaign;
         $this->parserImportColleague = $parserImportColleague;
@@ -49,7 +50,8 @@ class ImportContactService
         ?Company $company,
         ?array $origin,
         ?string $comment
-    ): Contact {
+    ): Contact
+    {
         $contact = $this->parserImportContact->replace($contact, $row, $user, $responsible, $company, $origin, $comment);
         $this->parserImportCampaign->replace($contact, $row);
         $this->parserImportColleague->replace($contact, $row);
@@ -69,7 +71,8 @@ class ImportContactService
         ?Company $company,
         ?array $origin,
         ?string $comment
-    ): ?Contact {
+    ): ?Contact
+    {
         $contact = $this->parserImportContact->create($row, $user, $responsible, $company, $origin, $comment);
         if ($contact) {
             $this->parserImportCampaign->create($contact, $row);
@@ -92,8 +95,14 @@ class ImportContactService
         ?Company $company,
         ?array $origin,
         ?string $comment
-    ): Contact {
-        $contact = $this->parserImportContact->merge($contact, $row, $user, $responsible, $company, $origin, $comment);
+    ): Contact
+    {
+        if ($user->hasRole(User::USER_ROLE_NC2)) {
+            $contact = $this->parserImportContact->replace($contact, $row, $user, $responsible, $company, $origin, $comment);
+        } else {
+            $contact = $this->parserImportContact->merge($contact, $row, $user, $responsible, $company, $origin, $comment);
+        }
+
         $this->parserImportCampaign->merge($contact, $row);
         $this->parserImportColleague->merge($contact, $row);
         $this->parserImportContactSocialNetwork->merge($contact, $row);

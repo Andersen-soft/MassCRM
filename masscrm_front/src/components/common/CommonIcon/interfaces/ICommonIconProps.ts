@@ -6,4 +6,5 @@ export interface ICommonIconProps {
   resetFilter?: () => void;
   isActive?: boolean;
   disabled?: boolean;
+  dataTestId?: string;
 }

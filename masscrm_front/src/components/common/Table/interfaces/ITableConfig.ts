@@ -1,3 +1,6 @@
+import { SvgIconProps } from '@material-ui/core';
+import { FC } from 'react';
+
 export type TOpen = 'edit' | 'copy' | boolean;
 
 export interface ITableHeaderItem {
@@ -12,6 +15,7 @@ export interface ITableHeaderItem {
   hasDataRangeFilter?: boolean;
   hasSorting?: boolean;
   hasNumericRangeFilter?: boolean;
+  IconComponent?: FC<SvgIconProps<'svg', {}>>;
 }
 
 export interface ITableColumnConfig {
@@ -26,7 +30,7 @@ export interface ITableColumnConfig {
   onSelectAll?: (value: boolean) => void;
   onDeleteSelected?: (id?: number) => void;
   moreInfoRow?: (id: number) => Element;
-  onSelectRow?: (id: number) => void;
+  onSelectRow?: (id: number) => (value: boolean) => void;
   onFilteredBy?: (name: string) => void;
   onEdit?: (id: number, type?: TOpen) => void;
 }

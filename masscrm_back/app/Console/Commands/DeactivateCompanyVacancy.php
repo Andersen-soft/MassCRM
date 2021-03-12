@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
 
 class DeactivateCompanyVacancy extends Command
 {
-    private CONST DAYS_TO_DEACTIVATE_VACANCY = 90;
+    public CONST DAYS_TO_DEACTIVATE_VACANCY = 90;
 
     private CompanyService $companyService;
 

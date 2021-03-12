@@ -60,6 +60,16 @@ return [
             'root' => storage_path('importFiles'),
             'visibility' => 'private',
         ],
+        'importSuccess' => [
+            'driver' => 'local',
+            'root' => storage_path('importSuccess'),
+            'visibility' => 'private',
+        ],
+        'export' => [
+            'driver' => 'local',
+            'root' => storage_path('export'),
+            'visibility' => 'private',
+        ],
         'cities' => [
             'driver' => 'local',
             'root' => storage_path('cities'),

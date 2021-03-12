@@ -20,7 +20,7 @@ class ImportIndustry
             return;
         }
 
-        $newIndustries = [];
+        $idsIndustries = [];
         $industries = $company->industries()->pluck('id')->toArray();
 
         foreach ($row['companyIndustries']['industry'] as $key => $item) {
@@ -33,8 +33,8 @@ class ImportIndustry
             $idsIndustries[] = $industry->id;
         }
 
-        if (!empty($newIndustries)) {
-            $company->industries()->sync(array_unique(array_merge($newIndustries, $industries)));
+        if (!empty($idsIndustries)) {
+            $company->industries()->sync(array_unique(array_merge($idsIndustries, $industries)));
         }
     }
 

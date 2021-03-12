@@ -13,3 +13,4 @@ export * from './autocomplete.action';
 export * from './export.action';
 export * from './error.action';
 export * from './blacklist.action';
+export * from './report.action';

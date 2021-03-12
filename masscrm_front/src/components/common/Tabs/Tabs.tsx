@@ -77,6 +77,7 @@ export const Tabs: React.FC<Props> = props => {
       >
         {tabsConfig.map(config => (
           <Tab
+            data-testid={`tab_label_${config.label}`}
             key={config.key}
             classes={tabClasses}
             disabled={disabledTabs?.[config.key]}

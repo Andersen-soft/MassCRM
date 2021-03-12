@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace App\Http\Requests\Import;
+namespace App\Http\Requests\Import\StartParsing;
 
 use App\Commands\Import\ImportStartParseCommand;
 use App\Http\Requests\AbstractRequest;
 use Illuminate\Support\Facades\Lang;
 
-class ImportStartParsingRequest extends AbstractRequest
+class ImportStartParsingRequest extends AbstractRequest implements ImportStartParsingRequestInterface
 {
     /**
      * Determine if the user is authorized to make this request.

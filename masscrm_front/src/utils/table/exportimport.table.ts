@@ -3,7 +3,7 @@ import {
   ITableRow
 } from 'src/components/common/Table/interfaces';
 import { IExport, IImportModal } from '../../interfaces';
-import { downLoadCell } from './cells';
+import { downLoadCell, StatusCell, IStatusCell } from './cells';
 
 export const exportTableConfig: ITableConfig = {
   rows: [
@@ -47,7 +47,8 @@ export const exportTableMap = () => ({
   name,
   user,
   status,
-  file_path
+  file_path,
+  type
 }: IExport): ITableRow => ({
   id: id as number,
   cells: [
@@ -61,7 +62,7 @@ export const exportTableMap = () => ({
       data: name
     },
     {
-      data: status
+      component: StatusCell({ status, type, rowId: id } as IStatusCell)
     },
     {
       component: downLoadCell(name, file_path)
@@ -77,7 +78,8 @@ export const importTableMap = (
   name,
   user,
   status,
-  operation_id
+  operation_id,
+  type
 }: IImportModal): ITableRow => ({
   id: id as number,
   cells: [
@@ -91,7 +93,7 @@ export const importTableMap = (
       data: name
     },
     {
-      data: status
+      component: StatusCell({ status, type, rowId: id } as IStatusCell)
     },
     {
       component: downLoadCell(

@@ -381,7 +381,9 @@ class ImportContact
 
     private function setUserAndCompanyToContact(Contact $contact, User $user, ?Company $company): Contact
     {
-        $contact->user()->associate($user);
+        if (!$contact->getUserId()) {
+            $contact->user()->associate($user);
+        }
 
         if ($company) {
             $contact->company()->associate($company);
@@ -403,18 +405,18 @@ class ImportContact
             $loc = $this->locationService->findLocations($row[$field], $row);
 
             if ($loc) {
-                $country = $loc->getCountry();
-                if ($country) {
+                if ($country = $loc->getCountry()) {
                     $contact->country = $country->name;
                 }
-                $region = $loc->getRegion();
-                if ($region) {
+
+                if ($region = $loc->getRegion()) {
                     $contact->region = $region->name;
                 }
-                $city = $loc->getCity();
-                if ($city) {
+
+                if ($city = $loc->getCity()) {
                     $contact->city = $city->name;
                 }
+                break;
             }
         }
 
@@ -457,10 +459,8 @@ class ImportContact
     {
         foreach (self::COUNTRY_MAPPING as $originCountry => $countryVariation) {
             if (in_array($country, $countryVariation)) {
-
                 return $originCountry;
             }
-
         }
 
         return $country;

@@ -8,7 +8,8 @@ import {
   getActivityLogAction,
   getRelatedContacts,
   setContactForBindingToCompany,
-  setIsContactForBindingToCompanyUpdated
+  setIsContactForBindingToCompanyUpdated,
+  setShowCountContactsAction
 } from 'src/actions';
 import { IContactStore } from 'src/interfaces/store';
 
@@ -19,7 +20,8 @@ const initialState: IContactStore = {
   plan: {
     count: '',
     expected: ''
-  }
+  },
+  showCount: 50
 };
 
 export const contactReducer = handleActions(
@@ -57,6 +59,10 @@ export const contactReducer = handleActions(
       ...payload
     }),
     [`${setIsContactForBindingToCompanyUpdated}`]: (state, { payload }) => ({
+      ...state,
+      ...payload
+    }),
+    [`${setShowCountContactsAction}`]: (state, { payload }) => ({
       ...state,
       ...payload
     })

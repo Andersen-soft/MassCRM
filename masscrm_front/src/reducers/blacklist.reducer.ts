@@ -1,4 +1,5 @@
 import { handleActions } from 'redux-actions';
+import history from 'src/utils/history';
 import {
   getBlacklistAction,
   setBlacklistFilterSettingsAction,
@@ -7,7 +8,6 @@ import {
   setShowCountAction
 } from '../actions/blacklist.action';
 import { IBlacklistStore } from '../interfaces';
-import history from '../store/history';
 
 const initBlacklistFiltersState = {
   blacklist: '',

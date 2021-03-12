@@ -73,6 +73,14 @@ export const tableStyle = makeStyles(() =>
       '& .MuiPagination-ul': {
         display: 'none'
       }
+    },
+    noDataMessage: {
+      position: 'absolute',
+      top: '50%',
+      width: '100%',
+      textAlign: 'center',
+      color: '#939bb2',
+      fontSize: '1.29em'
     }
   })
 );

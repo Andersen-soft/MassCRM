@@ -83,11 +83,10 @@ class ReportFileService extends AbstractReport
         $listHeaders = $this->getListHeaders($listField, $search);
         $writer->insertOne($listHeaders[self::HEADERS]);
         $data = $this->reportRepository->buildQueryReport($search, $sort, $ids);
-        $contacts = $data->get();
-        $count = $contacts->count();
+        $count = $this->reportRepository->buildQueryReportCount($search, $ids);
 
         /** @var Contact $item */
-        foreach ($contacts as $item) {
+        foreach ($data->cursor() as $item) {
             $this->percentOfExport($count, $process->id, $token);
             $writer->insertOne(
                 $this->fetchReport($item, $listHeaders[self::PATH_METHODS], $listHeaders[self::FILTERS])
@@ -182,7 +181,7 @@ class ReportFileService extends AbstractReport
         }
         $elementPercentStep = ceil($totalRows * self::PERCENT_STEP / self::PERCENT);
 
-        if (($this->currentElement % $elementPercentStep) == 0) {
+        if (($this->currentElement % $elementPercentStep) == 0 || $this->currentElement == $totalRows) {
             $this->currentPercent += self::PERCENT_STEP;
             CreateSocketUserExportProgressBarEvent::dispatch(
                 $this->currentPercent,

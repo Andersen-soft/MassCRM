@@ -2,12 +2,13 @@ import React, { FC, useCallback, useMemo } from 'react';
 import { format, max, min, parseISO } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { IContactFilter } from '../interfaces';
-import { getBouncesValue, ROWS_COUNT, VALIDATION_VALUE } from '../utils/table';
+import { getBouncesValue, VALIDATION_VALUE } from '../utils/table';
 import { getCompanySize } from '../utils/map';
 import {
   getCurrentPage,
   getFilterSettings,
   getFilterValues,
+  getShowCountContacts,
   getSortBy,
   getUser
 } from '../selectors';
@@ -44,10 +45,11 @@ export const FilterProvider: FC = ({ children }) => {
   const paramURL = new URLSearchParams(window.location.search);
   const filtersState = useSelector(getFilterValues);
   const sortBy = useSelector(getSortBy);
-  const currentPage: number = useSelector(getCurrentPage);
+  const currentPage = useSelector(getCurrentPage);
   const currentUser = useSelector(getUser);
   const filtersSettings = useSelector(getFilterSettings);
   const { listField } = filtersSettings;
+  const showCount = useSelector(getShowCountContacts);
 
   const getGenderForRequest = useCallback(() => {
     return filtersState?.Gender?.map(
@@ -121,7 +123,7 @@ export const FilterProvider: FC = ({ children }) => {
   }: IRequestValuesArgs) => IContactFilter = useMemo(
     () => ({ daily, myContacts }: IRequestValuesArgs) => ({
       page: currentPage,
-      limit: ROWS_COUNT,
+      limit: showCount,
       search: {
         skip_responsibility:
           (daily || myContacts) && !isNC2myContacts(myContacts) ? 0 : undefined,
@@ -205,7 +207,7 @@ export const FilterProvider: FC = ({ children }) => {
         listField ||
         (paramURL.get('fields') ? paramURL.get('fields')?.split(',') : [])
     }),
-    [filtersState, filtersSettings, sortBy]
+    [filtersState, filtersSettings, sortBy, currentPage, showCount]
   );
 
   return (

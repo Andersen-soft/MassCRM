@@ -4,10 +4,12 @@ import { Pagination } from '@material-ui/lab';
 import { useDispatch, useSelector } from 'react-redux';
 import { getContactListRequest, setPage } from 'src/actions';
 import { getCurrentPage, getLoader, getUser } from 'src/selectors';
-import { useLocation } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { AxiosResponse } from 'axios';
+import { getStringifiedItemsWithoutChosenOne } from 'src/utils/array/filters';
+import { createProperty, getObjectValueFunction } from 'src/utils/object';
 import { TableHeader, TableRowItem } from './components';
-import { ITableConfig, ITableProps } from './interfaces';
+import { ITableConfig, ITableProps, ITableRow } from './interfaces';
 import { tableStyle } from './Table.style';
 import { Loader } from '../Loader';
 
@@ -31,6 +33,7 @@ export const TableBase: FC<ITableProps> = ({
   selectedContacts,
   isMyContacts
 }) => {
+  const history = useHistory();
   const dispatch = useDispatch();
   const location = useLocation();
   const scrollRef = useRef<HTMLTableElement>(null);
@@ -38,14 +41,88 @@ export const TableBase: FC<ITableProps> = ({
   const currentUser = useSelector(getUser);
   const style = tableStyle({ otherHeight });
 
-  const [filteredBy, setFilteredBy] = useState<Array<string>>([]);
+  const param = new URLSearchParams(location.search);
+  const selectAllOnPage = param.get('selectAllOnPage');
+  const checkedContacts = param.get('selectedContacts');
+  const page = param.get('page');
+
+  const [filteredBy, setFilteredBy] = useState<string[]>([]);
   const currentPage = useSelector(getCurrentPage);
+  const currentPageStringified = `${currentPage}`;
+  const contactsIDs = data?.map(({ id: contactId }: ITableRow) => contactId);
+  const checkedContactsArray = checkedContacts
+    ?.split(',')
+    .filter(contact => contact)
+    .map(contact => +contact);
+
+  const areAllCheckedContactsFromCurrentPage = (item: number) =>
+    contactsIDs?.every(contactId =>
+      [...(checkedContactsArray || []), item].includes(contactId)
+    );
 
   const isNC2myContacts =
     Object.keys(currentUser.roles).includes('nc2') && isMyContacts;
 
-  const onSelectRow = (item: number) =>
-    setSelectedContacts && dispatch(setSelectedContacts({ id: item }));
+  const onSelectRow = (item: number) => (value: boolean) => {
+    const itemStringified = `${item}`;
+
+    const checkedRowCasesConfig = {
+      [createProperty(
+        'firstCase',
+        areAllCheckedContactsFromCurrentPage(item)
+      )]: () => {
+        param.delete('selectedContacts');
+        param.set('selectAllOnPage', currentPageStringified);
+      },
+      [createProperty('secondCase', !checkedContacts)]: () => {
+        param.set('selectedContacts', itemStringified);
+      },
+      [createProperty('thirdCase', !!checkedContacts)]: () => {
+        param.set('selectedContacts', `${checkedContacts},${item}`);
+      },
+      default: () => {}
+    };
+
+    const uncheckedRowCasesConfig = {
+      [createProperty(
+        'firstCase',
+        checkedContactsArray?.length === 1 &&
+          checkedContactsArray.includes(item)
+      )]: () => {
+        param.delete('selectedContacts');
+      },
+      [createProperty(
+        'secondCase',
+        checkedContactsArray && checkedContactsArray?.length > 1
+      )]: () => {
+        param.set(
+          'selectedContacts',
+          getStringifiedItemsWithoutChosenOne(item, checkedContactsArray)
+        );
+      },
+      [createProperty(
+        'thirdCase',
+        selectAllOnPage === currentPageStringified
+      )]: () => {
+        param.delete('selectAllOnPage');
+        param.set(
+          'selectedContacts',
+          getStringifiedItemsWithoutChosenOne(item, selectedContacts)
+        );
+      },
+      default: () => {}
+    };
+
+    if (value) {
+      getObjectValueFunction(checkedRowCasesConfig);
+    } else {
+      getObjectValueFunction(uncheckedRowCasesConfig);
+    }
+
+    history.push({
+      search: param.toString()
+    });
+  };
 
   const handleDeleteMultipleContacts = () => {
     onDeleteData && selectedContacts && onDeleteData(selectedContacts);
@@ -65,8 +142,8 @@ export const TableBase: FC<ITableProps> = ({
   const tableScrollUp = () =>
     scrollRef.current && scrollRef.current.scrollIntoView();
 
-  const onChangePage = (event: ChangeEvent<unknown>, page: number) => {
-    dispatch(setPage(page));
+  const onChangePage = (event: ChangeEvent<unknown>, pageNum: number) => {
+    dispatch(setPage(pageNum));
     tableScrollUp();
   };
 
@@ -87,30 +164,53 @@ export const TableBase: FC<ITableProps> = ({
   };
 
   useEffect(() => {
-    const param = new URLSearchParams(location.search);
-    const selectAll = param.get('selectAll');
-    const selectAllOnPage = param.get('selectAllOnPage');
-    const page = param.get('page');
-
-    const handleSelectedContacts = (pageNumber: string | null) => {
+    const handleSelectedContacts = (
+      pageNumber: string | null,
+      items?: { id: number }[],
+      isConcatItems?: boolean
+    ) => {
       getContactListRequest({
         ...requestValues,
-        page: Number(pageNumber)
-      }).then(
-        (contactList: AxiosResponse) =>
-          setSelectedContacts &&
-          dispatch(setSelectedContacts({ data: contactList.data }))
-      );
+        page: +(pageNumber || 1)
+      }).then((contactList: AxiosResponse) => {
+        setSelectedContacts &&
+          dispatch(
+            setSelectedContacts({
+              data:
+                isConcatItems && items
+                  ? [...contactList.data, ...items]
+                  : items || contactList.data
+            })
+          );
+      });
     };
 
-    if (selectAll) {
-      handleSelectedContacts(page);
-    }
-    if (selectAllOnPage && selectAllOnPage === String(currentPage)) {
-      handleSelectedContacts(selectAllOnPage);
-    }
-    if (selectAllOnPage && selectAllOnPage !== String(currentPage)) {
+    const selectedItems = checkedContactsArray?.map(
+      (checkedContact: number) => ({
+        id: checkedContact
+      })
+    );
+
+    const resetSelectedContacts = () =>
       setSelectedContacts && dispatch(setSelectedContacts({}));
+
+    if (selectAllOnPage) {
+      if (selectAllOnPage === currentPageStringified) {
+        // eslint-disable-next-line no-unused-expressions
+        checkedContacts
+          ? handleSelectedContacts(selectAllOnPage, selectedItems, true)
+          : handleSelectedContacts(selectAllOnPage);
+      } else {
+        // eslint-disable-next-line no-unused-expressions
+        checkedContacts
+          ? handleSelectedContacts(selectAllOnPage, selectedItems, true)
+          : resetSelectedContacts();
+      }
+    } else {
+      // eslint-disable-next-line no-unused-expressions
+      selectedItems
+        ? handleSelectedContacts(page, selectedItems)
+        : resetSelectedContacts();
     }
   }, [location]);
 
@@ -120,7 +220,12 @@ export const TableBase: FC<ITableProps> = ({
         component={Paper}
         classes={{ root: `${style.customTable} ${style.tableHeight}` }}
       >
-        <Table stickyHeader aria-label='sticky table' ref={scrollRef}>
+        <Table
+          stickyHeader
+          aria-label='sticky table'
+          ref={scrollRef}
+          data-testid='table'
+        >
           <TableHeader
             data={data}
             changeInput={changeInput}
@@ -131,14 +236,21 @@ export const TableBase: FC<ITableProps> = ({
             config={tableConfig}
             clearAutocompleteList={clearAutocompleteList}
             isFullTable={isFullTable}
-            currentPage={currentPage}
+            currentPageStringified={currentPageStringified}
             setSelectedContacts={setSelectedContacts}
+            selectedContacts={selectedContacts}
             isNC2myContacts={isNC2myContacts}
+            param={param}
+            checkedContacts={checkedContacts}
+            selectAllOnPage={selectAllOnPage}
+            checkedContactsArray={checkedContactsArray}
+            contactsIDs={contactsIDs}
           />
           <TableBody
             classes={{ root: `${style.customBody} ${load && style.tableBlur}` }}
+            data-testid='table_body'
           >
-            {data &&
+            {data.length ? (
               data.map(item => (
                 <TableRowItem
                   config={tableConfig.column}
@@ -149,7 +261,10 @@ export const TableBase: FC<ITableProps> = ({
                   fetchUsers={fetchUsers}
                   isNC2myContacts={isNC2myContacts}
                 />
-              ))}
+              ))
+            ) : (
+              <div className={style.noDataMessage}>No data to display</div>
+            )}
             {load && <Loader />}
           </TableBody>
         </Table>
@@ -159,6 +274,7 @@ export const TableBase: FC<ITableProps> = ({
         count={count}
         page={currentPage}
         onChange={onChangePage}
+        data-testId='table_pagination'
       />
     </>
   );

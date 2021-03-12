@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { useDispatch, useSelector } from 'react-redux';
 import { styleNames } from 'src/services';
-import history from 'src/store/history';
+import history from 'src/utils/history';
 import { rolesConfig, header } from 'src/data/header';
 import { INotificationStore, IStoreState } from 'src/interfaces/store';
 import { getUserRoles } from 'src/selectors';
@@ -171,6 +171,7 @@ export const Header: FC<{ daily?: boolean; myContacts?: boolean }> = ({
               overlap='circle'
             >
               <MoreInformation
+                data-testid='notification'
                 icon={NotificationsNoneRoundedIcon}
                 notification
                 popperInfo={

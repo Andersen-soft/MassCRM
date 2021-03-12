@@ -34,13 +34,14 @@ export const CustomList = ({ list, getResult }: IListProps) => {
 
   return (
     <List
+      data-testid='list'
       className={
         list?.length > 3 ? `${classes.root} ${classes.rootOver}` : classes.root
       }
     >
       {list?.map(({ id, payload, type }: INotification) => (
         <div key={id}>
-          <ListItem>
+          <ListItem data-testid='notification_list_item'>
             <ListItemText
               className={
                 payload.new
@@ -54,10 +55,14 @@ export const CustomList = ({ list, getResult }: IListProps) => {
                   variant='body2'
                   className={classes.typography}
                 >
-                  <span className={classes.date}>
+                  <span
+                    className={classes.date}
+                    data-testid={`date_listItem_${id}`}
+                  >
                     {format(parseJSON(payload.created_at), 'dd MMM, p')}
                   </span>
                   <button
+                    data-testid={`btn_${type}_${id}`}
                     className={classes.button}
                     type='button'
                     onClick={handleClick(type, id, payload)}

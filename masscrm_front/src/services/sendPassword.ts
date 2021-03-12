@@ -1,6 +1,6 @@
 import { setToken } from 'src/services/setTokenToCookies';
+import history from 'src/utils/history';
 import { instance } from '../utils/http';
-import history from '../store/history';
 
 export default (id: number, password: string) => {
   return instance

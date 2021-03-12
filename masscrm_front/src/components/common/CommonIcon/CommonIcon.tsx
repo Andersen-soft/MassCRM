@@ -8,13 +8,14 @@ export const CommonIcon: FC<ICommonIconProps & SvgIconProps> = ({
   IconComponent,
   isActive,
   disabled,
+  dataTestId,
   ...props
 }) => {
   const style = iconStyle();
 
   if (disabled) {
     return (
-      <Box className={style.box}>
+      <Box className={style.box} data-testid={dataTestId}>
         <IconButton className={style.iconBtn} disabled>
           <IconComponent
             {...props}
@@ -28,7 +29,7 @@ export const CommonIcon: FC<ICommonIconProps & SvgIconProps> = ({
   }
 
   return (
-    <Box className={style.box}>
+    <Box className={style.box} data-testid={dataTestId}>
       <IconComponent
         {...props}
         classes={{
