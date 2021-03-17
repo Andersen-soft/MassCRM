@@ -14,6 +14,13 @@ Our system let users:
 We have collected key examples of usage. Please, explore the range of Andersen CRM Sales features by getting into [User Guide](./documentation/Andersen%20CRM%20Marketing%20Guide.docx.pdf).
 Download the file for more convenient reading.
 
+The [Video](./documentation/MassCRM.mp4) describes the main functions that Andersen CRM Marketing  provides:
+- create contacts
+- import contacts from a file
+- access to contact data
+- use filters and sorts
+- export data
+
 # Technologies
 
 * Laravel 7.0
