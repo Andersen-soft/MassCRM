@@ -64,7 +64,7 @@
     "redux-thunk": "^2.3.0",
     "reselect": "^4.0.0",
     "save-dev": "0.0.1-security",
-    "yup": "^0.29.3"
+    "yup": "^0.32.9"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.1",
