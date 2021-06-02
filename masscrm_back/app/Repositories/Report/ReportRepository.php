@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Repositories\Report;
 
+use App\Models\ReportPageLog;
+use App\Models\User\User;
 use App\Repositories\Contact\ContactRepository;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +17,7 @@ use App\Models\Company\Company;
 class ReportRepository implements SearchType
 {
     private const FORMAT_MONTH_AND_DAY = 'MMDD';
+    private const USER_ROLES = [User::USER_ROLE_NC1, User::USER_ROLE_NC2];
     private const LAST_MONTH_AND_DAY_YEAR = 1231;
     private const START_MONTH_AND_DAY_YEAR = 101;
     private const FORMAT_MASK_STRING_TO_INT = '9999';
@@ -28,6 +31,104 @@ class ReportRepository implements SearchType
     public function __construct(ContactRepository $contactRepository)
     {
         $this->contactRepository = $contactRepository;
+    }
+
+    public function getReportListForManagers(array $search, array $sort): Builder
+    {
+        $statistic = ReportPageLog::query()
+            ->selectRaw("
+             users.id as user_id,
+             CONCAT(users.name, users.surname) as full_name,
+             users.name as name,
+             users.surname as surname,
+             users.roles as role,
+             COALESCE(SUM(created), 0) as created,
+             COALESCE(SUM(updated), 0) as updated,
+             (COALESCE(SUM(created), 0) + COALESCE(SUM(updated), 0)) as total
+             ")
+            ->join('users', 'users.id', '=', 'report_page_log.user_id');
+
+        $this->setParamsSearchDateList($search, $statistic);
+
+        $query = $this->setParamsSearchForManagersList($search, $statistic)->groupBy('users.id');
+
+        $query = $this->setParamSorList($sort, $query);
+
+        return $query;
+    }
+
+    public function getReportListForNC(array $search, array $sort, int $userId): Builder
+    {
+        $statistic = ReportPageLog::query()
+            ->selectRaw("
+             COALESCE(SUM(created), 0) as created,
+             COALESCE(SUM(updated), 0) as updated,
+             (COALESCE(SUM(created), 0) + COALESCE(SUM(updated), 0)) as total,
+             to_char(report_page_log.created_at, 'YYYY-MM') as date
+             ")
+            ->join('users', 'users.id', '=', 'report_page_log.user_id')
+            ->where('report_page_log.user_id', $userId);
+
+        $this->setParamsSearchDateList($search, $statistic);
+
+        $statistic = $this->setParamSorList($sort, $statistic->groupBy(['report_page_log.user_id', 'date']));
+
+        return $statistic;
+    }
+
+    public function setParamsSearchForManagersList(array $search, Builder $query): Builder
+    {
+
+        if (array_key_exists('employee', $search)) {
+            $searchParam = $search['employee'];
+            $query->whereRaw("CONCAT(users.name, ' ', users.surname) ILIKE '%$searchParam%'");
+        }
+
+        if (array_key_exists('role', $search)) {
+            $query->where(static function (Builder $query) use ($search) {
+                foreach ($search['role'] as $item) {
+                    $query->orWhereJsonContains('users.roles', $item);
+                }
+            });
+        } else {
+            $query->where(function (Builder $query) {
+                $roles = self::USER_ROLES;
+                    foreach ($roles as $item) {
+                        $query->orWhereJsonContains('users.roles', $item);
+                    }
+            });
+        }
+
+        return $query;
+    }
+
+    public function setParamsSearchDateList(array $search, Builder $query): Builder
+    {
+        if (array_key_exists('date', $search)){
+            $query->whereBetween('report_page_log.created_at',
+                [Carbon::parse($search['date']['from'])->startOfDay(),
+                    Carbon::parse($search['date']['to'])->endOfDay()]
+            );
+        } else {
+            $query->whereBetween('report_page_log.created_at',
+                [Carbon::now()->startOfMonth(),
+                    Carbon::now()->endOfMonth()]
+            );
+        }
+
+        return $query;
+    }
+
+    private function setParamSorList(array $sort, Builder $query): Builder
+    {
+        if (!empty($sort)
+            && !empty($sort['field_name'])
+            && !empty($sort['type_sort'])
+        ) {
+            $query->orderByRaw($sort['field_name'] . ' ' . $sort['type_sort']);
+        }
+
+        return $query;
     }
 
     private function getRelationTablesQuery(array $search, Builder $query): Builder
@@ -142,6 +243,16 @@ class ReportRepository implements SearchType
                     } else {
                         $query->where('companies.min_employees', '>=', $value['min']);
                     }
+                    break;
+                case SearchType::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE_MULTI:
+                    $query->where(static function (Builder $query) use ($value) {
+                        foreach ($value as $item) {
+                            $query->orWhere(static function ($query) use ($item) {
+                                $query->where(Company::MIN_EMPLOYEES_FIELD, '>=', $item['min'])
+                                    ->where(Company::MAX_EMPLOYEES_FIELD, '<=', $item['max']);
+                            });
+                        }
+                    });
                     break;
                 case self::TYPE_SEARCH_FIELD_BOUNCES:
                     if ($value) {

@@ -1,6 +1,5 @@
-import { IJob } from 'src/interfaces/IJob';
-import { checkUrl, checkJobUrl } from './chekUrl';
-import { IIndustry } from '../../interfaces';
+import { IJob, IIndustry } from 'src/interfaces';
+import { checkUrl, checkJobUrl } from 'src/utils';
 
 export class CompanyBuilder {
   public name?: string;
@@ -19,7 +18,7 @@ export class CompanyBuilder {
 
   public subsidiaries?: number[];
 
-  public vacancies?: Array<IJob>;
+  public vacancies?: IJob[];
 
   public sto_full_name?: string;
 
@@ -80,7 +79,7 @@ export class CompanyBuilder {
     return this;
   }
 
-  setVacancies(formForVacancies: boolean, vacancies?: Array<IJob>) {
+  setVacancies(formForVacancies: boolean, vacancies?: IJob[]) {
     if (formForVacancies) {
       this.vacancies = vacancies?.map(checkJobUrl) ?? [];
     }

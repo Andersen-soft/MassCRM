@@ -1,4 +1,4 @@
-import { IUser } from './IUser';
+import { IUser } from 'src/interfaces';
 
 export interface IExport {
   created_at?: string;
@@ -12,7 +12,7 @@ export interface IExport {
   operation_id?: number;
 }
 
-export interface IExportMetaData {
+interface IExportMetaData {
   current_page?: number;
   first_page_url?: string;
   from?: number;
@@ -35,8 +35,8 @@ export interface IExportInputFilterValues {
 }
 
 export interface IExportStore {
-  data: Array<IExport>;
-  errors: Array<string>;
+  data: IExport[];
+  errors: string[];
   meta: IExportMetaData;
   success: boolean;
   filter: IExportInputFilterValues;
@@ -59,6 +59,6 @@ export interface IExportSearch {
 export interface IExportDataTable {
   total: number;
   show: number;
-  data: Array<IExport>;
+  data: IExport[];
   filter: IExportInputFilterValues;
 }

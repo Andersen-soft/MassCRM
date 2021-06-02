@@ -1,5 +1,5 @@
 import { ILocation } from 'src/interfaces';
-import { checkUrl } from './chekUrl';
+import { checkUrl } from 'src/utils';
 
 export class ContactBuilder {
   public responsible?: string;

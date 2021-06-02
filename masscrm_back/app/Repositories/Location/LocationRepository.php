@@ -86,6 +86,15 @@ class LocationRepository
             ->exists();
     }
 
+    public function hasRegionByNameInCountryByName(string $countryName, string $regionName): bool
+    {
+        return Country::query()
+            ->leftJoin('regions', 'countries.id', '=', 'regions.country_id')
+            ->where('regions.name', '=', $regionName)
+            ->where('countries.name', '=', $countryName)
+            ->exists();
+    }
+
     public function hasCityByNameAndRegionId(string $cityName, int $regionId): bool
     {
         return City::query()

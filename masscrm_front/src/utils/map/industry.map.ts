@@ -1,8 +1,8 @@
 import { IIndustry } from 'src/interfaces';
 
 export const findIndustryIDByName = (
-  industriesNames: Array<string>,
-  industries: Array<IIndustry>
+  industriesNames: string[],
+  industries: IIndustry[]
 ) => {
   return industries.reduce((result: number[], { name, id }: IIndustry) => {
     if (industriesNames.includes(name)) return [...result, id];
@@ -10,10 +10,10 @@ export const findIndustryIDByName = (
   }, []);
 };
 
-export const getNamesOfIndustry = (items: Array<IIndustry>) => {
+export const getNamesOfIndustry = (items: IIndustry[]) => {
   return items.map(({ name }) => name);
 };
 
-export const joinNamesOfIndusrty = (items: Array<IIndustry>) => {
+export const joinNamesOfIndusrty = (items: IIndustry[]) => {
   return getNamesOfIndustry(items).join(',');
 };

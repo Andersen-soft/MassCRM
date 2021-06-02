@@ -1,0 +1,14 @@
+export const HOME_PATH: string = '/';
+export const SET_PASSWORD_PATH: string = '/set_password';
+export const COMPANY_PAGE_PATH: string = '/company';
+export const USERS_PATH: string = '/users';
+export const ADD_CONTACTS_PATH: string = '/add_contacts';
+export const MY_CONTACTS_PATH: string = '/my_contacts';
+export const ALL_CONTACTS_PATH: string = '/all_contacts';
+export const BLACKLIST_PATH: string = '/blacklist';
+export const CONTACT_PAGE_PATH: string = '/contact';
+export const EXPORT_PATH: string = '/export';
+export const IMPORT_PATH: string = '/import';
+export const ERROR_PATH: string = '/error';
+export const REVIEW_PAGE_PATH: string = '/review';
+export const REPORT_PAGE_PATH: string = '/report';

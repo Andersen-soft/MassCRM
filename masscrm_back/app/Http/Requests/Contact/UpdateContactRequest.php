@@ -8,6 +8,7 @@ use App\Rules\Contact\CheckUniqueEmailContact;
 use App\Rules\Contact\UniqueContactLinkedIn;
 use App\Rules\Contact\UniqueContactSocialNetwork;
 use App\Rules\DistinctRule;
+use App\Rules\Contact\ValidContactLocationArray;
 use Illuminate\Support\Facades\Lang;
 
 class UpdateContactRequest extends AbstractRequest
@@ -54,11 +55,11 @@ class UpdateContactRequest extends AbstractRequest
                 new UniqueContactLinkedIn((int) $this->contact)
             ],
             'requires_validation' => 'nullable|boolean',
-            'location' => 'array',
+            'location' => ['array', new ValidContactLocationArray],
             'location.country' => 'required_without:gender|string|max:50',
             'location.region' => 'nullable|string|max:150',
             'location.city' => 'nullable|string|max:50',
-            'position' => 'string',
+            'position' => 'required|string',
             'social_networks' => 'nullable|array',
             'social_networks.*' => ['string', 'url', new UniqueContactSocialNetwork((int) $this->contact)],
             'comment' => 'nullable|string',
@@ -79,7 +80,7 @@ class UpdateContactRequest extends AbstractRequest
             'responsible' => 'nullable|string|max:150',
             'birthday' => 'nullable|date',
             'note' => 'array',
-            'note.*' => 'string'
+            'note.*' => 'string',
         ];
     }
 

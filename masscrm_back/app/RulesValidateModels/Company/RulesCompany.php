@@ -4,7 +4,8 @@ namespace App\RulesValidateModels\Company;
 
 use App\Models\BaseModel;
 use App\Models\Company\Company;
-use App\Rules\Company\UniqueCompanyNameRule;
+use App\Rules\Company\UniqueCompanyWebsite;
+use App\Rules\Company\ValidCompanyWebsite;
 use App\RulesValidateModels\RulesValidateInterface;
 use Illuminate\Support\Facades\Lang;
 use App\Http\Requests\AbstractRequest;
@@ -19,8 +20,12 @@ class RulesCompany implements RulesValidateInterface
     public function rulesCreate(): array
     {
         return [
-            'name' => ['required', 'string', 'max:150', new UniqueCompanyNameRule()],
-            'website' => 'nullable|string|url',
+            'name' => ['required', 'string', 'max:150'],
+            'website' => [
+                'required', 'string', 'url',
+                new ValidCompanyWebsite(),
+                new UniqueCompanyWebsite()
+            ],
             'linkedin' => 'nullable|string|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN,
             'sto_full_name' => 'nullable|string|max:150',
             'type' => 'nullable|string|max:50|in:' . implode(',', [
@@ -38,7 +43,11 @@ class RulesCompany implements RulesValidateInterface
     {
         return [
             'name' => 'required|string|max:150',
-            'website' => 'nullable|string|url',
+            'website' => [
+                'required', 'string', 'url',
+                new ValidCompanyWebsite(),
+                new UniqueCompanyWebsite(null, $company->id)
+            ],
             'linkedin' =>
                 'nullable|string|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN,
             'sto_full_name' => 'nullable|string|max:150',
@@ -61,7 +70,8 @@ class RulesCompany implements RulesValidateInterface
             'website.url' => Lang::get('validationModel.company.company_website_url'),
             'linkedin.regex' => Lang::get('validationModel.company.company_linkedIn_regex'),
             'type.in' => Lang::get('validationModel.company.company_type_error'),
-            'founded.date' => Lang::get('validationModel.company.founded_date')
+            'founded.date' => Lang::get('validationModel.company.founded_date'),
+            'website.required' => Lang::get('validationModel.company.company_website_required')
         ];
     }
 }

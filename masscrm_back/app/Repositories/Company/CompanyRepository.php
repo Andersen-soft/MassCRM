@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Repositories\Company;
 
+use App\Helpers\Url;
 use App\Models\BaseModel;
 use App\Models\Company\Company;
 use App\Models\Company\CompanySubsidiary;
 use App\Models\Company\CompanyVacancy;
+use App\Models\Contact\Contact;
 use App\Repositories\FilterRepository;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -73,7 +75,8 @@ class CompanyRepository
             $query->where('name', 'ILIKE', $name);
         }
         if ($website) {
-            $query->orWhere('website', 'ILIKE', $website);
+            $website = Url::getSecondAndFirstDomainsString($website);
+            $query->where('website', '~*', Url::getWebsiteMatchString($website));
         }
         if ($linkedIn) {
             $query->orWhere('linkedin', 'ILIKE', $linkedIn);
@@ -104,6 +107,13 @@ class CompanyRepository
     public function getCompanyById(int $company): ?Company
     {
         return Company::query()->find($company);
+    }
+
+    public function getCompanyByName(string $name): ?Company
+    {
+        return Company::query()
+            ->where('name', '=', $name)
+            ->first();
     }
 
     public function getCompanyFromTypeAndName(string $name, string $type): ?Company
@@ -140,10 +150,13 @@ class CompanyRepository
             ->first();
     }
 
-    public function hasVacanciesByStatus(Company $company, $status): bool
+    public function hasVacanciesByJobLocation(Company $company, $status, ?Contact $contact): bool
     {
         return $company->vacancies()
             ->where(CompanyVacancy::FIELD_ACTIVE, $status)
+            ->where('job_country', $contact->country ?? null)
+            ->where('job_city', $contact->city ?? null)
+            ->where('job_region', $contact->region ?? null)
             ->exists();
     }
 }

@@ -17,12 +17,14 @@ use App\Services\Token\FirebaseTokenManager;
 use Illuminate\Support\Facades\Mail;
 use WebSocket\BadOpcodeException;
 use WebSocket\Client;
+use WebSocket\ConnectionException;
 
 class NotificationUserService
 {
     private UserService $userService;
     private UserRepository $userRepository;
     private FirebaseTokenManager $firebaseTokenManager;
+    private array $clientSocketConfig;
 
     public function __construct(
         UserService $userService,
@@ -32,6 +34,10 @@ class NotificationUserService
         $this->userService = $userService;
         $this->userRepository = $userRepository;
         $this->firebaseTokenManager = $firebaseTokenManager;
+        $this->clientSocketConfig = [
+            'timeout' => 60,
+            'logger' => logger()
+        ];
     }
 
     public function sendNotificationRegistrationUserActiveDirectory(User $user): void
@@ -64,7 +70,7 @@ class NotificationUserService
         ?int $operationId
     ): void {
         $token = $this->userService->loginUserSuperAdmin();
-        $client = new Client(config('socket.host') . '?token=' . $token);
+        $client = new Client(config('socket.host') . '?token=' . $token, $this->clientSocketConfig);
         if (empty($users)) {
             $users = $this->userRepository->getListActiveUser();
         }
@@ -98,7 +104,7 @@ class NotificationUserService
         string $message
     ): void {
         $token = $this->userService->loginUserSuperAdmin();
-        $client = new Client(config('socket.host') . '?token=' . $token);
+        $client = new Client(config('socket.host') . '?token=' . $token, $this->clientSocketConfig);
         $data = [
             'info' => [
                 'type' => $typeNotification,
@@ -108,6 +114,7 @@ class NotificationUserService
                 ]
             ]
         ];
+        logger('Socket notification User to socket without saving in DB: ' . json_encode($data));
         if ($token) {
             $this->sendNotificationToSocket($data, $client);
         }
@@ -119,7 +126,7 @@ class NotificationUserService
     {
         try {
             $client->send(json_encode($data));
-        } catch (BadOpcodeException $e) {
+        } catch (BadOpcodeException | ConnectionException $e) {
             Log::error('Cant send message. Error: ' . $e->getMessage());
         }
     }
@@ -137,7 +144,7 @@ class NotificationUserService
 
     public function sendNotificationImportProgressBarToSocket(int $percent, int $importId, $token): void
     {
-        $client = new Client(config('socket.host') . '?token=' . $token);
+        $client = new Client(config('socket.host') . '?token=' . $token, $this->clientSocketConfig);
         $data = [
             'info' => [
                 'type' => 'import_progress_bar',
@@ -148,6 +155,7 @@ class NotificationUserService
                 ]
             ]
         ];
+        logger('Socket data import progress bar to socket: ' . json_encode($data));
         $this->sendNotificationToSocket($data, $client);
 
         $client->close();
@@ -155,7 +163,7 @@ class NotificationUserService
 
     public function sendNotificationExportProgressBarToSocket(int $percent, int $exportId, $token): void
     {
-        $client = new Client(config('socket.host') . '?token=' . $token);
+        $client = new Client(config('socket.host') . '?token=' . $token, $this->clientSocketConfig);
         $data = [
             'info' => [
                 'type' => 'export_progress_bar',
@@ -166,6 +174,7 @@ class NotificationUserService
                 ]
             ]
         ];
+        logger('Socket data export progress bar to socket: ' . json_encode($data));
         $this->sendNotificationToSocket($data, $client);
 
         $client->close();

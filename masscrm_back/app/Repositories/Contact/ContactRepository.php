@@ -140,6 +140,22 @@ class ContactRepository
                             $query->where('companies.min_employees', '>=', $value['min']);
                         }
                         break;
+                    case SearchType::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE_MULTI:
+                        $query->where(static function (Builder $query) use ($value) {
+                            foreach ($value as $item) {
+                                if (array_key_exists('max', $item)) {
+                                    $query->orWhere(static function ($query) use ($item) {
+                                        $query->where(Company::MIN_EMPLOYEES_FIELD, '>=', $item['min'])
+                                            ->where(Company::MAX_EMPLOYEES_FIELD, '<=', $item['max']);
+                                    });
+                                } else {
+                                    $query->orWhere(static function ($query) use ($item) {
+                                        $query->where(Company::MIN_EMPLOYEES_FIELD, '>=', $item['min']);
+                                    });
+                                }
+                            }
+                        });
+                        break;
                     case SearchType::TYPE_SEARCH_FIELD_BOUNCES:
                         $query->where(static function (Builder $query) use ($value, $filterConfig) {
                             foreach ($value as $item) {
@@ -325,6 +341,13 @@ class ContactRepository
         return Contact::query()->find($id);
     }
 
+    public function getContactByEmail(string $email): ?Contact
+    {
+        return Contact::query()->whereHas("contactEmails", function($q) use ($email){
+            $q->where('email', $email);
+        })->first();
+    }
+
     public function changeResponsibleById(array $ids, int $responsibleId): void
     {
         $contact = Contact::query()->whereIn('id', $ids);
@@ -342,5 +365,13 @@ class ContactRepository
     public function deleteContact(Builder $contact): void
     {
         $contact->delete();
+    }
+
+    public function checkCreatedContactsToday(array $info, int $userId): bool
+    {
+        return Contact::query()->where('company_id', $info['company_id'])
+            ->where('created_by', $userId)
+            ->where('country', $info['job_country'] ?? null)
+            ->whereDate('created_at', Carbon::today())->exists();
     }
 }

@@ -1,1 +1,0 @@
-export { SimpleTableRow } from './SimpleTableRow';

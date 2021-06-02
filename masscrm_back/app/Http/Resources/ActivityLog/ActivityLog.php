@@ -40,8 +40,12 @@ class ActivityLog extends JsonResource
                 'activityLog.' . $this->model_name . '_' . $this->activity_type . '_' . $this->model_field,
                 [
                     'modelField' => $this->model_field,
-                    'dataOld' => $this->data_old,
-                    'dataNew' => $this->data_new,
+                    'dataOld' => $this->model_field === 'company_id'
+                        ? $this->getCompanyNameFromLog($this->data_old)
+                        : $this->data_old ,
+                    'dataNew' =>  $this->model_field === 'company_id'
+                        ? $this->getCompanyNameFromLog($this->data_new)
+                        : $this->data_new,
                 ]
             ),
             'date' => $this->created_at->format(self::DATE_TIME_FORMAT),
@@ -51,5 +55,17 @@ class ActivityLog extends JsonResource
                 'surname' => $this->user->surname,
             ]
         ];
+    }
+
+    private function getCompanyNameFromLog(?string $logData): ?string
+    {
+        if (!$logData) {
+            return null;
+        }
+
+        if (($companyData = json_decode($logData)) && empty($companyData->name)) {
+            return null;
+        }
+        return $companyData->name;
     }
 }

@@ -34,6 +34,7 @@ class BaseModel extends Model
     public const DATE_OF_USE_FIELD = 'date_of_use';
     public const UPDATED_AT_FIELD = 'updated_at';
     public const USER_ID_FIELD = 'user_id';
+    public const CREATED_BY_FIELD = 'created_by';
 
     protected static function getFieldsTo(array $fields, string $type = self::SEARCH): array
     {

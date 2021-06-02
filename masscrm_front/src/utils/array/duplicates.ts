@@ -3,21 +3,19 @@ interface IDuplicates {
 }
 
 export const findDuplicates = (
-  arr: Array<string | number>,
-  skip?: Array<string | number>
+  arr: (string | number)[],
+  skip?: (string | number)[]
 ) => {
   const count: IDuplicates = Object.create(null);
 
   arr.forEach((item: string | number) => {
-    if (!item || skip?.indexOf(item) !== -1) {
-      return;
-    }
+    if (!item || skip?.includes(item)) return;
 
     if (!count[item]) {
       count[item] = 1;
-    } else {
-      count[item] += 1;
+      return;
     }
+    count[item] += 1;
   });
 
   return Object.keys(count).reduce((result: IDuplicates, key: string) => {
@@ -35,8 +33,8 @@ export const findDuplicates = (
 };
 
 export const countDuplicates = (
-  arr: Array<string | number>,
-  skip?: Array<string | number>
+  arr: (string | number)[],
+  skip?: (string | number)[]
 ) =>
   Object.values(findDuplicates(arr, skip)).reduce(
     (acc: number, duplicates: number) => acc + duplicates,

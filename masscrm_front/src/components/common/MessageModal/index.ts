@@ -1,1 +1,0 @@
-export { MessageModal } from './MessageModal';

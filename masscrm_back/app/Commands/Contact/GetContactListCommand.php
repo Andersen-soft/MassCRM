@@ -10,7 +10,7 @@ use App\Models\User\User;
  */
 class GetContactListCommand
 {
-    public const DEFAULT_LIMIT = 10;
+    public const DEFAULT_LIMIT = 50;
     public const DEFAULT_PAGE = 1;
 
     protected array $search;

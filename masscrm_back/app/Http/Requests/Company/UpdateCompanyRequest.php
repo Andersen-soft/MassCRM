@@ -37,10 +37,10 @@ class UpdateCompanyRequest extends AbstractRequest
         return [
             'name' => ['string', 'max:150', new UniqueCompanyNameRule((int) $this->company)],
             'website' => [
-                'nullable',
+                'required_with:name',
                 'string',
                 'url',
-                new UniqueCompanyWebsite(self::REGEX_GET_URL, (bool) $this->skip_validation, (int) $this->company)
+                new UniqueCompanyWebsite((bool) $this->skip_validation, (int) $this->company)
             ],
             'linkedin' => [
                 'nullable',
@@ -54,7 +54,7 @@ class UpdateCompanyRequest extends AbstractRequest
             'min_employees' => 'nullable|integer|min:1',
             'max_employees' => 'nullable|integer|min:1|gte:min_employees',
             'comment' => 'nullable|string',
-            'industries' => 'array|min:1',
+            'industries' => 'array|size:1',
             'industries.*' => 'integer|exists:industries,id',
             'vacancies' => [
                 'nullable',

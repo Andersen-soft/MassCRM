@@ -6,6 +6,8 @@ return [
         'company_name_required' => 'The company name is required.',
         'company_name_string' => 'The company name must be a string.',
         'company_website_already_exist' => 'The company website is already exist.',
+        'company_website_invalid' => 'The company website is invalid',
+        'company_website_required' => 'The company website is required.',
         'company_website_url' => 'The company website format is invalid, should be format URL.',
         'company_linkedIn_already_exist' => 'The company LinkedIn  is already exist.',
         'company_linkedIn_regex' => 'The company LinkedIn ":value" format is invalid.',
@@ -13,6 +15,7 @@ return [
         'founded_date' => 'The founded is not a valid date.',
         'company_vacancies_has_active_of_another_user' => 'The company has active vacancies of another user. Try in :days days.',
         'company_vacancies_timed_out' => 'Vacancies update timed out. Try in :days days.',
+        'company_vacancies_doesnt_fill_in' => 'Company vacancies does not fill in',
     ],
     'industry' => [
         'name_not_exist' => 'The industry name ":value" not exist in database.'

@@ -22,18 +22,16 @@ export interface IWebsocketpackage {
   };
 }
 
-export interface IProgress {
-  [key: string]: string | number;
-}
+type CreatedAt = Date | string;
 
 export interface IWSProgressBar {
   id: number;
-  created_at: Date | string;
+  created_at: CreatedAt;
   percent: number;
 }
 
 export interface IWebsocketData {
-  created_at?: string | Date;
+  created_at?: CreatedAt;
   file_path?: string;
   message?: string;
   operation_id?: null | number | string;

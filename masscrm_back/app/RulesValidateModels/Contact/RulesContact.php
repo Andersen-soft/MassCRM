@@ -6,6 +6,7 @@ use App\Http\Requests\AbstractRequest;
 use App\Models\BaseModel;
 use App\Models\Contact\Contact;
 use App\Models\Contact\Fields\ContactFields;
+use App\Rules\Contact\RegexContactName;
 use App\RulesValidateModels\RulesValidateInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Lang;
@@ -23,15 +24,15 @@ class RulesContact implements RulesValidateInterface
         $countries = implode(',', AbstractRequest::GENDER_REQUIRED_FOR_COUNTRIES);
 
         return [
-            'first_name' => 'string|max:50',
-            'last_name' => 'string|max:50',
+            'first_name' => ['required', 'string', 'max:50', new RegexContactName()],
+            'last_name' => ['required', 'string', 'max:50', new RegexContactName()],
             'full_name' => 'nullable|string|max:150',
             'gender' => 'required_if:country,' . $countries . '|nullable|string|in:' . implode(',', $gender),
             'linkedin' => 'nullable|string|unique:contacts,linkedin|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN,
-            'country' => 'nullable|string|max:50',
+            'country' => 'required|string|max:50|exists:countries,name',
             'region' => 'nullable|string|max:150',
             'city' => 'nullable|string|max:50',
-            'position' => 'nullable|string',
+            'position' => 'required|string',
             'comment' => 'nullable|string',
             'company_id' => 'nullable|integer|exists:companies,id',
             'opens' => 'nullable|integer|min:0',
@@ -56,16 +57,16 @@ class RulesContact implements RulesValidateInterface
         $gender = array_keys(Lang::get('filters.genders'));
 
         return [
-            'first_name' => 'string|max:50',
-            'last_name' => 'string|max:50',
+            'first_name' => ['required', 'string', 'max:50', new RegexContactName()],
+            'last_name' => ['required', 'string', 'max:50', new RegexContactName()],
             'full_name' => 'nullable|string|max:150',
             'gender' => 'nullable|string|in:' . implode(',', $gender),
             'linkedin' =>
                 'nullable|string|unique:contacts,linkedin,' . $contact->id . '|regex:' . AbstractRequest::REGEX_LINK_LINKEDIN,
-            'country' => 'nullable|string|max:50',
+            'country' => 'required|string|max:50|exists:countries,name',
             'region' => 'nullable|string|max:150',
             'city' => 'nullable|string|max:50',
-            'position' => 'nullable|string',
+            'position' => 'required|string',
             'comment' => 'nullable|string',
             'company_id' => 'nullable|integer|exists:companies,id',
             'opens' => 'nullable|integer|min:0',

@@ -6,6 +6,7 @@ use App\Console\Commands\DeactivateCompanyVacancy;
 use App\Exceptions\Import\ImportFileException;
 use App\Models\Company\Company;
 use App\Models\Company\CompanyVacancy;
+use App\Models\Contact\Contact;
 use App\Models\User\User;
 use App\Repositories\ActivityLog\ActivityLogCompanyRepository;
 use App\Repositories\Company\CompanyRepository;
@@ -36,16 +37,6 @@ class ImportCompanyService
         $this->companyRepository = $companyRepository;
     }
 
-    public function replace(Company $company, array $row, User $user): Company
-    {
-        $company = $this->importCompany->replace($company, $row, $user);
-        $this->importVacancy->replace($company, $row);
-        $this->importSubsidiary->replace($company, $row);
-        $this->importIndustry->replace($company, $row);
-
-        return $company;
-    }
-
     public function create(array $row, User $user): ?Company
     {
         $company = $this->importCompany->create($row, $user);
@@ -54,6 +45,32 @@ class ImportCompanyService
             $this->importSubsidiary->create($company, $row);
             $this->importIndustry->create($company, $row);
         }
+
+        return $company;
+    }
+
+    public function createCompanyWithoutCollection(array $row, User $user): ?Company
+    {
+        $company = $this->importCompany->create($row, $user);
+
+        return $company;
+    }
+
+    public function updateCompanyCollection(array $row, Company $company): ?Company
+    {
+        $this->importVacancy->create($company, $row);
+        $this->importSubsidiary->create($company, $row);
+        $this->importIndustry->create($company, $row);
+
+        return $company;
+    }
+
+    public function replace(Company $company, array $row, User $user): Company
+    {
+        $company = $this->importCompany->replace($company, $row, $user);
+        $this->importVacancy->replace($company, $row);
+        $this->importSubsidiary->replace($company, $row);
+        $this->importIndustry->replace($company, $row);
 
         return $company;
     }
@@ -75,11 +92,7 @@ class ImportCompanyService
 
     public function getUnique(array $fields, array $row): ?Company
     {
-        if (!$key = array_search('company', $fields, true)) {
-            return null;
-        }
-
-        $name = trim((string)$row[$key]);
+        $name = $this->getFieldValueFromFieldsAndRowArrays('company', $fields, $row);
 
         if (empty($name)) {
             throw new ImportFileException([
@@ -87,18 +100,33 @@ class ImportCompanyService
             ]);
         }
 
-        return $this->companyRepository->checkUniqueCompany($name);
+        $website = $this->getFieldValueFromFieldsAndRowArrays('website', $fields, $row);
+
+        if (empty($website)) {
+            throw new ImportFileException([
+                Lang::get('validationModel.company.company_website_required')
+            ]);
+        }
+
+        return $this->companyRepository->checkUniqueCompany($name, $website);
     }
 
-    public function validateNC2(Company $company, User $user): bool
+    public function validateNC2(Company $company, User $user, ?Contact $contact, array $userDate = []): bool
     {
+        if (!empty($userDate)){
+            if (empty($userDate['companyVacancies'])) {
+                throw new ImportFileException([
+                    Lang::get('validationModel.company.company_vacancies_doesnt_fill_in')
+                ]);
+            }
+        }
         // if company hasn't any vacancies
         if ($company->vacancies()->doesntExist()) {
             return true;
         }
 
         // if vacancies are exist and they all have status archive(false)
-        if (!$this->companyRepository->hasVacanciesByStatus($company, true)) {
+        if (!$this->companyRepository->hasVacanciesByJobLocation($company, true, $contact)) {
             return true;
         }
 
@@ -133,5 +161,14 @@ class ImportCompanyService
         return $vacancyDate
             ? $vacancyDate->addDays(DeactivateCompanyVacancy::DAYS_TO_DEACTIVATE_VACANCY)->diffInDays(now())
             : null;
+    }
+
+    private function getFieldValueFromFieldsAndRowArrays(string $fieldKey, array $fields, array $row): ?string
+    {
+        if (!$key = array_search($fieldKey, $fields, true)) {
+            return null;
+        }
+
+        return trim((string) $row[$key]);
     }
 }

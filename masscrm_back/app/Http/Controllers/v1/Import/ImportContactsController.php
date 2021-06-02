@@ -89,6 +89,7 @@ class ImportContactsController extends BaseController
     {
         $data = new ImportStartParseCommand(
             $request->user(),
+            $request->get('file_name'),
             $request->get('fields'),
             $request->get('origin', []),
             (int)$request->get('responsible'),

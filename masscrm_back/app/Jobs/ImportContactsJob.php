@@ -95,10 +95,10 @@ class ImportContactsJob implements ShouldQueue
 
     public function notifyError()
     {
-        CreateSocketUserNotificationEvent::dispatch(
-            UsersNotification::TYPE_IMPORT_FAILED,
-            Lang::get('import.failed')
-        );
+//        CreateSocketUserNotificationEvent::dispatch(
+//            UsersNotification::TYPE_IMPORT_FAILED,
+//            Lang::get('import.failed')
+//        );
     }
 
     public function failed(Throwable $exception): void

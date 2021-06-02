@@ -26,7 +26,7 @@ class ShowActivityLogListRequest extends AbstractRequest
         return [
             'id' => 'required|min:1',
             'page' => 'integer|min:1',
-            'limit' => 'integer|min:1|max:50',
+            'limit' => 'integer|min:1|max:200',
             'search' => 'array',
             'search.query' => 'string|max:255',
             'search.from' => 'required_with:search.to|date',

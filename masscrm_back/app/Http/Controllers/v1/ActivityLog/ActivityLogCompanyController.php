@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 
 class ActivityLogCompanyController extends BaseController
 {
+    public const DEFAULT_PAGE_LIMIT = 50;
     /**
      * @OA\Get(
      *     path="/activity-log/company",
@@ -51,7 +52,7 @@ class ActivityLogCompanyController extends BaseController
     ): JsonResponse {
         $activityLogsCompany = $activityLogCompanyService
             ->getActivityLogCompany((int)$request->get('id'), $request->get('search', []))
-            ->paginate($request->get('limit', 50));
+            ->paginate($request->get('limit', self::DEFAULT_PAGE_LIMIT));
 
         return $this->success(
             ActivityLog::collection($activityLogsCompany),

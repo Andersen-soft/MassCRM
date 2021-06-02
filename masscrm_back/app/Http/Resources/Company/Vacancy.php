@@ -21,7 +21,10 @@ class Vacancy extends JsonResource
             'id' => $this->id,
             'job' => $this->vacancy,
             'skills' => $this->skills,
-            'link' => $this->link
+            'link' => $this->link,
+            'job_country' => $this->job_country,
+            'job_city' => $this->job_city,
+            'job_region' => $this->job_region
         ];
     }
 }

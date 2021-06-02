@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repositories\ActivityLog;
 
 use App\Models\ActivityLog\ActivityLogContact;
+use App\Models\BaseModel;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\LazyCollection;
 

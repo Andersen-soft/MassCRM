@@ -12,7 +12,7 @@ class CompanyVacancyObserver
 
     private $activeLogClass = ActivityLogCompany::class;
 
-    private static array $updateFieldLog = [CompanyVacancy::VACANCY, CompanyVacancy::SKILLS, CompanyVacancy::LINK];
+    private static array $updateFieldLog = [CompanyVacancy::VACANCY, CompanyVacancy::SKILLS, CompanyVacancy::LINK, CompanyVacancy::FIELD_ACTIVE];
 
     public function created(CompanyVacancy $companyVacancy): void
     {

@@ -23,6 +23,7 @@ use ScoutElastic\Searchable;
  * @package App
  * @property int $id
  * @property int|null $user_id
+ * @property int|null $created_by
  * @property int|null $company_id
  * @property int|null $opens
  * @property int|null $views
@@ -73,6 +74,7 @@ class Contact extends ContactFields
 
     public const CONTACT = 'contact';
     public const EXCEPT_EMAIL_TEMPLATE = 'noemail@noemail.com';
+    public const MODEL_NAME = 'Contact';
 
     protected $fillable = [
         self::ID_FIELD,
@@ -114,6 +116,7 @@ class Contact extends ContactFields
         self::SALE_COLLECTION_FIELD,
         self::IS_UPLOAD_COLLECTION_FIELD,
         self::USER_ID_FIELD,
+        self::CREATED_BY_FIELD,
         self::IN_BLACKLIST_FIELD,
         self::IS_IN_WORK_FIELD,
         self::DATE_OF_USE_FIELD
@@ -158,6 +161,7 @@ class Contact extends ContactFields
         self::SALE_COLLECTION_FIELD => 'array',
         self::IS_UPLOAD_COLLECTION_FIELD => 'boolean',
         self::USER_ID_FIELD => 'integer',
+        self::CREATED_BY_FIELD => 'integer',
         self::RESPONSIBLE_ID_FIELD => 'integer',
         self::IN_BLACKLIST_FIELD => 'boolean',
         self::IS_IN_WORK_FIELD => 'boolean'
@@ -717,15 +721,12 @@ class Contact extends ContactFields
 
     public function updateIsInWorkAndDate(Builder $contacts): void
     {
-        $contacts->each(function ($item) {
-            /** @var self $item */
-            $item->scopeWithoutTimestamps()->update(
-                [
-                    'is_in_work' => true,
-                    'date_of_use' => Carbon::now()
-                ]
-            );
-        });
+        $contacts->setModel((new Contact())->scopeWithoutTimestamps())->update(
+            [
+                'is_in_work' => true,
+                'date_of_use' => Carbon::now()
+            ]
+        );
     }
 
     public function createAssociate(string $field, string $value): Contact
@@ -794,6 +795,16 @@ class Contact extends ContactFields
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function getCreatedBy(): ?int
+    {
+        return $this->created_by;
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function responsibleUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'responsible_id');
@@ -808,6 +819,7 @@ class Contact extends ContactFields
 
         $contact->origin = !empty($origin) ? implode(';', $origin) : null;
         $contact->user()->associate($user);
+        $contact->createdBy()->associate($user);
         $contact->responsibleUser()->associate($user);
         $contact->save();
 
@@ -825,6 +837,7 @@ class Contact extends ContactFields
         }
 
         $updateData = array_merge($fields, $updateData);
+        $updateData = $this->setContactLocationFieldsBeforeUpdate($updateData);
         $contact->update($updateData);
         $contact->setUpdatedAt(Carbon::now());
 
@@ -838,5 +851,23 @@ class Contact extends ContactFields
     public function toSearchableArray(): array
     {
         return (new ContactTransformer())->transform($this);
+    }
+
+    private function setContactLocationFieldsBeforeUpdate(array $updateData): array
+    {
+        if (!isset($updateData['country'])) {
+            return $updateData;
+        }
+
+        if (!isset($updateData['region'])) {
+            $updateData['region'] = null;
+            $updateData['city'] = null;
+        }
+
+        if (!isset($updateData['city'])) {
+            $updateData['city'] = null;
+        }
+
+        return $updateData;
     }
 }

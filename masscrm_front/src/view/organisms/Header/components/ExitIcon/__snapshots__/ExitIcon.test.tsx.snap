@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ExitIcon Logo should render correctly 1`] = `
+<span
+  id="logout-button"
+  onClick={
+    [MockFunction] {
+      "calls": Array [
+        Array [],
+      ],
+      "results": Array [
+        Object {
+          "type": "return",
+          "value": undefined,
+        },
+      ],
+    }
+  }
+  onKeyDown={[Function]}
+  role="button"
+  tabIndex={0}
+>
+  <svg
+    className="makeStyles-icon-1 makeStyles-active-2"
+  >
+    <use
+      xlinkHref="assets/svg/sprite.svg#exit"
+    />
+  </svg>
+</span>
+`;

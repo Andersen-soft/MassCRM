@@ -69,11 +69,11 @@ class ProcessRepository
         return $query;
     }
 
-    public function getProcessesToClear($type, int $days): Builder
+    public function getProcessesToClear(array $types, int $days): Builder
     {
         return Process::query()
-            ->whereDate('updated_at', '<', now()->subDays($days)->toDateString())
+            ->whereDate('updated_at', '<=', now()->subDays($days)->toDateString())
             ->whereNotNull('file_path')
-            ->whereIn('type', $type);
+            ->whereIn('type', $types);
     }
 }

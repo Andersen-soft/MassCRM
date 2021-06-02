@@ -1,4 +1,5 @@
 export interface IFileInfo {
-  name: '';
-  size: '';
+  name: string;
+  uploadName: string;
+  size: string;
 }

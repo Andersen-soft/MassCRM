@@ -1,4 +1,4 @@
-import { IRoles } from 'src/interfaces/IRoles';
+import { IRoles } from 'src/interfaces';
 
 export const getRolesText = (roles: IRoles) => {
   return Object.keys(roles).map((roleKey: string) => {

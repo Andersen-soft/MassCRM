@@ -1,6 +1,7 @@
-import { IRoles } from './IRoles';
+import { IRoles } from 'src/interfaces';
 
 export interface IUser {
+  [key: string]: string | boolean | number | undefined | IRoles;
   active?: boolean;
   comment?: string;
   email?: string;
@@ -39,8 +40,8 @@ export interface IFilter {
 
 export interface IUserFiltersValues {
   [index: string]: string | string[];
-  'full name': string;
-  'e-mail': string;
+  fullName: string;
+  email: string;
   login: string;
   roles: string[];
   skype: string;
@@ -55,4 +56,35 @@ export interface IUsersFiltersRequestValues {
   skype?: string;
   position?: string;
   active: number;
+}
+
+export interface IUserFormInputs {
+  [index: string]: string | string[] | undefined | boolean;
+  email?: string;
+  login?: string;
+  name?: string;
+  surname?: string;
+  roles?: string[];
+  skype?: string;
+  position?: string;
+  comment?: string;
+  active?: boolean;
+  fromActiveDirectory?: boolean;
+}
+
+export interface ICreateAddUser {
+  user: IUserFormInputs;
+  currentPage: number;
+  filter: IUsersFiltersRequestValues;
+  handleAlert?: () => void;
+  handleClose?: () => void;
+}
+
+export interface IUpdateAddUser {
+  id: number;
+  user: IUserFormInputs;
+  currentPage: number;
+  filter: IUsersFiltersRequestValues;
+  handleAlert?: () => void;
+  handleClose?: () => void;
 }

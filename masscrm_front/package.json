@@ -1,11 +1,11 @@
 {
   "name": "masscrm",
   "version": "1.0.0",
-  "description": "",
+  "description": "Andersen CRM Marketing",
   "main": "index.js",
   "scripts": {
     "watch:src": "watch \"npm run build:prod -s\" src",
-    "start": "env-cmd webpack-dev-server --config webpack.dev.js",
+    "start": "env-cmd  webpack-dev-server --config webpack.dev.js ",
     "build:dev": "npm run clean &&  npm run lint && env-cmd cross-env NODE_ENV=development webpack --config webpack.dev.js",
     "build:prod": "npm run clean && env-cmd cross-env NODE_ENV=production webpack --config webpack.prod.js",
     "clean": "node ./scripts/clean.js",
@@ -40,7 +40,7 @@
     "@material-ui/pickers": "^3.2.10",
     "@types/react-lottie": "^1.2.5",
     "axios": "^0.19.2",
-    "classnames": "^2.2.6",
+    "classnames": "^2.3.0",
     "date-fns": "^2.16.1",
     "env-cmd": "^10.1.0",
     "formik": "^2.2.0",

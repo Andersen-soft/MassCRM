@@ -19,6 +19,7 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
     Route::post('contact/reports/download-count', 'Report\ReportController@downloadCount');
     Route::post('contact/reports/download', 'Report\ReportController@download');
 
+
     Route::group(['prefix' => 'users'], function () {
         Route::get('token', 'User\UserController@getUserFromToken');
         Route::post('set-password', 'User\UserController@setPassword');
@@ -33,6 +34,7 @@ Route::group(['prefix' => config('app.api_version'), 'namespace' => config('app.
             Route::get('industries', 'Filter\FilterController@industries')
                 ->name('filters.industries');
         });
+        Route::get('report', 'Report\ReportPageController@index');
         Route::group(['prefix' => 'import'], function () {
             Route::post('upload-file', 'Import\ImportContactsController@uploadFile')
                 ->name('import.upload-file');

@@ -1,4 +1,4 @@
-import { IUser } from './IUser';
+import { IUser } from 'src/interfaces';
 
 export interface IBlacklistItem {
   created_at: Date;

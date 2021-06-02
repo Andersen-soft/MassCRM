@@ -6,3 +6,7 @@ export interface IRole {
 export interface IRoles {
   [key: string]: IRole;
 }
+
+export interface IRolesDisplay {
+  [key: string]: string;
+}

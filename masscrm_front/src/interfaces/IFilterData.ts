@@ -1,14 +1,14 @@
-import { ICompanySize } from './ICompany';
 import {
   IBlacklistFiltersState,
   IContactFiltersState,
   IExportInputFilterValues,
   IFilterValuesUsers,
   IMinMax,
-  IUserFiltersValues
-} from './index';
-import { IGlobalContactSearch } from './IContact';
-import { ITableRow } from '../components/common/Table/interfaces';
+  IUserFiltersValues,
+  IGlobalContactSearch,
+  ICompanySize,
+  ITableRow
+} from 'src/interfaces';
 
 export type FiltersStateType =
   | IFilterValuesUsers
@@ -25,6 +25,7 @@ export type FiltersTypes = {
     | (number | Date)[]
     | never[]
     | IMinMax
+    | IMinMax[]
     | IGlobalContactSearch;
 };
 
@@ -37,9 +38,9 @@ export type FiltersParamsItemType =
   | null;
 
 export interface IFilterData {
-  company_size?: Array<ICompanySize>;
-  origin?: Array<string>;
-  company_type?: Array<string>;
+  company_size?: ICompanySize[];
+  origin?: string[];
+  company_type?: string[];
   export_status?: { [key: string]: string };
   user_roles?: string[];
 }

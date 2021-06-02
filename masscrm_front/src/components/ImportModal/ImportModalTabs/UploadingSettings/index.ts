@@ -1,1 +1,0 @@
-export { UploadingSettings } from './UploadingSettings';

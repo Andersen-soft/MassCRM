@@ -127,7 +127,7 @@ class AttachmentFileCompanyController extends BaseController
     ): JsonResponse {
         $files = $this->attachmentFileCompanyService
             ->getAttachedFilesCompany((int) $request->get('id'))
-            ->paginate($request->get('limit', 50));
+            ->paginate($request->get('limit', self::DEFAULT_PAGE_LIMIT));
 
         return $this->success(AttachmentFileResources::collection($files), $pagination->getMeta($files));
     }

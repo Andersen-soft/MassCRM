@@ -6,8 +6,7 @@ use App\Models\Process;
 use App\Repositories\Process\ProcessRepository;
 use App\Models\User\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 
 class ProcessService
 {
@@ -81,21 +80,13 @@ class ProcessService
         return $query;
     }
 
-    public function clearProcesses($type, int $days, string $diskName = 'export'): void
+    public function clearProcesses(array $types, int $days): void
     {
-        $disk = Storage::disk($diskName);
-        $this->processRepository->getProcessesToClear($type, $days)
-            ->each(function (Process $process) use ($disk) {
-                try {
-                    $file = $process->getFileName();
-                    if (!is_null($file) && $disk->exists($file)) {
-                        $disk->delete($file);
-                    }
-                } catch (\Exception $e) {
-                    app('sentry')->captureException($e);
-                    Log::error($e->getMessage());
-                }
-            });
-        $this->processRepository->getProcessesToClear($type, $days)->update(['file_path' => null]);
+        $builder = $this->processRepository->getProcessesToClear($types, $days);
+        $builder->each(function (Process $process) {
+            File::delete($process->file_path);
+        });
+
+        $builder->update(['file_path' => null]);
     }
 }

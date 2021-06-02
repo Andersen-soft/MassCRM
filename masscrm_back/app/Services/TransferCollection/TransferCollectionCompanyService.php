@@ -54,6 +54,10 @@ class TransferCollectionCompanyService
                'job' => $item->vacancy,
                'skills' => $item->skills,
                'link' => $item->link,
+               'job_country' => $item->job_country,
+               'job_city' => $item->job_city,
+               'job_region' => $item->job_region,
+               'updated_at' => $item->updated_at,
            ];
         });
 

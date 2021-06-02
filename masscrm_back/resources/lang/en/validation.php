@@ -154,6 +154,11 @@ return [
         'industry_invalid_regex' => 'The only latin letters and symbols & \ / , - are available',
         'industry_unique' => 'The industry is already exist',
     ],
+    'location' => [
+        'city_already_exist' => 'The city is already exist',
+        'invalid_contact_location_array' => 'The location data is invalid',
+        'region_not_in_country' => 'The region is not in country',
+    ],
 
     /*
     |--------------------------------------------------------------------------

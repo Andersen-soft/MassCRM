@@ -6,9 +6,9 @@ namespace App\Imports\Contact\Users;
 class UserNC2 extends User
 {
     public const FIELDS = [
-        'contact' => ['position', 'country', 'region', 'city'],
+        'contact' => ['first_name', 'last_name', 'position', 'country', 'region', 'city'],
         'contactEmail' => ['email'],
-        'company' => ['name', 'companySize'],
+        'company' => ['name', 'website', 'companySize'],
         'companyVacancies' => ['vacancy'],
         'companyIndustries' => ['industry']
     ];

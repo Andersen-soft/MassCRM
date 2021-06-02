@@ -1,4 +1,4 @@
-import { createProperty } from 'src/utils/object';
+import { createProperty } from 'src/utils';
 
 interface IGetSelectedEntities {
   [key: string]: any;

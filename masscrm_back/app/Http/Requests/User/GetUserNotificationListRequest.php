@@ -25,7 +25,7 @@ class GetUserNotificationListRequest extends AbstractRequest
     {
         return [
             'page' => 'integer|min:1',
-            'limit' => 'integer|min:1|max:50',
+            'limit' => 'integer|min:1|max:200',
             'new' => 'boolean'
         ];
     }

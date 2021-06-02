@@ -18,6 +18,7 @@ class ImportStartParseCommand
     ];
 
     protected User $user;
+    protected string $fileName;
     protected array $fields;
     protected array $origin;
     protected int $responsible;
@@ -29,6 +30,7 @@ class ImportStartParseCommand
 
     public function __construct(
         User $user,
+        string $fileName,
         array $fields,
         array $origin,
         int $responsible,
@@ -39,10 +41,11 @@ class ImportStartParseCommand
         string $comment = null
     ) {
         $this->user = $user;
+        $this->fileName = $fileName;
         $this->fields = $fields;
         $this->origin = $origin;
         $this->responsible = $responsible;
-        $this->isHeader = in_array($isHeader, ['1', 'true']);
+        $this->isHeader = in_array($isHeader, ['1', 'true'], false);
         $this->duplicationAction = $duplicationAction;
         $this->columnSeparator = $columnSeparator;
         $this->token = $token;
@@ -92,5 +95,10 @@ class ImportStartParseCommand
     public function getToken(): string
     {
         return $this->token;
+    }
+
+    public function getFileName(): string
+    {
+        return $this->fileName;
     }
 }

@@ -15,6 +15,7 @@ interface SearchType
     public const TYPE_SEARCH_FIELD_DATA_RANGE = 'dataRange';
     public const TYPE_SEARCH_FIELD_DATE_ONLY_MONTH_AND_DAY_RANGE = 'dateMonthDayRange';
     public const TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE = 'companySizeRange';
+    public const TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE_MULTI = 'companySizeRangeMulti';
     public const TYPE_SEARCH_FIELD_BOUNCES = 'Bounces';
     public const TYPE_SEARCH_FIELD_FIO_TEXT_LIKE = 'FioTextLike';
     public const TYPE_SEARCH_FIELD_LINK_COLLEAGUE_TEXT_LIKE = 'ColleagueLink';
@@ -386,7 +387,7 @@ interface SearchType
             'path' => 'getCompanySize',
             'name' => 'Company size',
             'field' => 'companies.min_employees',
-            'typeSearch' => self::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE,
+            'typeSearch' => self::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE_MULTI,
             'join' => [
                 CompanyFields::JOIN_COMPANY_TABLE
             ]

@@ -69,6 +69,9 @@ class FieldMapping
                 'job' => CompanyVacancy::VACANCY,
                 'job_skills' => CompanyVacancy::SKILLS,
                 'job_urls' => CompanyVacancy::LINK,
+                'job_country' => CompanyVacancy::JOB_COUNTRY,
+                'job_region' => CompanyVacancy::JOB_REGION,
+                'job_city' => CompanyVacancy::JOB_CITY,
             ],
             'companyIndustries' => [
                 'industry' => 'industry'
@@ -226,13 +229,7 @@ class FieldMapping
         if (in_array($key, self::FIELDS_TRANSFORM, true)) {
             $entityValues[$entity][$field] = $this->getSplitString((string)$valueFields[$key], $separator);
         } else {
-            if(is_string($valueFields[$key])) {
-                $val =  trim($valueFields[$key]);
-            }else{
-                $val = null;
-            }
-
-            $entityValues[$entity][$field] = $val;
+            $entityValues[$entity][$field] = $this->getStringValueForEntityElseNull($valueFields, $key);
         }
     }
 
@@ -259,6 +256,17 @@ class FieldMapping
         }
 
         return $list;
+    }
+
+    private function getStringValueForEntityElseNull(array $valueFields, string $key): ?string
+    {
+        if (is_string($valueFields[$key])) {
+            return trim($valueFields[$key]);
+        }
+        if ($key === 'company') {
+            return (string) $valueFields[$key];
+        }
+        return null;
     }
 
     public function mappingFieldsByUser(array $data, array $fields): array

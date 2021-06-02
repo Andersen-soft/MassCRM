@@ -9,6 +9,8 @@ use App\Http\Resources\Response\RestApiResponse;
 
 abstract class BaseController extends Controller
 {
+    public const DEFAULT_PAGE_LIMIT = 50;
+
     protected function success(
         iterable $data,
         array $meta = [],

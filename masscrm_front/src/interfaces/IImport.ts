@@ -1,4 +1,4 @@
-import { IUser } from './IUser';
+import { IUser } from 'src/interfaces';
 
 export interface IImportModal {
   created_at?: string;
@@ -12,7 +12,7 @@ export interface IImportModal {
   operation_id?: number;
 }
 
-export interface IImportMetaDataTable {
+interface IImportMetaDataTable {
   current_page?: number;
   first_page_url?: string;
   from?: number;
@@ -35,8 +35,8 @@ export interface IImportInputFilterValues {
 }
 
 export interface IImportDataStore {
-  data: Array<IImportModal>;
-  errors: Array<string>;
+  data: IImportModal[];
+  errors: string[];
   meta: IImportMetaDataTable;
   success: boolean;
   filter?: IImportInputFilterValues;
@@ -59,6 +59,6 @@ export interface IImportSearch {
 export interface IImportDataTable {
   total: number;
   show: number;
-  data: Array<IImportModal>;
+  data: IImportModal[];
   filter: IImportInputFilterValues;
 }

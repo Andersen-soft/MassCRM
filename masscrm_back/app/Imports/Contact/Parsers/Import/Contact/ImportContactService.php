@@ -132,9 +132,24 @@ class ImportContactService
         }
 
         if (!empty($emails) || $linkedIn) {
-            return $this->contactRepository->checkUniqueContact($emails, $linkedIn);
+            $contact = $this->contactRepository->checkUniqueContact($emails, $linkedIn);
+            $this->checkExistingFirstAndLastName($contact, $row);
+
+            return $contact;
         }
 
         return null;
+    }
+
+    public function checkExistingFirstAndLastName(?Contact $contact, array $row): void
+    {
+        if ($contact){
+            if ($contact->first_name === null && array_key_exists('first_name', $row['contact'])) {
+                $contact->setFirstName($row['contact']['first_name']);
+            }
+            if ($contact->last_name === null && array_key_exists('last_name', $row['contact'])) {
+                $contact->setLastName($row['contact']['last_name']);
+            }
+        }
     }
 }

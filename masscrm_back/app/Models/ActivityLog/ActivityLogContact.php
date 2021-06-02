@@ -20,6 +20,7 @@ class ActivityLogContact extends AbstractActivityLog
     use Searchable;
 
     public const CONTACT_ID_FIELD = 'contact_id';
+    public const ACTIVITY_LOG_CONTACT = 'ActivityLogContact';
 
     protected $fillable = [
         self::ID_FIELD,

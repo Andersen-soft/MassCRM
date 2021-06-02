@@ -39,7 +39,8 @@ class Notification extends JsonResource
                 'new' => $this->new,
                 'message' => $this->message,
                 'operation_id' => $this->operation_id,
-                'file_path' => $this->file_path
+                'file_path' => $this->file_path,
+                'user' => $this->user->full_name,
             ]
         ];
     }

@@ -1,4 +1,5 @@
+type RangeItem = string | number;
 export interface IMinMax {
-  min?: string | number;
-  max?: string | number;
+  min?: RangeItem;
+  max?: RangeItem;
 }

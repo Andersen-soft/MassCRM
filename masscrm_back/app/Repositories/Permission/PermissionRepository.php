@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repositories\Permission;
 
+use App\Models\User\Permission;
 use App\Models\User\RolesPermission;
 
 class PermissionRepository
@@ -18,5 +19,22 @@ class PermissionRepository
         }
 
         return $query->pluck('roles_permissions.role')->toArray();
+    }
+
+    public function permissionExist(string $slug): bool
+    {
+        return Permission::query()
+            ->where('slug', '=', $slug)
+            ->exists();
+    }
+
+    public function getRolePermissionByRoleNameAndSlug(string $role, string $slug): ?RolesPermission
+    {
+        return RolesPermission::query()
+            ->leftJoin('permissions', 'permissions.id', '=', 'roles_permissions.permission_id')
+            ->select('roles_permissions.*')
+            ->where('roles_permissions.role', '=', $role)
+            ->where('permissions.slug', '=', $slug)
+            ->first();
     }
 }

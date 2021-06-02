@@ -20,6 +20,9 @@ class ActivityLogCompany extends AbstractActivityLog
     use Searchable;
 
     public const COMPANY_ID_FIELD = 'company_id';
+    public const ACTIVITY_LOG_COMPANIES = 'ActivityLogCompanies';
+    public const DATE_FOR_INDUSTRY = '2020-08-01';
+    public const DATE_FORMAT = 'Y-m-d';
 
     protected $fillable = [
         self::ID_FIELD,

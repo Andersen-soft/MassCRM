@@ -68,21 +68,31 @@ class ContactService
 
         /** @var ActivityLogContact $item */
         foreach ($items as $key => $item) {
-            if (empty($item->log_info)) {
+            if (empty($item->data_old) || $item->model_field !== self::COMPANY_ID || !$item->log_info) {
                 continue;
             }
 
-            if (isset($item->log_info[self::COMPANY_ID])) {
-                $company = $this->baseContactService->companyRepository->getCompanyById($item->log_info[self::COMPANY_ID]);
-                if ($company) {
-                    $companies[] = [
-                        'company_name' => $company->name,
-                        self::COMPANY_ID => $item->log_info[self::COMPANY_ID],
-                        'position' => $item->log_info['position'],
-                        'updated_at' => Carbon::parse($item->log_info['updated_at'])->format(Contact::DATE_FORMAT)
-                    ];
-                }
+            if (($oldCompany = json_decode($item->data_old)) && empty($oldCompany->id)) {
+                continue;
             }
+
+            $company = $this->baseContactService->companyRepository->getCompanyById((int) $oldCompany->id);
+            $positionChangeLog = $items
+                ->where('created_at', $item->created_at)
+                ->where('model_field', '=', 'position')
+                ->first();
+
+            if (!$company || (!$positionChangeLog && !isset($item->log_info['position']))) {
+                continue;
+            }
+
+            $position = $positionChangeLog ? $positionChangeLog->data_old : $item->log_info['position'];
+            $companies[] = [
+                'company_name' => $company->name,
+                self::COMPANY_ID => $company->id,
+                'position' => $position,
+                'updated_at' => Carbon::parse($item->log_info['updated_at'])->format(Contact::DATE_FORMAT)
+            ];
         }
 
         return $companies;

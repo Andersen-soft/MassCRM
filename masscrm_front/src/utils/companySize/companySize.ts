@@ -1,4 +1,4 @@
-import { createProperty } from 'src/utils/object';
+import { createProperty } from 'src/utils';
 
 export const getCompanySize = (max?: number, min?: number) => {
   const sizeValues = {

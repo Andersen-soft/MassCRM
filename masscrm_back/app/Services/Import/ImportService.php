@@ -37,7 +37,7 @@ class ImportService
     {
         $result = InformationImport::query()->find($id);
         if (!$result) {
-            throw new NotFoundException('Import value(' . $id. ') not found');
+            throw new NotFoundException('Import value(' . $id . ') not found');
         }
 
         return $result;
@@ -48,27 +48,30 @@ class ImportService
         $file = $command->getFile();
 
         try {
-            $fileName = $file->getClientOriginalName();
-            $fullPath = $this->storagePath . '/' . $command->getUser()->id;
-            Storage::disk('importFiles')->deleteDirectory((string) $command->getUser()->id);
+            $fileInfo = pathinfo($file->getClientOriginalName());
+            $fileName = sprintf('%s_%s.%s', trim($fileInfo['filename']), time(), $fileInfo['extension']);
+
             Storage::disk('importFiles')->put(
                 $command->getUser()->id . '/' . $fileName,
                 file_get_contents($file->path())
             );
 
-            $fullPath = $fullPath . '/' . $fileName;
+            $fullPath = $this->storagePath . DIRECTORY_SEPARATOR . $command->getUser()->id
+                . DIRECTORY_SEPARATOR . $fileName;
+
             $this->fileFormatting($fullPath, $fileName);
 
             return [
                 'file_size' => $this->getFileSize($fullPath),
                 'data' => $this->getFirsLines($fullPath),
+                'file_name' => $fileName
             ];
         } catch (\Exception $e) {
             throw new ImportException('Import error: ' . $e->getMessage());
         }
     }
 
-    private function getFileSize(string $fullPath) : string
+    private function getFileSize(string $fullPath): string
     {
         $bytes = filesize($fullPath);
         $base = log($bytes, 1024);
@@ -114,28 +117,6 @@ class ImportService
         return $data;
     }
 
-//    private function fileFormatting($file): UploadedFile
-//    {
-//        $format = ucfirst(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
-//        if (in_array($format, self::EXCEL_FORMAT) === false) {
-//            return $file;
-//        }
-//
-//        $spreadsheet = IOFactory::load($file);
-//        for ($index = 0; $index < $spreadsheet->getSheetCount(); $index++) {
-//            if ($spreadsheet->getSheet($index)->getHighestDataRow() < 2) {
-//                $spreadsheet->removeSheetByIndex($index);
-//                $index--;
-//            }
-//        }
-//
-//        $writer = IOFactory::createWriter($spreadsheet, $format);
-//        $writer->setPreCalculateFormulas(false);
-//        $writer->save($file);
-//
-//        return $file;
-//    }
-
     private function fileFormatting(string $fullPath, string $fileName): void
     {
         $format = ucfirst(pathinfo($fileName, PATHINFO_EXTENSION));
@@ -162,13 +143,14 @@ class ImportService
     public function startParse(ImportStartParseCommand $command): void
     {
         try {
-            $filePath = $this->checkFileExist($command->getUser()->getId());
+            $filePath = $this->checkFileExist($command->getUser()->getId(), $command->getFileName());
 
             /** @var Process $process */
             $process = $command->getUser()->processes()->create([
                 'name' => Lang::get('import.name_import', ['file' => basename($filePath)]),
                 'status' => Process::TYPE_STATUS_PROCESS_WAIT,
-                'type' => Process::TYPE_PROCESS_IMPORT_CONTACT
+                'type' => Process::TYPE_PROCESS_IMPORT_CONTACT,
+                'file_path' => $filePath
             ]);
 
             ImportContactsJob::dispatch(
@@ -180,18 +162,13 @@ class ImportService
         }
     }
 
-    private function checkFileExist(int $userId): string
+    private function checkFileExist(int $userId, string $fileName): string
     {
-        $path = storage_path('importFiles') . '/' . $userId;
-        if (!file_exists($path) && !is_dir($path)) {
-            throw new ImportException('File to import not found', 404);
-        }
-        $fileNames = array_diff(scandir($path), ['.', '..']);
-        $fileName = array_shift($fileNames);
-        if (!$fileName) {
+        $path = $this->storagePath . DIRECTORY_SEPARATOR . $userId . DIRECTORY_SEPARATOR . $fileName;
+        if (!file_exists($path)) {
             throw new ImportException('File to import not found', 404);
         }
 
-        return $path . '/' . $fileName;
+        return $path;
     }
 }

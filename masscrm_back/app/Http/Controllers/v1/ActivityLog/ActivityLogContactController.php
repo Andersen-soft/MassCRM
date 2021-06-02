@@ -52,7 +52,7 @@ class ActivityLogContactController extends BaseController
     {
         $activityLogsContact = $activityLogContactService
             ->getActivityLogContact((int)$request->get('id'), $request->get('search', []))
-            ->paginate($request->get('limit', 50));
+            ->paginate($request->get('limit', self::DEFAULT_PAGE_LIMIT));
 
         return $this->success(ActivityLog::collection($activityLogsContact), $pagination->getMeta($activityLogsContact));
     }

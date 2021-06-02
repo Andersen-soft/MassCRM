@@ -29,6 +29,7 @@ class ImportStartParsingRequest extends AbstractRequest implements ImportStartPa
         $separator = array_keys(Lang::get('filters.column_separator'));
 
         return [
+            'file_name' => 'required|string',
             'fields' => 'required|array',
             'fields.*' => 'required|string|in:' . implode(',', $fields),
             'comment' => 'string',

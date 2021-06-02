@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Logo Logo should render correctly 1`] = `
+<a
+  href="/"
+>
+  <svg
+    className="makeStyles-icon-1"
+  >
+    <use
+      xlinkHref="assets/svg/sprite.svg#logo"
+    />
+  </svg>
+</a>
+`;

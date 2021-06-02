@@ -12,7 +12,7 @@ declare module '*.jpg' {
 }
 
 declare module '*.svg' {
-  export const content: React.SFC<React.SVGProps<SVGSVGElement>>;
+  export const content: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
 declare module '*.ttf' {

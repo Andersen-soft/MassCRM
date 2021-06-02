@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { backendUrl } from 'src/constants';
-import { refreshToken } from 'src/actions';
+import { refreshToken } from 'src/store/slices';
 
 const redirectOnTokenExpiration = (error: { [key: string]: string[] }) => {
   const token = Cookies.get('token');
@@ -74,6 +74,8 @@ const HTTP = axios.create({
   }
 });
 
+export default HTTP;
+
 HTTP.interceptors.request.use((config: any) => ({
   ...config,
   headers: {
@@ -83,8 +85,6 @@ HTTP.interceptors.request.use((config: any) => ({
 }));
 
 HTTP.interceptors.response.use(onFullfiled, onRejected);
-
-export default HTTP;
 
 const onFullfiledFile = (response: any) => response;
 

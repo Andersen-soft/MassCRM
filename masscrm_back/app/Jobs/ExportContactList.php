@@ -92,9 +92,10 @@ class ExportContactList implements ShouldQueue
 
     public function notifyError()
     {
-        CreateSocketUserNotificationEvent::dispatch(
-            UsersNotification::TYPE_EXPORT_CONTACTS_FAILED,
-            Lang::get('export.contacts.export_failed')
-        );
+
+//        CreateSocketUserNotificationEvent::dispatch(
+//            UsersNotification::TYPE_EXPORT_CONTACTS_FAILED,
+//            Lang::get('export.contacts.export_failed')
+//        );
     }
 }

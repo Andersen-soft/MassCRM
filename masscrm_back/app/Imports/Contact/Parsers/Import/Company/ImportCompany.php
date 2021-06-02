@@ -120,9 +120,7 @@ class ImportCompany
 
     private function setUserToCompany(Company $company, User $user): Company
     {
-        if (!$company->getUserId()) {
-            $company->user()->associate($user);
-        }
+        $company->user()->associate($user);
 
         return $company;
     }

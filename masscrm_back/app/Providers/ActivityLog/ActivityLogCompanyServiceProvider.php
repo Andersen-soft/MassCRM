@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\ActivityLog;
 
+
 use App\Models\AttachmentFile\CompanyAttachment;
 use App\Observers\AttachmentFile\CompanyAttachmentObserver;
 

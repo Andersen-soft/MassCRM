@@ -157,7 +157,7 @@ class CompanyFields extends BaseModel implements FieldsInterface
             self::SORT => false,
             self::SEARCH => true,
             self::FIELD => 'companies.min_employees',
-            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE,
+            self::TYPE_FILTER => SearchType::TYPE_SEARCH_FIELD_COMPANY_SIZE_RANGE_MULTI,
             self::JOIN => [self::JOIN_COMPANY_TABLE],
         ],
         self::HAS_JOBS => [

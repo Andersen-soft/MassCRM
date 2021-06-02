@@ -6,6 +6,7 @@ namespace App\Imports\Contact\Parsers;
 
 use App\Commands\Import\ImportContactsDto;
 use App\Commands\Import\ImportStartParseCommand;
+use App\Events\ReportPage\CountUpdatedForReportPageEvent;
 use App\Events\User\CreateSocketUserImportProgressBarEvent;
 use App\Exceptions\Import\ImportException;
 use App\Imports\Contact\Parsers\Import\Company\ImportCompanyService;
@@ -14,6 +15,7 @@ use App\Imports\Contact\Parsers\Mapping\FieldMapping;
 use App\Imports\Contact\Users\UserNC2;
 use App\Models\Company\Company;
 use App\Models\Contact\Contact;
+use App\Models\ReportPageLog;
 use App\Models\User\User;
 use App\Services\TransferCollection\TransferCollectionCompanyService;
 use App\Services\TransferCollection\TransferCollectionContactService;
@@ -117,17 +119,15 @@ class ParserImportFileService extends ParserMain
 
                 $userData = $this->fieldMapping->mappingFieldsByUser($data, UserNC2::FIELDS);
 
-                if ($company) {
-                    $this->importCompanyService->validateNC2($company, $this->user);
-                }
-
                 if ($company && $contact) {
-                    $this->transferCollectionCompanyService->updateCollectionCompany(
-                        $company = $this->parseCompany($userData, $company)
-                    );
+                    $this->importCompanyService->validateNC2($company, $this->user, $contact, $userData);
 
                     $this->transferCollectionContactService->updateCollectionContact(
                         $contact = $this->parseContact($userData, $contact, $company)
+                    );
+
+                    $this->transferCollectionCompanyService->updateCollectionCompany(
+                        $company = $this->parseCompany($userData, $company)
                     );
                 }
 
@@ -136,28 +136,33 @@ class ParserImportFileService extends ParserMain
                         $company = $this->parseCompany($data, $company)
                     );
 
+                    $this->importCompanyService->validateNC2($company, $this->user, $contact);
+
                     $this->transferCollectionContactService->updateCollectionContact(
                         $contact = $this->parseContact($userData, $contact, $company)
                     );
                 }
 
                 if (!$contact && $company) {
-                    $this->transferCollectionCompanyService->updateCollectionCompany(
-                        $company = $this->parseCompany($userData, $company)
-                    );
+                    $this->importCompanyService->validateNC2($company, $this->user, $contact);
 
                     $this->transferCollectionContactService->updateCollectionContact(
                         $contact = $this->parseContact($data, $contact, $company)
                     );
+
+                    $this->transferCollectionCompanyService->updateCollectionCompany(
+                        $company = $this->parseCompany($userData, $company)
+                    );
                 }
 
+                event(new CountUpdatedForReportPageEvent($contact, $company, $data, $this->user));
                 $this->importResult->successSaveRow();
                 DB::commit();
                 return;
             }
-
-            $company = $this->parseCompany($data, $company);
+            $company = $this->parseCompanyWithoutCollection($data, $company);
             $contact = $this->parseContact($data, $contact, $company);
+            $company = $this->parseCompanyCollections($data, $company);
 
             $this->transferCollectionContactService->updateCollectionContact($contact);
 
@@ -201,6 +206,25 @@ class ParserImportFileService extends ParserMain
 
         $company = $this->importCompanyService->create($data, $this->user);
         $this->importResult->incrementSucImportCompany();
+
+        return $company;
+    }
+
+    private function parseCompanyWithoutCollection(array $data, ?Company $company): ?Company
+    {
+        if ($company) {
+            return $this->workWithCompanyAction($company, $data);
+        }
+
+        $company = $this->importCompanyService->createCompanyWithoutCollection($data, $this->user);
+        $this->importResult->incrementSucImportCompany();
+
+        return $company;
+    }
+
+    private function parseCompanyCollections(array $data, ?Company $company): ?Company
+    {
+        $company = $this->importCompanyService->updateCompanyCollection($data, $company);
 
         return $company;
     }
@@ -286,11 +310,12 @@ class ParserImportFileService extends ParserMain
 
         if (($this->currentElement % $elementPercentStep) == 0 || $this->currentElement == $totalRows) {
             $this->currentPercent += self::PERCENT_STEP;
-            CreateSocketUserImportProgressBarEvent::dispatch(
-                $this->currentPercent,
-                $importId,
-                $token
-            );
+
+//            CreateSocketUserImportProgressBarEvent::dispatch(
+//                $this->currentPercent,
+//                $importId,
+//                $token
+//            );
         }
 
         $this->currentElement++;
@@ -299,6 +324,7 @@ class ParserImportFileService extends ParserMain
     private function sendNotificationIfCountLessThenMinimum(int $totalRows, int $importId, $token): void
     {
         if ($this->currentElement === $totalRows && $this->currentElement < self::PERCENT_STEP) {
+            //
             CreateSocketUserImportProgressBarEvent::dispatch(
                 self::PERCENT,
                 $importId,

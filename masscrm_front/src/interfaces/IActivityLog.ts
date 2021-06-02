@@ -1,5 +1,15 @@
+interface ILog {
+  id: number;
+  date: string;
+  description: string;
+  user: {
+    id: number;
+    name: string;
+    surname: string;
+  };
+}
 export interface IActivityLog {
-  data: Array<ILog>;
+  data: ILog[];
   meta: {
     current_page: number;
     first_page_url: string;
@@ -12,16 +22,5 @@ export interface IActivityLog {
     prev_page_url: string;
     to: number;
     total: number;
-  };
-}
-
-export interface ILog {
-  id: number;
-  date: string;
-  description: string;
-  user: {
-    id: number;
-    name: string;
-    surname: string;
   };
 }

@@ -1,1 +1,0 @@
-export { FieldLabel } from './FieldLabel';

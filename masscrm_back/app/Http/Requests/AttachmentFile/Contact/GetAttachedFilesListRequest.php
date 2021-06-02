@@ -26,7 +26,7 @@ class GetAttachedFilesListRequest extends AbstractRequest
         return [
             'id' => 'required|integer|min:1|exists:contacts,id',
             'page' => 'integer|min:1',
-            'limit' => 'integer|min:1|max:50',
+            'limit' => 'integer|min:1|max:200',
         ];
     }
 }

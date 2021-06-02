@@ -22,7 +22,7 @@ export interface ILocation {
 }
 
 export interface ILocations {
-  country?: Array<ICountry>;
-  region?: Array<IRegion>;
-  city?: Array<ICity>;
+  country?: ICountry[];
+  region?: IRegion[];
+  city?: ICity[];
 }

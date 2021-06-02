@@ -27,7 +27,7 @@ class ProcessRequest extends AbstractRequest
     {
         return [
             'page' => 'integer|min:1',
-            'limit' => 'integer|min:1|max:50',
+            'limit' => 'integer|min:1|max:200',
             'search' => 'array',
             'search.*' => 'in:name,user,status,date',
             'search.name' => 'string|max:255',

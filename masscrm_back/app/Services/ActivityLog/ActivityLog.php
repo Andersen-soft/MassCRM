@@ -7,6 +7,7 @@ namespace App\Services\ActivityLog;
 use App\Models\ActivityLog\AbstractActivityLog;
 use App\Models\ActivityLog\ActivityLogContact;
 use App\Models\BaseModel;
+use App\Models\User\User;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -33,6 +34,28 @@ trait ActivityLog
 
         $activeLogName = self::getActivityModelName();
         DB::table((new $activeLogName())->getTable())->insert($activities);
+    }
+
+    protected function saveManyByModel(array $activities): void
+    {
+        if (empty($activities)) {
+            return;
+        }
+
+        $activeLogName = self::getActivityModelName();
+        $activeLog = new $activeLogName ();
+
+        foreach ($activities as $activity) {
+            foreach ($activity as $key => $value) {
+                if ($key === 'log_info') {
+                    $value = json_decode($value);
+                }
+
+                $activeLog->$key = $value;
+            }
+        }
+
+        $activeLog->save();
     }
 
     protected static function getDataLog(Model $model): string
@@ -112,12 +135,12 @@ trait ActivityLog
                     (string)$model->getOriginal($key)
                 );
                 if ($keyAdditionInfo) {
-                    $log->setAdditionalInfoForData($model->{$key});
+                    $log->setAdditionalInfoForData((string)$model->{$key});
                 }
                 $activityLogs[] = $this->prepareToUpdateEvent($log, json_encode(static::prepareModelForLog($model)));
             }
         }
-        $this->saveMany($activityLogs);
+        $this->saveManyByModel($activityLogs);
     }
 
     protected static function prepareModelForLog(Model $model): array
@@ -150,16 +173,15 @@ trait ActivityLog
 
     private function getUser(Model $model): ?int
     {
-        if (isset($model->user_id)) {
-            return $model->user_id;
+        if (isset($model->responsible_id)) {
+            return $model->responsible_id;
         }
 
         if ($user = $this->findUserId($model)) {
             return $user;
         }
 
-        $user = auth()->user();
-        if ($user) {
+        if ($user = auth()->user()) {
             return $user->getId();
         }
 
@@ -168,14 +190,22 @@ trait ActivityLog
 
     private function findUserId($model): ?int
     {
-        if ($model->company) {
+        if (isset($model->contact)) {
+            return $model->contact->responsible_id;
+        }
+
+        if (method_exists($model, 'getTemporaryResponsible')
+            && $user = $model->getTemporaryResponsible()) {
+
+            if ($user instanceof User) {
+                return $user->getId();
+            }
+        }
+
+        if (isset($model->company)) {
             return $model->company->user_id;
         }
 
-        if ($model->contact) {
-            return $model->contact->user_id;
-        }
-
-        return null;
+        return $model->user_id ?? null;
     }
 }

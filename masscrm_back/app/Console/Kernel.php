@@ -6,7 +6,12 @@ namespace App\Console;
 
 use App\Console\Commands\DeleteOldImports;
 use App\Console\Commands\DeactivateCompanyVacancy;
-use App\Console\Commands\DeleteOldExports;
+use App\Console\Commands\DeleteOldProcesses;
+use App\Console\Commands\FixContactCompanyIdActivityLog;
+use App\Console\Commands\FixContactDetails;
+use App\Console\Commands\LeftOneCompanyIndustry;
+use App\Console\Commands\DetachPermission;
+use App\Console\Commands\FillEmptyContactFullName;
 use App\Console\Commands\ParseFiles;
 use App\Console\Commands\WebSocketServer;
 use App\Console\Commands\LemlistBlacklistCommand;
@@ -33,8 +38,13 @@ class Kernel extends ConsoleKernel
         TransferCollectionContact::class,
         DeleteDuplicateCompanyCommand::class,
         DeactivateCompanyVacancy::class,
-        DeleteOldExports::class,
-        DeleteOldImports::class
+        DeleteOldProcesses::class,
+        DeleteOldImports::class,
+        LeftOneCompanyIndustry::class,
+        DetachPermission::class,
+        FillEmptyContactFullName::class,
+        FixContactDetails::class,
+        FixContactCompanyIdActivityLog::class,
     ];
 
     /**

@@ -40,7 +40,7 @@ abstract class AbstractRequest extends FormRequest
         $gender = array_keys(Lang::get('filters.genders'));
         return [
             'page' => 'integer|min:1',
-            'limit' => 'integer|min:1|max:50',
+            'limit' => 'integer|min:1|max:200',
             'search' => 'array',
             'search.*' => 'in:' . implode(',', Contact::getFieldsToSearch()),
             'search.global' => 'array',
@@ -155,8 +155,9 @@ abstract class AbstractRequest extends FormRequest
             'search.company.type' => 'array|min:1',
             'search.company.type.*' => 'string|max:50',
             'search.company.company_size' => 'array|min:1',
-            'search.company.company_size.max' => 'integer|gte:search.company.company_size.min',
-            'search.company.company_size.min' => 'integer',
+            'search.company.company_size.*' => 'array|min:1',
+            'search.company.company_size.*.min' => 'integer|required',
+            'search.company.company_size.*.max' => 'integer',
             'search.company.has_jobs' => 'boolean',
             'search.company.jobs_status' => 'boolean',
             'search.company.jobs' => 'array|min:1',

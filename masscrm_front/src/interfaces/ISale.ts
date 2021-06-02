@@ -1,4 +1,4 @@
-import { IMinMax } from './IMinMax';
+import { IMinMax } from 'src/interfaces';
 
 export interface ISale {
   [key: string]: string | number;

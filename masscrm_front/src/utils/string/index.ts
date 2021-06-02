@@ -31,7 +31,7 @@ export const findSubstr = (targetString: string, substrForSearch: string) =>
     .toLocaleLowerCase()
     .includes(substrForSearch.toLocaleLowerCase());
 
-export const getTrimmedValue = (value: string | null) => value && value.trim();
+export const getTrimmedValue = (value: string) => value && value.trim();
 
 export const cutStringWithEllipsis = (str: string, len: number) =>
   str.length > len ? `${str.substr(0, len)}...` : str;

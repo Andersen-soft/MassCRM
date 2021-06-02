@@ -11,7 +11,7 @@ class InformationImportRepository
     public function getDataToClear(int $days): Builder
     {
         return InformationImport::query()
-            ->whereDate('updated_at', '<', now()->subDays($days)->toDateString())
+            ->whereDate('updated_at', '<=', now()->subDays($days)->toDateString())
             ->where(function (Builder $query) {
                 $query->orWhere('file_name_missed_duplicates', '<>', '');
                 $query->orWhere('file_name_unsuccessfully_duplicates','<>', '');

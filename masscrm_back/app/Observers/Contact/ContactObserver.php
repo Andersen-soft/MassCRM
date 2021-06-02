@@ -75,10 +75,10 @@ class ContactObserver
             $dataOld = $this->prepareData($contact, $key);
             if ($key === 'company_id') {
                 $dataOld = !empty($contact->getOriginal($key))
-                    ? $this->getCompanyName($contact->getOriginal($key))
+                    ? $this->encodeCompanyLogData($contact->getOriginal($key))
                     : null;
                 $value = !empty($value)
-                    ? $this->getCompanyName($value)
+                    ? $this->encodeCompanyLogData($value)
                     : null;
             }
 
@@ -91,14 +91,17 @@ class ContactObserver
         $this->saveMany($activityLogs);
     }
 
-    private function getCompanyName(int $companyId): ?string
+    private function encodeCompanyLogData($companyId): ?string
     {
         $company = $this->companyRepository->getCompanyById($companyId);
 
-        if ($company) {
-            return $company->getName();
+        if (!$company) {
+            return null;
         }
 
-        return null;
+        return json_encode([
+            'id' => $company->id,
+            'name' => str_replace("'", "''", $company->name)
+        ]);
     }
 }

@@ -41,7 +41,7 @@ class ImportContact
         ]
     ];
 
-    private const COUNTRY_MAPPING = [
+    public const COUNTRY_MAPPING = [
         'United States' => [
             'United States',
             'US',
@@ -354,6 +354,21 @@ class ImportContact
                 continue;
             }
 
+            if ($key === Contact::FIRST_NAME_FIELD &&
+                $item !== null &&
+                $item !== $contact->first_name) {
+                $contact->first_name = $item;
+                continue;
+            }
+
+            if ($key === Contact::LAST_NAME_FIELD &&
+                $item !== null &&
+                $item !== $contact->last_name) {
+                $contact->last_name = $item;
+                continue;
+            }
+
+
             if (!is_null($item)) {
                 if ($contact->getCasts()[$key] === 'datetime') {
                     $date = \DateTime::createFromFormat('d/m/Y H:i', $item);
@@ -361,7 +376,7 @@ class ImportContact
 
                     /** @phpstan-ignore-next-line */
                     if ($date || (is_int($time) && Carbon::parse((int)$time))) {
-                        $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int)$item)->format('d-m-Y H:i');
+                        $date = !empty($date) ? $date->format('d-m-Y H:i') : Carbon::parse((int)$time)->format('d-m-Y H:i');
                         $contact->{$key} = $date;
 
                         continue;
@@ -375,6 +390,7 @@ class ImportContact
         $contact->origin = implode(';', $origin);
         $contact->responsible_id = $responsibleId;
         $contact->comment = $this->getComment($row['contact'], $comment);
+        $contact->full_name = $this->getContactFullName($contact);
 
         return $contact;
     }
@@ -383,6 +399,10 @@ class ImportContact
     {
         if (!$contact->getUserId()) {
             $contact->user()->associate($user);
+        }
+
+        if (!$contact->getCreatedBy()) {
+            $contact->createdBy()->associate($user);
         }
 
         if ($company) {
@@ -464,5 +484,14 @@ class ImportContact
         }
 
         return $country;
+    }
+
+    private function getContactFullName(Contact $contact): ?string
+    {
+        if (empty($contact->first_name) || empty($contact->last_name)) {
+            return null;
+        }
+
+        return "{$contact->first_name} {$contact->last_name}";
     }
 }

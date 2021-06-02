@@ -350,7 +350,7 @@ class UserController extends BaseController
     public function index(GetUserListRequest $request, UserService $userService, Pagination $pagination): JsonResponse
     {
         $users = $userService->getUserList($request->get('search', []), $request->get('sort', []))
-            ->paginate($request->get('limit', 50));
+            ->paginate($request->get('limit', self::DEFAULT_PAGE_LIMIT));
 
         return $this->success(UserResource::collection($users), $pagination->getMeta($users));
     }

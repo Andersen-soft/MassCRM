@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class DeleteOldImports extends Command
 {
-    protected $signature = 'deleteOldImports {--days=90 : update to all}';
+    protected $signature = 'deleteOldImports {--days=90 : days to delete}';
 
     /**
      * The console command description.

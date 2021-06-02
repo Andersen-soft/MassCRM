@@ -1,4 +1,4 @@
-import { IContactResult } from './IContact';
+import { IContactResult } from 'src/interfaces';
 
 export interface IContactJobValues {
   [index: string]: string | number | undefined;
@@ -6,33 +6,12 @@ export interface IContactJobValues {
   job: string;
   skills: string;
   link: string;
+  job_country?: string;
+  job_region?: string;
+  job_city?: string;
+  updated_at?: string;
 }
 
-export type IContactsJobs = IContactJobValues[];
-export type IContacts = IContactResult[];
+export type ContactsJobs = IContactJobValues[];
 
-export interface IJobFormState {
-  vacancies: IContactsJobs;
-}
-
-export interface IContactJobRow {
-  arrayPosition: 'first' | 'last';
-  jobs: IContactsJobs;
-  indexCorrection: number;
-  onEditHandler: (index: number, event: EventTarget) => void;
-  onRemoveHandler: (index: number) => void;
-}
-
-export interface IContactJobInput {
-  vacancies: IContactsJobs;
-  onChange: (fieldName: string, value: IContactsJobs) => void;
-  errorMessage?: string;
-  role?: any;
-}
-
-export interface IContactJobForm {
-  anchorForm: { el: HTMLElement; index: number } | null;
-  data: IContactJobValues | null;
-  onChange: (data: IContactJobValues, index: number) => void;
-  onClose: () => void;
-}
+export type Contacts = IContactResult[];

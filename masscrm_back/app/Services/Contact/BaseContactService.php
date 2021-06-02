@@ -6,6 +6,7 @@ namespace App\Services\Contact;
 
 use App\Repositories\Company\CompanyRepository;
 use App\Repositories\Contact\ContactRepository;
+use App\Repositories\Report\ReportRepository;
 use App\Services\ActivityLog\ActivityLogContactService;
 use App\Services\TransferCollection\TransferCollectionContactService;
 
@@ -19,6 +20,7 @@ class BaseContactService
     public ContactPhoneService $contactPhoneService;
     public ContactSocialNetworkService $contactSocialNetworkService;
     public TransferCollectionContactService $transferCollectionContactService;
+    public ReportRepository $reportRepository;
 
     public function __construct(
         ContactRepository $contactRepository,
@@ -28,7 +30,8 @@ class BaseContactService
         ContactPhoneService $contactPhoneService,
         ContactNotesService $contactNotesService,
         ContactSocialNetworkService $contactSocialNetworkService,
-        TransferCollectionContactService $transferCollectionContactService
+        TransferCollectionContactService $transferCollectionContactService,
+        ReportRepository $reportRepository
     ) {
         $this->contactRepository = $contactRepository;
         $this->activityLogContactService = $activityLogContactService;
@@ -38,5 +41,6 @@ class BaseContactService
         $this->contactNotesService = $contactNotesService;
         $this->contactSocialNetworkService = $contactSocialNetworkService;
         $this->transferCollectionContactService = $transferCollectionContactService;
+        $this->reportRepository = $reportRepository;
     }
 }

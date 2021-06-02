@@ -31,16 +31,13 @@ export const GENDER_MAP: { [key: string]: string } = {
   f: 'Female'
 };
 
-export const getContactByFullName = (
-  contact: string,
-  contacts: Array<IContact>
-) => {
+export const getContactByFullName = (contact: string, contacts: IContact[]) => {
   return contacts.find(
     ({ first_name, last_name }) => `${first_name} ${last_name}` === contact
   );
 };
 
-export const getNamesOfContacts = (contacts: Array<IContact>) => {
+export const getNamesOfContacts = (contacts: IContact[]) => {
   return contacts.map(
     ({ first_name, last_name }) => `${first_name} ${last_name}`
   );
@@ -48,9 +45,10 @@ export const getNamesOfContacts = (contacts: Array<IContact>) => {
 
 export const getContactFullNameByID = (
   idCompany: number | undefined,
-  contacts: Array<IContact>
+  contacts: IContact[]
 ) => {
   const matchedContact = contacts.find(({ id }) => idCompany === id);
+
   return matchedContact
     ? `${matchedContact?.first_name} ${matchedContact?.last_name}`
     : '';

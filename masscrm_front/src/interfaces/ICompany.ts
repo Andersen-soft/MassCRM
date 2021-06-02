@@ -1,16 +1,23 @@
-import { IIndustry } from './IIndustry';
-import { IJob } from './IJob';
-import { IContacts, IContactsJobs } from './IContactJobInput';
-import { IMinMax } from './IMinMax';
-import { ISort } from './ISort';
+import {
+  IIndustry,
+  IJob,
+  Contacts,
+  ContactsJobs,
+  IMinMax
+} from 'src/interfaces';
+
+export type IndustriesCommonFormat = {
+  id: number;
+  name: string;
+};
 
 export interface ICompany {
   [key: string]:
     | number
     | string
     | IIndustry
-    | Array<IJob>
-    | Array<{ id: number; name: string }>
+    | IJob[]
+    | { id: number; name: string }[]
     | undefined;
   id: number;
   created_at?: string;
@@ -24,11 +31,11 @@ export interface ICompany {
   min_employees?: number;
   max_employees?: number;
   comment?: string;
-  industries?: Array<IIndustry>;
-  subsidiary?: Array<{ id: number; name: string }>;
-  holding?: Array<{ id: number; name: string }>;
-  vacancies?: IContactsJobs;
-  contacts?: IContacts;
+  industries?: IIndustry[];
+  subsidiary?: IndustriesCommonFormat[];
+  holding?: IndustriesCommonFormat[];
+  vacancies?: ContactsJobs;
+  contacts?: Contacts;
 }
 
 export interface ICompanySearch {
@@ -39,8 +46,8 @@ export interface ICompanySearch {
   linkedin?: string;
   sto_full_name?: string;
   industry?: string[];
-  company_size?: IMinMax;
-  type?: Array<string>;
+  company_size?: IMinMax[];
+  type?: string[];
   subsidiary?: string;
   holding?: string;
   founded?: IMinMax;
@@ -50,13 +57,7 @@ export interface ICompanySearch {
   jobs_status?: string;
 }
 
-export interface ICompanyFilter {
-  page?: number;
-  limit?: number;
-  search?: ICompanySearch;
-  sort?: ISort;
-  mode?: string;
-}
+type NumberOfEmployees = number | null;
 
 export interface ICompanyUpdate {
   id?: number;
@@ -66,13 +67,13 @@ export interface ICompanyUpdate {
   sto_full_name?: string;
   type?: string;
   founded?: string;
-  min_employees?: number | null;
-  max_employees?: number | null;
+  min_employees?: NumberOfEmployees;
+  max_employees?: NumberOfEmployees;
   comment?: string;
-  industries?: Array<number>;
-  subsidiaries?: Array<number>;
-  holding?: Array<number>;
-  vacancies?: Array<IJob>;
+  industries?: number[];
+  subsidiaries?: number[];
+  holding?: number[];
+  vacancies?: IJob[];
   skip_validation?: number;
 }
 

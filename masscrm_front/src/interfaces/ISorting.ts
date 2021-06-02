@@ -13,7 +13,7 @@ export interface ISortingState {
   'Date of use': ISortingObject;
 }
 
-export interface ISortingFieldId {
+export interface IContactsSortingFieldId {
   [key: string]: string | undefined;
   'Contact created'?: string;
   'Contact updated'?: string;

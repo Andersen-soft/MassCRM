@@ -18,6 +18,7 @@ class CreateContactCommand
     protected ?array $socialNetworks;
     protected bool $requiresValidation;
     protected User $user;
+    protected User $createdBy;
 
     public function __construct(
         array $emails,
@@ -37,6 +38,7 @@ class CreateContactCommand
         $this->socialNetworks = $socialNetworks;
         $this->requiresValidation = in_array($requiresValidation, ['1', 'true']);
         $this->user = $user;
+        $this->createdBy = $user;
     }
 
     public function getOrigin(): ?array
@@ -77,5 +79,10 @@ class CreateContactCommand
     public function getUser(): User
     {
         return $this->user;
+    }
+
+    public function getCreatedBy(): User
+    {
+        return $this->createdBy;
     }
 }

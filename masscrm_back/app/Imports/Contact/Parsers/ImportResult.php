@@ -148,14 +148,13 @@ class ImportResult
             'file_name_missed_duplicates' => $this->duplicateFileName,
             'file_name_unsuccessfully_duplicates' => $this->errorFileName,
         ]);
-
-        CreateSocketUserNotificationEvent::dispatch(
-            UsersNotification::TYPE_IMPORT_FINISHED,
-            Lang::get('import.finished'),
-            [$user],
-            '',
-            $infoImport->id
-        );
+//        CreateSocketUserNotificationEvent::dispatch(
+//            UsersNotification::TYPE_IMPORT_FINISHED,
+//            Lang::get('import.finished'),
+//            [$user],
+//            '',
+//            $infoImport->id
+//        );
 
         return $infoImport;
     }

@@ -36,10 +36,10 @@ class CreateCompanyRequest extends AbstractRequest
         return [
             'name' => ['required', 'string', 'max:150', new UniqueCompanyNameRule()],
             'website' => [
-                'nullable',
+                'required',
                 'string',
                 'url',
-                new UniqueCompanyWebsite(self::REGEX_GET_URL, (bool) $this->skip_validation)
+                new UniqueCompanyWebsite((bool) $this->skip_validation)
             ],
             'linkedin' => [
                 'nullable',
@@ -52,7 +52,7 @@ class CreateCompanyRequest extends AbstractRequest
             'founded' => 'nullable|date',
             'min_employees' => 'integer|min:1',
             'max_employees' => 'nullable|integer|min:1|gte:min_employees',
-            'industries' => 'array|min:1',
+            'industries' => 'array|size:1',
             'industries.*' => 'integer|exists:industries,id',
             'vacancies' => 'array|min:1',
             'vacancies.*' => 'array',

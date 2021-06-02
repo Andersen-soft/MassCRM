@@ -27,7 +27,7 @@ class GetCompanyListRequest extends AbstractRequest
     {
         return [
             'page' => 'integer|min:1',
-            'limit' => 'integer|min:1|max:50',
+            'limit' => 'integer|min:1|max:200',
             'search.*' => 'in:' . implode(',', Company::getFieldsToSearch()),
             'search.name' => 'array|min:1',
             'search.name.*' => 'string|max:150',

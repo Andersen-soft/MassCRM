@@ -1,0 +1,89 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`CommonButton input should render correctly 1`] = `
+<Fragment>
+  <WithStyles(ForwardRef(FormControl))
+    classes={
+      Object {
+        "root": "makeStyles-input-1 undefined undefined",
+      }
+    }
+    style={
+      Object {
+        "width": "230px",
+      }
+    }
+    variant="outlined"
+  >
+    <WithStyles(ForwardRef(InputLabel)) />
+    <WithStyles(ForwardRef(OutlinedInput))
+      aria-describedby="component-error-text"
+      autoFocus={false}
+      endAdornment={
+        <ForwardRef(WithStyles)
+          position="end"
+        />
+      }
+      error={false}
+      inputProps={
+        Object {
+          "id": undefined,
+        }
+      }
+      labelWidth={70}
+      onChange={[Function]}
+      type="text"
+      value="test"
+    />
+  </WithStyles(ForwardRef(FormControl))>
+</Fragment>
+`;
+
+exports[`CommonButton input should render error 1`] = `
+<Fragment>
+  <WithStyles(ForwardRef(FormControl))
+    classes={
+      Object {
+        "root": "makeStyles-input-1 undefined undefined",
+      }
+    }
+    style={
+      Object {
+        "width": "230px",
+      }
+    }
+    variant="outlined"
+  >
+    <WithStyles(ForwardRef(InputLabel)) />
+    <WithStyles(ForwardRef(OutlinedInput))
+      aria-describedby="component-error-text"
+      autoFocus={false}
+      endAdornment={
+        <ForwardRef(WithStyles)
+          position="end"
+        >
+          <ForwardRef(WithStyles)
+            edge="end"
+            onClick={[Function]}
+            onMouseDown={[Function]}
+          >
+            <UNDEFINED
+              color="error"
+            />
+          </ForwardRef(WithStyles)>
+        </ForwardRef(WithStyles)>
+      }
+      error={true}
+      inputProps={
+        Object {
+          "id": undefined,
+        }
+      }
+      labelWidth={70}
+      onChange={[Function]}
+      type="text"
+      value="test"
+    />
+  </WithStyles(ForwardRef(FormControl))>
+</Fragment>
+`;
