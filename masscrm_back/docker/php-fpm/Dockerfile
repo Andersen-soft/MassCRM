@@ -1,4 +1,4 @@
-FROM php:7.4.16-fpm AS masscrm-fpm
+FROM php:7.4-fpm AS masscrm-fpm
 RUN cat /etc/hosts
 ADD https://raw.githubusercontent.com/mlocati/docker-php-extension-installer/master/install-php-extensions /usr/local/bin/
 
