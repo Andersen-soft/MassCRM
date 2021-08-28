@@ -4,7 +4,7 @@ ADD . /front/
 RUN npm install
 RUN ls -la
 RUN npm run build:prod
-FROM nginx:1.15
+FROM nginx:1.20
 RUN usermod -u 1000 www-data
 COPY --from=builder --chown=www-data:www-data /front /var/www
 RUN usermod -u 1000 www-data
