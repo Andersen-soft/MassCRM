@@ -1,4 +1,4 @@
-FROM nginx:1.15
+FROM nginx:stable
 
 RUN usermod -u 1000 www-data
 
